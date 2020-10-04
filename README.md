@@ -1,5 +1,4 @@
 # cs107-FinalProject
-# cs107-FinalProject
 ## This is the repository for CS107 group project for fall 2020 at HU.
 ### Group 5
 ### Group members:
@@ -9,6 +8,8 @@
 - Hanwen Zhang
 
 
-travis status:
+travis badge:
 [![Build Status](https://travis-ci.com/auto-differentiaters-in-CST/cs107-FinalProject.svg?token=AjVcVSqkqdiJgwaimWYR&branch=master)](https://travis-ci.com/auto-differentiaters-in-CST/cs107-FinalProject)
 
+codecov badge:
+[![codecov](https://codecov.io/gh/auto-differentiaters-in-CST/cs107-FinalProject/branch/master/graph/badge.svg?token=US1Y8Z9OE0)](undefined)
