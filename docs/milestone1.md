@@ -1,6 +1,37 @@
 ## Section 1: Introduction
+This package autodiffCST implements automatic differentiation. It can be used to automatically differentiate functions via forward mode and reverse mode, depending on the user's choice. It also provides an option of performing second order differentiation.
+
+Differentiation, namely, the process of finding the derivatives of functions, is very prevalent in various areas of science and engineering. It can often be used to find the extrema of functions with single or multiple variables. With the advance of technology, more complicated functions and larger dataset are developed. The difficulty of performing differentiation has greatly increased and we are more dependent on computers to take derivates. Nowadays, we have three major ways of performing differentiation: symbolic, numerical and automatic (algorithmic) differentiation. We will focus on automatic differentiation for the rest of this document.
 
 ## Section 2: Background
+### 2.1 An Overview of Auto Differentiation
+Automatic differentiation (AD) uses algorithms to efficiently and accurately evaluating derivatives of numeric functions. It has the advantage of avoiding symbolic manipulation of functions while reaching an accuracy close to machine precision. Application of automatic differentiation includes but is not limited to astronomy, dynamic systems, numerical analysis research, optimization in finance and engineering.
+
+The idea behind AD is to break down a function into a sequence of elementary operations and functions that have easily attained derivatives, and then sequencially apply the chain rule to evaluate the derivatives of these operations to compute the derivative of the whole function.
+
+The two main methods of performing automatic differentiation are forward mode and reverse mode. Some other AD algorithms implement a combination of forward mode and reverse mode, but this package will implement them seperately.  
+
+To better understand automatic differentiation, it is uncessary to get familar with some key concepts that are used in the algorithms of AD. We will use the rest of this section to briefly introduce them.
+
+### 2.2 Elementary operations and functions
+The algorithm of automatic differentiation breaks down functions into elementary arithmetic operations and elementary functions. Elementary arithmetic operations include addition, subtraction, multiplication, division and raising power (we can also consider taking roots of a number as raising it to powers less than $1$). Elementary functions include exponential, logrithmatic, and trigonometry. All of these operations and functions mentioned here have derivates that are easy to compute, so we use them as elementary steps in the evaluation trace of AD.
+
+### 2.3 The Chain Rule
+The chain rule can be used to calculate the derivate of nested functions, such in the form of $u(v(t))$. For this function, the derivative of $u$ with respect to $t$ is $$\dfrac{\partial u}{\partial t} = \dfrac{\partial u}{\partial v}\dfrac{\partial v}{\partial t}.$$
+
+A more general form of chain rule applies when a function $h$ has several arguments, or when its argument is a vector. Suppose we have $h = h(y(t))$ where  $y \in R^n$ and $t \in R^m $. Here, $h$ is the combination of $n$ functions, each of which has $m$ variables. Using the chain rule, the derivative of $h$ with respect to $t$, now called the gradient of $h$, is
+
+ $$    \nabla_{t}h = \sum_{i=1}^{n}{\frac{\partial h}{\partial y_{i}}\nabla y_{i}\left(t\right)}.$$
+
+The chain rule enables us to break down complicated and nested functions into layers and operations. Our automatic differentiation algrithm sequencially sues chain rule to compute the derivative of funtions. 
+
+### 2.4 Evaluation Trace and Computational Graph
+These two concepts are the core of our automatic differentiation algorithm. Since they are so important and can be created at the same time, creating them would be the first thing to do when a function is inputted into the algorithm.
+
+The evaluation trace tracks each layer of operations while evaluate the input function and its derivative. At each step the evaluation trace holds the traces, elementary operations, numerical values, elementary derivatives and partial derivatives. 
+
+The computational graph is a graphical visualization of the evaluation trace. It holds the traces and elementary operations of the steps, connecting them via arrows pointing from input to output for each step. The computational graph helps us to better understand the structure of the function and its evaluation trace. Forward mode performs the operations from the start to the end of the graph or evaluation trace. Reverse mode performs the operations backwards, while applying the chain rule at each time determining the derivate of the trace.
+
 
 ## Section 3: How to Use AutodiffCST
 Users should import the package or the class autodiffCST, 
