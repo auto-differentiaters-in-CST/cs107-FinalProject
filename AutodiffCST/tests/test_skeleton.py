@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from autodiffcst.skeleton import fib
+from src.autodiffcst.skeleton import fib
 
 __author__ = "XiaohanYa"
 __copyright__ = "XiaohanYa"

@@ -1,3 +1,6 @@
+import math
+
+
 class AD():
 
     def __init__(self, val, tags, ders=1, mode = "forward"):
@@ -102,7 +105,79 @@ class AD():
         except KeyError:
             raise Exception("Invalid direction")
     
+def chain_rule(ad, new_val, der):
+    new_ders = dict()
+    for tag in ad.tags:
+        new_ders[tag] = der * ad.ders[tag]
+    new_ad = AD(new_val, ad.tags, new_ders)
+    return new_ad
 
+
+def abs(ad):
+    new_val = math.fabs(ad.val)
+    if ad.val > 0:
+        der = 1
+    elif ad.val < 0:
+        der = -1
+    else:
+        raise Exception("Derivative undefined")
+    return chain_rule(ad, new_val, der)
+
+
+def exp(ad):
+    new_val = math.exp(ad.val)
+    der = new_val
+    return chain_rule(ad, new_val, der)
+
+
+def log(ad): #consider different base?
+    new_val = math.log(ad.val)
+    der = 1/ad.val
+    return chain_rule(ad, new_val, der)
+
+
+def pow(ad, y):
+    new_val = math.pow(ad.val, y)
+    der = y*math.pow(ad.val, y-1)
+    return chain_rule(ad, new_val, der)
+
+
+def sqrt(ad):
+    return pow(ad, 1/2)
+
+
+def sin(ad):
+    new_val = math.sin(ad.val)
+    der = math.cos(ad.val)
+    return chain_rule(ad, new_val, der)
+
+def sinh(ad):
+    pass
+def asin(ad):
+    pass
+def asinh(ad):
+    pass
+
+
+def cos(ad):
+    new_val = math.cos(ad.val)
+    der = -math.sin(ad.val)
+    return chain_rule(ad, new_val, der)
+
+def cosh(ad):
+    pass
+def acos(ad):
+    pass
+def acosh(ad):
+    pass
+def tan(ad):
+    pass
+def tanh(ad):
+    pass
+def atan(ad):
+    pass
+def atanh(ad):
+    pass
 
 if __name__ == "__main__":
     x = AD(1,"x")
