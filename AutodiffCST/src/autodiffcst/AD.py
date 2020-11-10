@@ -95,6 +95,94 @@ class AD():
 
     def __imod__(self, other):
         return self % other
+    
+    
+    ## Multiplication
+    # super not sure how tags work here
+    def __mul__(self, other):
+        try:
+            tags1 = self.tags
+            tags2 = other.tags
+
+            new_ders = self.ders.copy()
+            new_tags = self.tags.copy()
+
+            for tag_i in tags2:
+                if tag_i in tags1:
+                    new_ders[tag_i] = self.val * other.ders[tag_i] + other.val * self.ders[tag_i]
+                else:
+                    new_ders[tag_i] = self.val * other.ders[tag_i] 
+                    new_tags.append(tag_i)
+
+            new_val = self.val * other.val
+            new_self = AD(new_val, new_tags, ders = new_ders)
+            return new_self
+        except AttributeError:
+            if isinstance(other, int) or isinstance(other, float):
+                new_val = self.val * other
+                new_ders = self.ders * other
+                new_self = AD(new_val, self.tags, new_ders)
+            else:
+                raise TypeError("Invalid type.")
+
+    def __rmul__(self, other):
+        return other.mul(self)
+
+    def __imul__(self, other):
+        return self * other
+    
+    
+    ## Division
+    # super not sure how tags work here
+    def __div__(self, other):
+        try:
+            tags1 = self.tags
+            tags2 = other.tags
+
+            new_ders = self.ders.copy()
+            new_tags = self.tags.copy()
+
+            for tag_i in tags2:
+                if tag_i in tags1:
+                    new_ders[tag_i] = (other.val * self.ders[tag_i] - self.val * other.ders[tag_i]) / (self.val ** 2)
+                else:
+                    new_ders[tag_i] = -1* self.val / (other.ders[tag_i]**2)
+                    new_tags.append(tag_i)
+
+            new_val = self.val / other.val
+            new_self = AD(new_val, new_tags, ders = new_ders)
+            return new_self
+        except AttributeError:
+            if isinstance(other, int) or isinstance(other, float):
+                new_val = self.val / other
+                new_ders = self.ders / other
+                new_self = AD(new_val, self.tags, new_ders)
+            else:
+                raise TypeError("Invalid type.")
+
+    def __rdiv__(self, other):
+        return other.div(self)
+    
+    def __idiv__(self, other):
+        return self / other
+    
+    
+    ## power
+    # adapted from ryt's pow()
+    # more general, can be used by **
+    # do we need x ** y, if so, what's the derivative
+    def __pow__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            new_val = math.pow(self.val, other)
+            der = other * math.pow(self.val, other - 1)
+            new_self = AD(new_val, self.tags, der)
+            return new_self
+        else:
+            raise TypeError("You can only power by an integer or a float.")        
+    
+    def __ipow__(self, other):
+        return self ** other    
+
 
     # Differentiation
     def diff(self, direction=None):  
@@ -104,6 +192,7 @@ class AD():
             return self.ders[direction]
         except KeyError:
             raise Exception("Invalid direction")
+
     
 def chain_rule(ad, new_val, der):
     new_ders = dict()
@@ -111,7 +200,6 @@ def chain_rule(ad, new_val, der):
         new_ders[tag] = der * ad.ders[tag]
     new_ad = AD(new_val, ad.tags, new_ders)
     return new_ad
-
 
 def abs(ad):
     new_val = math.fabs(ad.val)
@@ -135,15 +223,13 @@ def log(ad): #consider different base?
     der = 1/ad.val
     return chain_rule(ad, new_val, der)
 
-
 def pow(ad, y):
     new_val = math.pow(ad.val, y)
-    der = y*math.pow(ad.val, y-1)
+    der = y * math.pow(ad.val, y - 1)
     return chain_rule(ad, new_val, der)
 
-
 def sqrt(ad):
-    return pow(ad, 1/2)
+    return ad ** 0.5
 
 
 def sin(ad):
