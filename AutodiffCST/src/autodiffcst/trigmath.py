@@ -1,8 +1,7 @@
-# chain_rule from Runting
-
 import math
 
 # need chain_rule function
+# from Runting
 def chain_rule(ad, new_val, der):
     new_ders = dict()
     for tag in ad.tags:
@@ -92,8 +91,8 @@ def sinh(ad):
 
 def cosh(ad):
     if isinstance(ad, AD):
-        new_val = math.cosh(ad.val)
-        der = math.cosh(ad.val)
+        new_val = cosh(ad.val)
+        der = sinh(ad.val)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return math.cosh(ad)
@@ -139,6 +138,7 @@ def csch(ad):
         return 1/math.sinh(ad)
     else:
         raise TypeError("Input should be either an AD object or a number.")
+
 
 
 
