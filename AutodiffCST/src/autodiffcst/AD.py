@@ -38,15 +38,17 @@ class AD():
         
             new_val = self.val + other.val
             new_self = AD(new_val, new_tags, ders = new_ders)
+            return new_self
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val + other
                 new_self = AD(new_val, self.tags, ders = self.ders)
+                return new_self
             else:
                 raise TypeError("Invalid type.")
 
     def __radd__(self, other):
-        return other.add(self)
+        return self + other
     
     def __iadd__(self, other):
         return self + other
@@ -65,22 +67,24 @@ class AD():
                 if tag_i in tags1:
                     new_ders[tag_i] -= other.ders[tag_i]
                 else:
-                    new_ders[tag_i] = other.ders[tag_i]
+                    new_ders[tag_i] = -1 * other.ders[tag_i]
                     new_tags.append(tag_i)
         
             new_val = self.val - other.val
             new_self = AD(new_val, new_tags, ders = new_ders)
+            return new_self
+
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val - other
                 new_self = AD(new_val, self.tags, ders = self.ders)
+                return new_self
             else:
                 raise TypeError("Invalid type.")
-
-
-        return new_self
     
-    
+    def __rsub__(self, other):
+        return (self - other)*(-1)
+
     def __isub__(self, other):
         return self - other
 
@@ -98,35 +102,41 @@ class AD():
     
     
     ## Multiplication
-    # super not sure how tags work here
     def __mul__(self, other):
         try:
-            tags1 = self.tags
-            tags2 = other.tags
+            self_tags = self.tags
+            other_tags = other.tags
 
-            new_ders = self.ders.copy()
             new_tags = self.tags.copy()
+            new_ders = self.ders.copy()
 
-            for tag_i in tags2:
-                if tag_i in tags1:
-                    new_ders[tag_i] = self.val * other.ders[tag_i] + other.val * self.ders[tag_i]
+            for var in self_tags:
+                if var in other_tags:
+                    new_ders[var] = self.ders[var] * other.val + other.ders[var] * self.val 
                 else:
-                    new_ders[tag_i] = self.val * other.ders[tag_i] 
-                    new_tags.append(tag_i)
-
+                    new_ders[var] = self.ders[var] * other.val
+            for var in other_tags:
+                if var not in self.tags:
+                    new_ders[var] = other.ders[var] * self.val
+                    new_tags.append(var)
             new_val = self.val * other.val
+            print(new_val, new_tags, new_ders)
             new_self = AD(new_val, new_tags, ders = new_ders)
             return new_self
+
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val * other
-                new_ders = self.ders * other
+                new_ders = {}
+                for var in self.tags:
+                    new_ders[var] = self.ders[var] * other
                 new_self = AD(new_val, self.tags, new_ders)
+                return new_self
             else:
                 raise TypeError("Invalid type.")
 
     def __rmul__(self, other):
-        return other.mul(self)
+        return self * other
 
     def __imul__(self, other):
         return self * other
@@ -268,7 +278,7 @@ def atanh(ad):
 if __name__ == "__main__":
     x = AD(1,"x")
     y = AD(2,"y")
-    f = y+x
+    f = 2 - x 
     f -= 1  
     print(f)
     print(f.ders)
