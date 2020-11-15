@@ -120,7 +120,6 @@ class AD():
                     new_ders[var] = other.ders[var] * self.val
                     new_tags.append(var)
             new_val = self.val * other.val
-            print(new_val, new_tags, new_ders)
             new_self = AD(new_val, new_tags, ders = new_ders)
             return new_self
 
