@@ -1,4 +1,5 @@
 import math
+import AD
 
 # need chain_rule function
 # from Runting
@@ -6,7 +7,7 @@ def chain_rule(ad, new_val, der):
     new_ders = dict()
     for tag in ad.tags:
         new_ders[tag] = der * ad.ders[tag]
-    new_ad = AD(new_val, ad.tags, new_ders)
+    new_ad = AD.AD(new_val, ad.tags, new_ders)
     return new_ad
 
 
@@ -17,7 +18,7 @@ def chain_rule(ad, new_val, der):
 
 # trig
 def sin(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = sin(ad.val)
         der = cos(ad.val)
         return chain_rule(ad, new_val, der)
@@ -27,7 +28,7 @@ def sin(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def cos(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = cos(ad.val)
         der = -sin(ad.val)
         return chain_rule(ad, new_val, der)
@@ -37,7 +38,7 @@ def cos(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def tan(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = tan(ad.val)
         der = sec(ad.val)**2
         return chain_rule(ad, new_val, der)
@@ -47,7 +48,7 @@ def tan(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def cot(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = cot(ad.val)
         der = sec(ad.val)**2
         return chain_rule(ad, new_val, der)
@@ -57,7 +58,7 @@ def cot(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def sec(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = sec(ad.val)
         der = sec(ad.val)*tan(ad.val)
         return chain_rule(ad, new_val, der)
@@ -67,7 +68,7 @@ def sec(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def csc(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = csc(ad.val)
         der = csc(ad.val)*cot(ad.val)
         return chain_rule(ad, new_val, der)
@@ -80,7 +81,7 @@ def csc(ad):
 
 # hyperbolic trig
 def sinh(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = sinh(ad.val)
         der = cosh(ad.val)
         return chain_rule(ad, new_val, der)
@@ -90,7 +91,7 @@ def sinh(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def cosh(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = cosh(ad.val)
         der = sinh(ad.val)
         return chain_rule(ad, new_val, der)
@@ -100,7 +101,7 @@ def cosh(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def tanh(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = tanh(ad.val)
         der = sech(ad.val)**2
         return chain_rule(ad, new_val, der)
@@ -110,7 +111,7 @@ def tanh(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def coth(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = coth(ad.val)
         der = csch(ad.val)**2
         return chain_rule(ad, new_val, der)
@@ -120,7 +121,7 @@ def coth(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def sech(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = sech(ad.val)
         der = sech(ad.val)*tanh(ad.val)
         return chain_rule(ad, new_val, der)
@@ -130,7 +131,7 @@ def sech(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def csch(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = csch(ad.val)
         der = csch(ad.val)*coth(ad.val)
         return chain_rule(ad, new_val, der)
@@ -144,7 +145,7 @@ def csch(ad):
 
 # inverse trig
 def asin(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = asin(ad.val)
         der = 1/math.sqrt(1-ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -154,7 +155,7 @@ def asin(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def acos(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = acos(ad.val)
         der = -1/math.sqrt(1-ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -164,7 +165,7 @@ def acos(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def atan(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = atan(ad.val)
         der = 1/(1+ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -174,7 +175,7 @@ def atan(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def acot(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = acot(ad.val)
         der = -1/(1+ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -184,7 +185,7 @@ def acot(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def asec(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = asec(ad.val)
         der = 1/(ad.val*(ad.val**2-1))
         return chain_rule(ad, new_val, der)
@@ -194,7 +195,7 @@ def asec(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def acsc(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = acsc(ad.val)
         der = -1/(ad.val*(ad.val**2-1))
         return chain_rule(ad, new_val, der)
@@ -207,7 +208,7 @@ def acsc(ad):
 
 # inverse hyperbolic trig
 def asinh(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = asinh(ad.val)
         der = 1/math.sqrt(1+ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -217,7 +218,7 @@ def asinh(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def acosh(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = acosh(ad.val)
         der = 1/math.sqrt(ad.val**2-1)
         return chain_rule(ad, new_val, der)
@@ -227,7 +228,7 @@ def acosh(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def atanh(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = atanh(ad.val)
         der = 1/(1-ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -237,7 +238,7 @@ def atanh(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def acoth(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = acoth(ad.val)
         der = 1/(1-ad.val**2)
         return chain_rule(ad, new_val, der)
@@ -247,7 +248,7 @@ def acoth(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def asech(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = asech(ad.val)
         der = -1/(ad.val*(ad.val+1)*math.sqrt((1-ad.val)/(1+ad.val)))
         return chain_rule(ad, new_val, der)
@@ -257,7 +258,7 @@ def asech(ad):
         raise TypeError("Input should be either an AD object or a number.")
 
 def acsch(ad):
-    if isinstance(ad, AD):
+    if isinstance(ad, AD.AD):
         new_val = acsch(ad.val)
         der = -1/(ad.val**2*math.sqrt(1/ad.val**2+1))
         return chain_rule(ad, new_val, der)
