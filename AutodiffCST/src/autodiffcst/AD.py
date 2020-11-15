@@ -241,40 +241,6 @@ def pow(ad, y):
 def sqrt(ad):
     return ad ** 0.5
 
-
-def sin(ad):
-    new_val = math.sin(ad.val)
-    der = math.cos(ad.val)
-    return chain_rule(ad, new_val, der)
-
-def sinh(ad):
-    pass
-def asin(ad):
-    pass
-def asinh(ad):
-    pass
-
-
-def cos(ad):
-    new_val = math.cos(ad.val)
-    der = -math.sin(ad.val)
-    return chain_rule(ad, new_val, der)
-
-def cosh(ad):
-    pass
-def acos(ad):
-    pass
-def acosh(ad):
-    pass
-def tan(ad):
-    pass
-def tanh(ad):
-    pass
-def atan(ad):
-    pass
-def atanh(ad):
-    pass
-
 if __name__ == "__main__":
     x = AD(1,"x")
     y = AD(2,"y")
