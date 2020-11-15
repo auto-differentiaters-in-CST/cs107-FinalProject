@@ -50,7 +50,7 @@ def tan(ad):
 def cot(ad):
     if isinstance(ad, AD.AD):
         new_val = cot(ad.val)
-        der = sec(ad.val)**2
+        der = -csc(ad.val)**2
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return 1/math.tan(ad)
@@ -70,7 +70,7 @@ def sec(ad):
 def csc(ad):
     if isinstance(ad, AD.AD):
         new_val = csc(ad.val)
-        der = csc(ad.val)*cot(ad.val)
+        der = -csc(ad.val)*cot(ad.val)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return 1/math.sin(ad)
@@ -113,7 +113,7 @@ def tanh(ad):
 def coth(ad):
     if isinstance(ad, AD.AD):
         new_val = coth(ad.val)
-        der = csch(ad.val)**2
+        der = -csch(ad.val)**2
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return math.cosh(ad)/math.sinh(ad)
@@ -123,7 +123,7 @@ def coth(ad):
 def sech(ad):
     if isinstance(ad, AD.AD):
         new_val = sech(ad.val)
-        der = sech(ad.val)*tanh(ad.val)
+        der = -sech(ad.val)*tanh(ad.val)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return 1/math.cosh(ad)
@@ -133,7 +133,7 @@ def sech(ad):
 def csch(ad):
     if isinstance(ad, AD.AD):
         new_val = csch(ad.val)
-        der = csch(ad.val)*coth(ad.val)
+        der = -csch(ad.val)*coth(ad.val)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return 1/math.sinh(ad)
@@ -187,8 +187,11 @@ def acot(ad):
 def asec(ad):
     if isinstance(ad, AD.AD):
         new_val = asec(ad.val)
-        der = 1/(ad.val*(ad.val**2-1))
-        return chain_rule(ad, new_val, der)
+        if abs(ad.val) <= 1:
+            raise ValueError("To be differentiable, asec cannot take input within (-1,1).")
+        else:
+            der = 1/(abs(ad.val)*math.sqrt(ad.val**2-1))
+            return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return math.acos(1/ad)
     else:
@@ -197,8 +200,11 @@ def asec(ad):
 def acsc(ad):
     if isinstance(ad, AD.AD):
         new_val = acsc(ad.val)
-        der = -1/(ad.val*(ad.val**2-1))
-        return chain_rule(ad, new_val, der)
+        if abs(ad.val) <= 1:
+            raise ValueError("To be differentiable, acsc cannot take input within (-1,1).")
+        else:
+            der = -1/(abs(ad.val)*math.sqrt(ad.val**2-1))
+            return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
         return math.asin(1/ad)
     else:
@@ -223,7 +229,10 @@ def acosh(ad):
         der = 1/math.sqrt(ad.val**2-1)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
-        return math.acosh(ad)
+        if ad < 1:
+            raise ValueError("The domain of acosh is [1,infty).")
+        else:
+            return math.acosh(ad)
     else:
         raise TypeError("Input should be either an AD object or a number.")
 
@@ -233,7 +242,10 @@ def atanh(ad):
         der = 1/(1-ad.val**2)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
-        return math.atanh(ad)
+        if ad > -1 and ad < 1:
+            return math.atanh(ad)
+        else:
+            raise ValueError("The domain of atanh is (-1,1).")
     else:
         raise TypeError("Input should be either an AD object or a number.")
 
@@ -243,7 +255,10 @@ def acoth(ad):
         der = 1/(1-ad.val**2)
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
-        return 0.5*math.log((ad+1)/(ad-1))
+        if -1 <= ad and ad <= 1:
+            raise ValueError("The domain of acoth is (-infty,-1)U(1,infty).")
+        else:
+            return 0.5*math.log((ad+1)/(ad-1))
     else:
         raise TypeError("Input should be either an AD object or a number.")
 
@@ -253,7 +268,10 @@ def asech(ad):
         der = -1/(ad.val*(ad.val+1)*math.sqrt((1-ad.val)/(1+ad.val)))
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
-        return math.log((1+math.sqrt(1-ad**2))/ad)
+        if ad > 0 and ad <= 1: 
+            return math.log((1+math.sqrt(1-ad**2))/ad)
+        else:
+            raise ValueError("The domain of asech is (0,1].")
     else:
         raise TypeError("Input should be either an AD object or a number.")
 
@@ -263,6 +281,9 @@ def acsch(ad):
         der = -1/(ad.val**2*math.sqrt(1/ad.val**2+1))
         return chain_rule(ad, new_val, der)
     elif isinstance(ad, int) or isinstance(ad, float):
-        return math.log(1/ad+math.sqrt(1/(ad**2)+1))
+        if ad == 0:
+            raise ValueError("The domain of acsch is (-infty,0)U(0,infty).")
+        else:
+            return math.log(1/ad+math.sqrt(1/(ad**2)+1))
     else:
         raise TypeError("Input should be either an AD object or a number.")
