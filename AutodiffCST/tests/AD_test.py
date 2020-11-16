@@ -135,7 +135,7 @@ def test_tan_ad():
 
 def test_cot_float():
     ad = 2
-    assert cot(ad).__eq__(1/math.cos(2)), "Error: cot(x), false value."
+    assert cot(ad).__eq__(1/math.tan(2)), "Error: cot(x), false value."
 
 epsilon = 10**(-10)
 
@@ -158,7 +158,7 @@ def test_sec_ad():
 
 def test_csc_float():
     ad = 2
-    assert abs(sec(ad)-1/math.sin(2)) <= epsilon, "Error: csc(x), false value."
+    assert abs(csc(ad)-1/math.sin(2)) <= epsilon, "Error: csc(x), false value."
 
 def test_sec_ad():
     x = AD.AD(1, "x")
