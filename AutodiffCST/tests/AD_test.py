@@ -75,96 +75,96 @@ def test_mod():
 
 def test_mul_constant():
     x = AD.AD(2, "x")
-    f1 = 5 * x 
-    f2 = f1 * 2
-    f3 = 1 + f1
-    f3 += 1
-    assert f1.diff("x") == 1, "Error: x+a, false derivative."
-    assert f1.val == 3, "Error: x+a, false value {f1}."
+    f1 = x * 5 
+    f2 = 2 * f1 
+    f3 = f1 * 2
+    f3 *= 1
+    assert f1.diff("x") == 5, "Error: x*a, false derivative."
+    assert f1.val == 10, "Error: x*a, false value {f1}."
 
-    assert f2.diff("x") == 1, "Error: a+x, false derivative."
-    assert f2.val == 4, "Error: a+x, false value."
+    assert f2.diff("x") == 10, "Error: a*x, false derivative."
+    assert f2.val == 20, "Error: a*x, false value."
 
-    assert f3.diff("x") == 1, "Error: x+=a false derivative."
-    assert f3.val == 5, "Error: f+=a, false value."
+    assert f3.diff("x") == 10, "Error: x*=a false derivative."
+    assert f3.val == 20, "Error: f*=a, false value."
 
 def test_mul_variable():
     x = AD.AD(2, "x")
     y = AD.AD(3, "y")
-    f1 = x + y 
-    f2 = y + x
+    f1 = x * y 
+    f2 = y * x
     f3 = f1
-    f3 += x
-    assert f1.diff() == {'x': 1, 'y': 1}, "Error: x+y, false derivative."
-    assert f1.val == 5, "Error: x+y, false value."
+    f3 *= y
+    assert f1.diff() == {'x': 3, 'y': 2}, "Error: x*y, false derivative."
+    assert f1.val == 6, "Error: x*y, false value."
 
-    assert f2.diff() == {'x': 1, 'y': 1}, "Error: a+x, false derivative."
-    assert f2.val == 5, "Error: y+x, false value."
+    assert f2.diff() == {'x': 3, 'y': 2}, "Error: y*x, false derivative."
+    assert f2.val == 6, "Error: y*x, false value."
 
-    assert f3.diff() == {'x': 2, 'y': 1}, "Error: x+=a false derivative."
-    assert f3.val == 7, "Error: f+=x, false value."
+    assert f3.diff() == {'x': 9, 'y': 12}, "Error: x*=a false derivative."
+    assert f3.val == 18, "Error: f*=x, false value."
 
 def test_div_constant():
-    x = AD.AD(2, "x")
-    f1 = x + 1 
-    f2 = 1 + f1
-    f3 = 1 + f1
-    f3 += 1
-    assert f1.diff("x") == 1, "Error: x+a, false derivative."
-    assert f1.val == 3, "Error: x+a, false value {f1}."
+    x = AD.AD(6, "x")
+    f1 = x / 2 
+    f2 = 2 / x
+    f3 = f1
+    f3 /= 3
+    assert f1.diff("x") == 1/2, "Error: x/a, false derivative."
+    assert f1.val == 3, "Error: x/a, false value {f1}."
 
-    assert f2.diff("x") == 1, "Error: a+x, false derivative."
-    assert f2.val == 4, "Error: a+x, false value."
+    assert f2.diff("x") == -1/18, "Error: a/x, false derivative."
+    assert f2.val == 1/3, "Error: a/x, false value."
 
-    assert f3.diff("x") == 1, "Error: x+=a false derivative."
-    assert f3.val == 5, "Error: f+=a, false value."
+    assert f3.diff("x") == 1/6, "Error: x/=a false derivative."
+    assert f3.val == 1, "Error: f/=a, false value."
 
 def test_div_variable():
-    x = AD.AD(2, "x")
+    x = AD.AD(6, "x")
     y = AD.AD(3, "y")
-    f1 = x + y 
-    f2 = y + x
+    f1 = x / y 
+    f2 = y / x
     f3 = f1
-    f3 += x
-    assert f1.diff() == {'x': 1, 'y': 1}, "Error: x+y, false derivative."
-    assert f1.val == 5, "Error: x+y, false value."
+    f3 /= x
+    assert f1.diff() == {'x': 1/3, 'y': -2/3}, "Error: x/y, false derivative."
+    assert f1.val == 2, "Error: x+y, false value."
 
-    assert f2.diff() == {'x': 1, 'y': 1}, "Error: a+x, false derivative."
-    assert f2.val == 5, "Error: y+x, false value."
+    assert f2.diff() == {'x': -1/12, 'y': 1/6}, "Error: y/x, false derivative."
+    assert f2.val == 1/2, "Error: y+x, false value."
 
-    assert f3.diff() == {'x': 2, 'y': 1}, "Error: x+=a false derivative."
-    assert f3.val == 7, "Error: f+=x, false value."
+    assert f3.diff() == {'x': 0, 'y': -1/9}, "Error: x/=y false derivative."
+    assert f3.val == 1/3, "Error: x/=y, false value."
 
 def test_pow_constant():
     x = AD.AD(2, "x")
-    f1 = x + 1 
-    f2 = 1 + f1
-    f3 = 1 + f1
-    f3 += 1
-    assert f1.diff("x") == 1, "Error: x+a, false derivative."
-    assert f1.val == 3, "Error: x+a, false value {f1}."
+    f1 = x ** 2 
+    f2 = 2 ** f1
+    f3 = f1
+    f3 **= 2
+    assert f1.diff("x") == 4, "Error: x**a, false derivative."
+    assert f1.val == 4, "Error: x**a, false value {f1}."
 
-    assert f2.diff("x") == 1, "Error: a+x, false derivative."
-    assert f2.val == 4, "Error: a+x, false value."
+    assert f2.diff("x") == math.log(2) * (2**4) * 4, "Error: a**x, false derivative."
+    assert f2.val == 16, "Error: a**x, false value."
 
-    assert f3.diff("x") == 1, "Error: x+=a false derivative."
-    assert f3.val == 5, "Error: f+=a, false value."
+    assert f3.diff("x") == 4*(2**3), "Error: x**=a false derivative."
+    assert f3.val == 16, "Error: f**=a, false value."
 
 def test_pow_variable():
     x = AD.AD(2, "x")
     y = AD.AD(3, "y")
-    f1 = x + y 
-    f2 = y + x
+    f1 = x ** y 
+    f2 = y ** x
     f3 = f1
-    f3 += x
-    assert f1.diff() == {'x': 1, 'y': 1}, "Error: x+y, false derivative."
-    assert f1.val == 5, "Error: x+y, false value."
+    f3 **= x
+    assert f1.diff() == {'x': 12, 'y': math.log(2) * (2**3)}, "Error: x**y, false derivative."
+    assert f1.val == 8, "Error: x**y, false value."
 
-    assert f2.diff() == {'x': 1, 'y': 1}, "Error: a+x, false derivative."
-    assert f2.val == 5, "Error: y+x, false value."
+    assert f2.diff() == {'x':  math.log(3) * (3**2), 'y': 6}, "Error: y**x, false derivative."
+    assert f2.val == 9, "Error: y**x, false value."
 
-    assert f3.diff() == {'x': 2, 'y': 1}, "Error: x+=a false derivative."
-    assert f3.val == 7, "Error: f+=x, false value."
+    assert f3.diff() == {'x': math.log(2) * (2**6) * 3, 'y': math.log(2) * (2**6) * 2}, "Error: x**=a false derivative."
+    assert f3.val == 64, "Error: f**=x, false value."
 
 def test_chain_rule():
     ad = AD.AD(2, "x")
