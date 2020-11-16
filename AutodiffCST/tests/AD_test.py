@@ -127,10 +127,10 @@ def test_div_variable():
     f3 = f1
     f3 /= x
     assert f1.diff() == {'x': 1/3, 'y': -2/3}, "Error: x/y, false derivative."
-    assert f1.val == 2, "Error: x+y, false value."
+    assert f1.val == 2, "Error: x/y, false value."
 
     assert f2.diff() == {'x': -1/12, 'y': 1/6}, "Error: y/x, false derivative."
-    assert f2.val == 1/2, "Error: y+x, false value."
+    assert f2.val == 1/2, "Error: y/x, false value."
 
     assert f3.diff() == {'x': 0, 'y': -1/9}, "Error: x/=y false derivative."
     assert f3.val == 1/3, "Error: x/=y, false value."

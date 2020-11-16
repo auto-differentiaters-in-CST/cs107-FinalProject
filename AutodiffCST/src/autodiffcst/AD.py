@@ -280,7 +280,9 @@ def pow(ad, y):
 def sqrt(ad):
     return ad ** 0.5
 
+'''
 if __name__ == "__main__":
+    
     x = AD(7,"x")
     y = AD(4,"y")
     f = 3 / y
@@ -290,3 +292,4 @@ if __name__ == "__main__":
     print(f.val)
     print(f.tags)
     print(f.diff())
+    '''
