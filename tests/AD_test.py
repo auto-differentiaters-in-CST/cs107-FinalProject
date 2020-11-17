@@ -1,10 +1,13 @@
+# Use a simple (but explicit) path modification to resolve the package properly
+import os
 import sys
-sys.path.insert(0, '../')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
 import math
 # import src.autodiffcst.AD as AD
 # from src.autodiffcst.trigmath import *
-from autodiffcst import AD as AD
+import autodiffcst.AD as AD
 from autodiffcst.trigmath import *
 
 #test1
@@ -354,3 +357,4 @@ def test_acsch_ad():
     y = AD.AD(3, "y")
     assert abs(acsch(x*y).val - math.log(1/6+math.sqrt(1/36+1))) <= epsilon, "Error: acsch(x*y), false value."
     assert abs(acsch(x*y).diff('x') + 3/(6*math.sqrt(1+36))) <= epsilon, "Error: acsch(x*y), false derivative."
+
