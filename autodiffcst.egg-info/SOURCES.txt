@@ -1,0 +1,9 @@
+README.md
+setup.py
+autodiffcst/AD.py
+autodiffcst/__init__.py
+autodiffcst/trigmath.py
+autodiffcst.egg-info/PKG-INFO
+autodiffcst.egg-info/SOURCES.txt
+autodiffcst.egg-info/dependency_links.txt
+autodiffcst.egg-info/top_level.txt
