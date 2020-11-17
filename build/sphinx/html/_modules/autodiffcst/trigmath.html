@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>autodiffcst.trigmath &#8212; AutodiffCST 0.0.post0.dev53+g9062eaf.dirty documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for autodiffcst.trigmath</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+
+<span class="c1"># need chain_rule function</span>
+<span class="c1"># from Runting</span>
+<div class="viewcode-block" id="chain_rule"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.chain_rule">[docs]</a><span class="k">def</span> <span class="nf">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">):</span>
+    <span class="n">new_ders</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">ad</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+        <span class="n">new_ders</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">der</span> <span class="o">*</span> <span class="n">ad</span><span class="o">.</span><span class="n">ders</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span>
+    <span class="n">new_ad</span> <span class="o">=</span> <span class="n">AD</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="n">ad</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span> <span class="n">new_ders</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_ad</span></div>
+
+
+<span class="c1"># all functions could take either AD object or a number as input</span>
+<span class="c1"># will raise TypeError with other inputs </span>
+
+
+
+<span class="c1"># trig</span>
+<div class="viewcode-block" id="sin"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.sin">[docs]</a><span class="k">def</span> <span class="nf">sin</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="cos"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.cos">[docs]</a><span class="k">def</span> <span class="nf">cos</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="tan"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.tan">[docs]</a><span class="k">def</span> <span class="nf">tan</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">tan</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">sec</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="cot"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.cot">[docs]</a><span class="k">def</span> <span class="nf">cot</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">cot</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">sec</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sec"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.sec">[docs]</a><span class="k">def</span> <span class="nf">sec</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">sec</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">sec</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">*</span><span class="n">tan</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="csc"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.csc">[docs]</a><span class="k">def</span> <span class="nf">csc</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">csc</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">csc</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">*</span><span class="n">cot</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># hyperbolic trig</span>
+<div class="viewcode-block" id="sinh"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.sinh">[docs]</a><span class="k">def</span> <span class="nf">sinh</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">sinh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">cosh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="cosh"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.cosh">[docs]</a><span class="k">def</span> <span class="nf">cosh</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">cosh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">sinh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="tanh"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.tanh">[docs]</a><span class="k">def</span> <span class="nf">tanh</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">tanh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">sech</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="coth"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.coth">[docs]</a><span class="k">def</span> <span class="nf">coth</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">coth</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">csch</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sech"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.sech">[docs]</a><span class="k">def</span> <span class="nf">sech</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">sech</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">sech</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">*</span><span class="n">tanh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="csch"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.csch">[docs]</a><span class="k">def</span> <span class="nf">csch</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">csch</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="n">csch</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">*</span><span class="n">coth</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+
+
+
+<span class="c1"># inverse trig</span>
+<div class="viewcode-block" id="asin"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.asin">[docs]</a><span class="k">def</span> <span class="nf">asin</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="acos"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.acos">[docs]</a><span class="k">def</span> <span class="nf">acos</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">acos</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="atan"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.atan">[docs]</a><span class="k">def</span> <span class="nf">atan</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">atan</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="acot"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.acot">[docs]</a><span class="k">def</span> <span class="nf">acot</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">acot</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="asec"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.asec">[docs]</a><span class="k">def</span> <span class="nf">asec</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">asec</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">*</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="acsc"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.acsc">[docs]</a><span class="k">def</span> <span class="nf">acsc</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">acsc</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">*</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+    
+
+
+<span class="c1"># inverse hyperbolic trig</span>
+<div class="viewcode-block" id="asinh"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.asinh">[docs]</a><span class="k">def</span> <span class="nf">asinh</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">asinh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">asinh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="acosh"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.acosh">[docs]</a><span class="k">def</span> <span class="nf">acosh</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">acosh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">acosh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="atanh"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.atanh">[docs]</a><span class="k">def</span> <span class="nf">atanh</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">atanh</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">atanh</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="acoth"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.acoth">[docs]</a><span class="k">def</span> <span class="nf">acoth</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">acoth</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">ad</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ad</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="asech"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.asech">[docs]</a><span class="k">def</span> <span class="nf">asech</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">asech</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">*</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mi">1</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ad</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="n">ad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="acsch"><a class="viewcode-back" href="../../api/autodiffcst.html#autodiffcst.trigmath.acsch">[docs]</a><span class="k">def</span> <span class="nf">acsch</span><span class="p">(</span><span class="n">ad</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">AD</span><span class="p">):</span>
+        <span class="n">new_val</span> <span class="o">=</span> <span class="n">acsch</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">der</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">ad</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">chain_rule</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="n">new_val</span><span class="p">,</span> <span class="n">der</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ad</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">ad</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">ad</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input should be either an AD object or a number.&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AutodiffCST</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, XiaohanYa.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
