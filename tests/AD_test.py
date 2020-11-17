@@ -1,7 +1,9 @@
 import pytest
 import math
-import src.autodiffcst.AD as AD
-from src.autodiffcst.trigmath import *
+# import src.autodiffcst.AD as AD
+# from src.autodiffcst.trigmath import *
+import autodiffcst.AD as AD
+from autodiffcst.trigmath import *
 
 #test1
 def test_add_constant():
