@@ -1,6 +1,5 @@
 import math
 
-
 class AD():
 
     def __init__(self, val, tags, ders=1, mode = "forward"):
@@ -141,6 +140,7 @@ class AD():
         return self * other
     
     
+    
     ## Division
     def __truediv__(self, other):
         try:
@@ -195,8 +195,7 @@ class AD():
         return self / other
     
     
-    ## power
-    # da^u/dx = ln(a) a^u du/dx
+  ## power
     def __pow__(self, other):
         try:
             self_tags = self.tags
@@ -204,15 +203,18 @@ class AD():
     
             new_tags = self.tags.copy()
             new_ders = self.ders.copy()
-    
+            
+            factor = self.val ** (other.val - 1)
             for var in self_tags:
+                term_1 = other.val * self.ders[var]
                 if var in other_tags:
-                    new_ders[var] = math.log(self.val) * (self.val ** other.val) * other.ders[var]  
+                    new_ders[var] = factor * (term_1 + math.log(self.val) * self.val * other.ders[var])
                 else:
-                    new_ders[var] = (self.val ** (other.val - 1)) * other.val * self.ders[var]
+                    new_ders[var] = factor * term_1
             for var in other_tags:
                 if var not in self.tags:
-                    new_ders[var] = math.log(self.val) * (self.val ** other.val) * other.ders[var]  
+                    term_2 = math.log(self.val) * self.val * other.ders[var]
+                    new_ders[var] = factor * term_2
                     new_tags.append(var)
             new_val = self.val ** other.val
             new_self = AD(new_val, new_tags, ders = new_ders)
@@ -223,7 +225,7 @@ class AD():
                 new_val = self.val ** other
                 new_ders = {}
                 for var in self.tags:
-                    new_ders[var] = (self.ders[var] ** (other - 1)) * other
+                    new_ders[var] = (self.val ** (other - 1)) * other * self.ders[var]
                 new_self = AD(new_val, self.tags, new_ders)
                 return new_self
             else:
@@ -231,6 +233,21 @@ class AD():
     
     def __ipow__(self, other):
         return self ** other    
+
+    def __rpow__(self, other):
+        try:
+            return other ** self
+        
+        except RecursionError:
+            if isinstance(other, int) or isinstance(other, float):
+                new_val = other ** self.val
+                new_ders = {}
+                for var in self.tags:
+                    new_ders[var] = math.log(other) * (new_val) * self.ders[var]
+                new_self = AD(new_val, self.tags, new_ders)                
+                return new_self
+            else:
+                raise TypeError("Invalid type.") 
 
 
     # Differentiation
@@ -242,54 +259,15 @@ class AD():
         except KeyError:
             raise Exception("Invalid direction")
 
-    
-def chain_rule(ad, new_val, der):
-    new_ders = dict()
-    for tag in ad.tags:
-        new_ders[tag] = der * ad.ders[tag]
-    new_ad = AD(new_val, ad.tags, new_ders)
-    return new_ad
-
-def abs(ad):
-    new_val = math.fabs(ad.val)
-    if ad.val > 0:
-        der = 1
-    elif ad.val < 0:
-        der = -1
-    else:
-        raise Exception("Derivative undefined")
-    return chain_rule(ad, new_val, der)
 
 
-def exp(ad):
-    new_val = math.exp(ad.val)
-    der = new_val
-    return chain_rule(ad, new_val, der)
-
-
-def log(ad): #consider different base?
-    new_val = math.log(ad.val)
-    der = 1/ad.val
-    return chain_rule(ad, new_val, der)
-
-def pow(ad, y):
-    new_val = math.pow(ad.val, y)
-    der = y * math.pow(ad.val, y - 1)
-    return chain_rule(ad, new_val, der)
-
-def sqrt(ad):
-    return ad ** 0.5
-
-'''
-if __name__ == "__main__":
-    
-    x = AD(7,"x")
-    y = AD(4,"y")
-    f = 3 / y
-    #f *= y  
-    print(f)
-    print(f.ders)
-    print(f.val)
-    print(f.tags)
-    print(f.diff())
-    '''
+# if __name__ == "__main__":
+#     x = AD(1,"x")
+#     y = AD(2,"y")
+#     f = 2 - x 
+#     f -= 1  
+#     print(f)
+#     print(f.ders)
+#     print(f.val)
+#     print(f.tags)
+#     print(f.diff())

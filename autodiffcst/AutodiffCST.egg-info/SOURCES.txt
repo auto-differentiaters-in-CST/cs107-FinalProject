@@ -1,0 +1,15 @@
+.travis.yml
+README.md
+README.rst
+setup.cfg
+setup.py
+autodiffcst/AutodiffCST.egg-info/PKG-INFO
+autodiffcst/AutodiffCST.egg-info/SOURCES.txt
+autodiffcst/AutodiffCST.egg-info/dependency_links.txt
+autodiffcst/AutodiffCST.egg-info/not-zip-safe
+autodiffcst/AutodiffCST.egg-info/requires.txt
+autodiffcst/AutodiffCST.egg-info/top_level.txt
+docs/C_graph_example.jpg
+docs/README.md
+docs/milestone1.ipynb
+docs/milestone2_progress.ipynb

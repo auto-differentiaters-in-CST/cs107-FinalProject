@@ -1,5 +1,8 @@
 import math
-import src.autodiffcst.AD as AD
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import autodiffcst.AD as AD
 # import AD as AD
 
 # need chain_rule function
@@ -15,7 +18,47 @@ def chain_rule(ad, new_val, der):
 # all functions could take either AD object or a number as input
 # will raise TypeError with other inputs 
 
+def abs(ad):
+    if isinstance(ad, AD.AD):
+        new_val = math.fabs(ad.val)
+        if ad.val > 0:
+            der = 1
+        elif ad.val < 0:
+            der = -1
+        else:
+            raise Exception("Derivative undefined")
+        return chain_rule(ad, new_val, der)
+    else:
+        return math.fabs(ad)
+    
 
+def exp(ad):
+    if isinstance(ad, AD.AD):
+        new_val = math.exp(ad.val)
+        der = new_val
+        return chain_rule(ad, new_val, der)
+    else:
+        return math.exp(ad)
+
+
+def log(ad): #consider different base?
+    if isinstance(ad, AD.AD):
+        new_val = math.log(ad.val)
+        der = 1/ad.val
+        return chain_rule(ad, new_val, der)
+    else:
+        return math.log(ad)
+
+def pow(ad, y):
+    if isinstance(ad, AD.AD):
+        new_val = math.pow(ad.val, y)
+        der = y * math.pow(ad.val, y - 1)
+        return chain_rule(ad, new_val, der)
+    else:
+        return math.pow(ad, y)
+
+def sqrt(ad):
+    return ad ** 0.5
 
 # trig
 def sin(ad):
