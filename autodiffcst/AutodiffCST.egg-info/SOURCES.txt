@@ -1,5 +1,6 @@
 .DS_Store
 .coverage
+.swp
 .travis.yml
 AUTHORS.rst
 CHANGELOG.rst
