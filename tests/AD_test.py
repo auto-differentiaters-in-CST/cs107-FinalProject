@@ -2,7 +2,7 @@ import pytest
 import math
 # import src.autodiffcst.AD as AD
 # from src.autodiffcst.trigmath import *
-import autodiffcst.AD as AD
+from autodiffcst import AD as AD
 from autodiffcst.trigmath import *
 
 #test1
