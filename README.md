@@ -9,7 +9,7 @@
 
 
 travis badge:
-[![Build Status](https://travis-ci.com/auto-differentiaters-in-CST/cs107-FinalProject.svg?token=AjVcVSqkqdiJgwaimWYR&branch=master)](https://travis-ci.com/auto-differentiaters-in-CST/cs107-FinalProject)
+[![Build Status](https://travis-ci.com/auto-differentiaters-in-CST/cs107-FinalProject.svg?token=AjVcVSqkqdiJgwaimWYR&branch=M2-pypi-dev)](https://travis-ci.com/auto-differentiaters-in-CST/cs107-FinalProject)
 
 codecov badge:
-[![codecov](https://codecov.io/gh/auto-differentiaters-in-CST/cs107-FinalProject/branch/master/graph/badge.svg?token=US1Y8Z9OE0)](https://codecov.io/gh/auto-differentiaters-in-CST/cs107-FinalProject)
+[![codecov](https://codecov.io/gh/auto-differentiaters-in-CST/cs107-FinalProject/branch/M2-pypi-dev/graph/badge.svg?token=US1Y8Z9OE0)](https://codecov.io/gh/auto-differentiaters-in-CST/cs107-FinalProject)
