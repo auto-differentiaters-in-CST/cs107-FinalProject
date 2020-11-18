@@ -179,9 +179,11 @@ def test_pow_variable():
 def test_jacobian():
     x = AD.AD(2, "x")
     y = AD.AD(3, "y")
-    f = x ** y 
-    assert AD.jacobian(f) == [12, math.log(2) * (2**3)], "Error: x**y, false jacobian."
     
+    f = x/x  
+    assert AD.jacobian(f) == [0], "Error: x/x, false jacobian."
+    
+    f = x**y
     f += y 
     assert AD.jacobian(f) == [12, math.log(2) * (2**3)+1], "Error: x**y + y, false jacobian."
     
@@ -189,10 +191,8 @@ def test_jacobian():
     assert AD.jacobian(f) == [1/3, -2/3**2], "Error: x/y, false jacobian."
     
 
-    f = x ** y/y
-    assert AD.jacobian(f) == [4, (math.log(2) * (2**3)*3 - 2**3)/3**2], "Error: x**y/y, false jacobian."
-    
-
+    f = (math.e ** y)/x
+    assert AD.jacobian(f) == [-math.e**3 / 4, math.e**3 /2], "Error: e**y /x, false jacobian."
 
 def test_chain_rule():
     ad = AD.AD(2, "x")
