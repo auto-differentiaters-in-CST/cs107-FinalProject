@@ -139,60 +139,69 @@ class AD():
     def __imul__(self, other):
         return self * other
     
-    
-    
     ## Division
     def __truediv__(self, other):
-        try:
-            self_tags = self.tags
-            other_tags = other.tags
-
-            new_ders = self.ders.copy()
-            new_tags = self.tags.copy()
-            
-            for var in self_tags:
-                if var in other_tags:
-                    new_ders[var] = (other.val * self.ders[var] - self.val * other.ders[var]) / (self.val ** 2)
-                else:
-                    new_ders[var] = self.ders[var] / other.val
-            for var in other_tags:
-                if var not in self.tags:
-                    new_ders[var] = -1 * other.ders[var] * self.val / (other.val**2)
-                    new_tags.append(var)            
-
-            new_val = self.val / other.val
-            new_self = AD(new_val, new_tags, ders = new_ders)
-            return new_self
-        
-        except AttributeError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = self.val / other
-                new_ders = {}
-                for var in self.tags:
-                    new_ders[var] = self.ders[var] / other
-                new_self = AD(new_val, self.tags, new_ders)
-                return new_self
-            else:
-                raise TypeError("Invalid type.")
+        return self * (other ** (-1))
 
     def __rtruediv__(self, other):
-        try:
-            return other / self
+        return other/self
         
-        except RecursionError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = other / self.val
-                new_ders = {}
-                for var in self.tags:
-                    new_ders[var] = self.ders[var] * -1 * other / (self.val ** 2)
-                new_self = AD(new_val, self.tags, new_ders)                
-                return new_self
-            else:
-                raise TypeError("Invalid type.")
-        
-    
     def __itruediv__(self, other):
         return self / other
+    
+    
+    # ## Division
+    # def __truediv__(self, other):
+    #     try:
+    #         self_tags = self.tags
+    #         other_tags = other.tags
+
+    #         new_ders = self.ders.copy()
+    #         new_tags = self.tags.copy()
+            
+    #         for var in self_tags:
+    #             if var in other_tags:
+    #                 new_ders[var] = (other.val * self.ders[var] - self.val * other.ders[var]) / (self.val ** 2)
+    #             else:
+    #                 new_ders[var] = self.ders[var] / other.val
+    #         for var in other_tags:
+    #             if var not in self.tags:
+    #                 new_ders[var] = -1 * other.ders[var] * self.val / (other.val**2)
+    #                 new_tags.append(var)            
+
+    #         new_val = self.val / other.val
+    #         new_self = AD(new_val, new_tags, ders = new_ders)
+    #         return new_self
+        
+    #     except AttributeError:
+    #         if isinstance(other, int) or isinstance(other, float):
+    #             new_val = self.val / other
+    #             new_ders = {}
+    #             for var in self.tags:
+    #                 new_ders[var] = self.ders[var] / other
+    #             new_self = AD(new_val, self.tags, new_ders)
+    #             return new_self
+    #         else:
+    #             raise TypeError("Invalid type.")
+
+    # def __rtruediv__(self, other):
+    #     try:
+    #         return other/self
+        
+    #     except RecursionError:
+    #         if isinstance(other, int) or isinstance(other, float):
+    #             new_val = other / self.val
+    #             new_ders = {}
+    #             for var in self.tags:
+    #                 new_ders[var] = self.ders[var] * -1 * other / (self.val ** 2)
+    #             new_self = AD(new_val, self.tags, new_ders)                
+    #             return new_self
+    #         else:
+    #             raise TypeError("Invalid type.")
+        
+    
+    # def __itruediv__(self, other):
+    #     return self / other
     
     
   ## power
@@ -228,6 +237,7 @@ class AD():
                     new_ders[var] = (self.val ** (other - 1)) * other * self.ders[var]
                 new_self = AD(new_val, self.tags, new_ders)
                 return new_self
+
             else:
                 raise TypeError("Invalid type.")            
     
@@ -259,7 +269,11 @@ class AD():
         except KeyError:
             raise Exception("Invalid direction")
 
-
+def jacobian(ad):
+    ders = ad.diff()
+    print(ders.values())
+    jacob = list(ders.values())
+    return jacob
 
 # if __name__ == "__main__":
 #     x = AD(1,"x")

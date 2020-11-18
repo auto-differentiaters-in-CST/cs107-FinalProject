@@ -116,7 +116,7 @@ def test_mul_variable():
 
 def test_div_constant():
     x = AD.AD(6, "x")
-    f1 = x / 2 
+    f1 = x / 0
     f2 = 2 / x
     f3 = f1
     f3 /= 3
@@ -175,6 +175,23 @@ def test_pow_variable():
 
     assert f3.diff() == {'x': (math.log(2)+1) * (2**6) * 3, 'y': math.log(2) * (2**6) * 2}, "Error: x**=y false derivative." 
     assert f3.val == 64, "Error: f**=x, false value." 
+
+def test_jacobian():
+    x = AD.AD(2, "x")
+    y = AD.AD(3, "y")
+    f = x ** y 
+    assert AD.jacobian(f) == [12, math.log(2) * (2**3)], "Error: x**y, false jacobian."
+    
+    f += y 
+    assert AD.jacobian(f) == [12, math.log(2) * (2**3)+1], "Error: x**y + y, false jacobian."
+    
+    f = x/y
+    assert AD.jacobian(f) == [1/3, -2/3**2], "Error: x/y, false jacobian."
+    
+
+    f = x ** y/y
+    assert AD.jacobian(f) == [4, (math.log(2) * (2**3)*3 - 2**3)/3**2], "Error: x**y/y, false jacobian."
+    
 
 
 def test_chain_rule():
