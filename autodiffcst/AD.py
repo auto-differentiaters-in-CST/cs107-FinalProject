@@ -49,6 +49,9 @@ class AD():
         """        
         return "AD(value: {0}, derivatives: {1})".format(self.val,self.ders)
     
+    ## Unary 
+    def __neg__(self):
+        return 0 - self
     ## Addition
     def __add__(self, other):
         """
