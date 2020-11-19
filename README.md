@@ -21,7 +21,9 @@ Differentiation, namely, the process of finding the derivatives of functions, is
 
 Our package is for Python 3 only. The current version is not released on PyPI yet, so please clone this repository to use our package. 
 
-In detail, please run ```git clone https://github.com/auto-differentiaters-in-CST/cs107-FinalProject.git``` from the command line. Then, run ```cd cs107-FinalProject``` from command line to get into this directory. Afterwards, you could run ```pip install -r requirements.txt``` to install all the required packages.
+* Clone the package repository: ```git clone https://github.com/auto-differentiaters-in-CST/cs107-FinalProject.git```
+* Change into the new directory: ```cd cs107-FinalProject``` .
+* Install the dependencies using ```pip install -r requirements.txt```.
 
 ## User Guide
 
@@ -31,16 +33,25 @@ Then, they could simply initiate the AD object by giving the point where they wi
 
 ``` python
 # import modules
-import numpy as np
-from AutodiffCST import AD as ad
+from autodiffcst import AD as ad
+from autodiffcst import admath as admath
 
 # base case: initialize AD object with scalar values
 
 x = ad.AD(5, tag = "x") # initialize AD object called "x" with the value 5
 y = ad.AD(3, tag = "y") # initialize AD object called "y" with the value 3
 
-f = x*y + 1          # build a function with AD objects, the function will also be an AD object
-print(f)             # print AD(value: {15}, derivatives: {'x': 3, 'y': 5})
+f1 = x*y              # build a function with AD objects, the function will also be an AD object
+print(f1)             # print AD(value: {15}, derivatives: {'x': 3, 'y': 5})
+
+dfdx = f1.diff("x") # returns the derivative with respect to x
+print(dfdx)                  # print 3
+ 
+jacobian = ad.jacobian(f1) # returns a gradient vector of f
+print(jacobian)  # print [5,3]
+
+f2 =  admath.sin(x) + y   # build a function with AD objects, the function will also be an AD object
+print(f2)             # print AD(value: {15}, derivatives: {'x': 3, 'y': 5})
 
 dfdx = f.diff("x") # returns the derivative with respect to x
 print(dfdx)                  # print 3
