@@ -14,6 +14,10 @@ def test_repr():
     x = AD.AD(2, "x")
     assert repr(x) == "AD(value: 2, derivatives: {'x': 1})", "Error: repr is not working"
 
+def test_negative():
+    x = - AD.AD(2, "x")
+    assert repr(x) == "AD(value: -2, derivatives: {'x': -1})", "Error: negative is not working"
+ 
 def test_add_constant():
     x = AD.AD(2, "x")
     f1 = x + 1 
@@ -116,7 +120,7 @@ def test_mul_variable():
 
 def test_div_constant():
     x = AD.AD(6, "x")
-    f1 = x / 0
+    f1 = x / 2
     f2 = 2 / x
     f3 = f1
     f3 /= 3
