@@ -50,12 +50,12 @@ print(dfdx)                  # print 3
 jacobian = ad.jacobian(f1) # returns a gradient vector of f
 print(jacobian)  # print [5,3]
 
-f2 =  admath.sin(x) + y   # build a function with AD objects, the function will also be an AD object
-print(f2)             # print AD(value: {15}, derivatives: {'x': 3, 'y': 5})
+f2 =  x + admath.sin(y)   # build a function with AD objects
+print(f2)             # print AD(value: 5.141120008059867, derivatives: {'x': 1, 'y': -0.9899924966004454})
 
-dfdx = f.diff("x") # returns the derivative with respect to x
-print(dfdx)                  # print 3
+dfdy = f2.diff("y") # returns the derivative with respect to x
+print(dfdy)                  # print -0.9899924966004454
  
-jacobian = ad.jacobian(f) # returns a gradient vector of f
-print(jacobian)  # print [5,3]
+jacobian2 = ad.jacobian(f2) # returns a gradient vector of f
+print(jacobian2)  # print [1, -0.9899924966004454]
 ```
