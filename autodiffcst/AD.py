@@ -313,7 +313,19 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying division
         """            
-        return other/self
+        try:
+            return other / self
+        
+        except RecursionError:
+            if isinstance(other, int) or isinstance(other, float):
+                new_val = other / self.val
+                new_ders = {}
+                for var in self.tags:
+                    new_ders[var] = self.ders[var] * -1 * other / (self.val ** 2)
+                new_self = AD(new_val, self.tags, new_ders)                
+                return new_self
+            else:
+                raise TypeError("Invalid type.")        
         
     def __itruediv__(self, other):
         """
@@ -464,7 +476,3 @@ def jacobian(ad):
 #     print(f.val)
 #     print(f.tags)
 #     print(f.diff())
-
-
-    
-    
