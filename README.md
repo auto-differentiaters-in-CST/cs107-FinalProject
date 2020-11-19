@@ -41,8 +41,8 @@ from AutodiffCST import AD as ad
 
 # base case: initialize AD object with scalar values
 
-x = ad(5, tag = "x") # initialize AD object called "x" with the value 5
-y = ad(3, tag = "y") # initialize AD object called "y" with the value 3
+x = ad.AD(5, tag = "x") # initialize AD object called "x" with the value 5
+y = ad.AD(3, tag = "y") # initialize AD object called "y" with the value 3
 
 f = x*y + 1          # build a function with AD objects, the function will also be an AD object
 print(f)             # print AD(value: {15}, derivatives: {'x': 3, 'y': 5})
@@ -50,6 +50,6 @@ print(f)             # print AD(value: {15}, derivatives: {'x': 3, 'y': 5})
 dfdx = f.diff("x") # returns the derivative with respect to x
 print(dfdx)                  # print 3
  
-jacobian = jacobian(f) # returns a gradient vector of f
+jacobian = ad.jacobian(f) # returns a gradient vector of f
 print(jacobian)  # print [5,3]
 ```
