@@ -14,6 +14,10 @@ def test_repr():
     x = AD.AD(2, "x")
     assert repr(x) == "AD(value: 2, derivatives: {'x': 1})", "Error: repr is not working"
 
+def test_negative():
+    x = - AD.AD(2, "x")
+    assert repr(x) == "AD(value: -2, derivatives: {'x': -1})", "Error: negative is not working"
+ 
 def test_add_constant():
     x = AD.AD(2, "x")
     f1 = x + 1 
@@ -116,7 +120,7 @@ def test_mul_variable():
 
 def test_div_constant():
     x = AD.AD(6, "x")
-    f1 = x / 2 
+    f1 = x / 2
     f2 = 2 / x
     f3 = f1
     f3 /= 3
@@ -176,6 +180,23 @@ def test_pow_variable():
     assert f3.diff() == {'x': (math.log(2)+1) * (2**6) * 3, 'y': math.log(2) * (2**6) * 2}, "Error: x**=y false derivative." 
     assert f3.val == 64, "Error: f**=x, false value." 
 
+def test_jacobian():
+    x = AD.AD(2, "x")
+    y = AD.AD(3, "y")
+    
+    f = x/x  
+    assert AD.jacobian(f) == [0], "Error: x/x, false jacobian."
+    
+    f = x**y
+    f += y 
+    assert AD.jacobian(f) == [12, math.log(2) * (2**3)+1], "Error: x**y + y, false jacobian."
+    
+    f = x/y
+    assert AD.jacobian(f) == [1/3, -2/3**2], "Error: x/y, false jacobian."
+    
+
+    f = (math.e ** y)/x
+    assert AD.jacobian(f) == [-math.e**3 / 4, math.e**3 /2], "Error: e**y /x, false jacobian."
 
 def test_chain_rule():
     ad = AD.AD(2, "x")
