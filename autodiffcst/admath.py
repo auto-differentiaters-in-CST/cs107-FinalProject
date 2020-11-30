@@ -3,54 +3,54 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import autodiffcst.AD as AD
+import numpy as np
 
-def _vectorize(func):
-    """
-    Make a function that accepts 1 or 2 arguments work with input arrays (of
-    length m) in the following array length combinations:
+# def _vectorize(func):
+#     """
+#     Make a function that accepts 1 or 2 arguments work with input arrays (of
+#     length m) in the following array length combinations:
+#
+#     - m x m
+#     - 1 x m
+#     - m x 1
+#     - 1 x 1
+#     """
+#
+#     def vectorized_function(*args, **kwargs):
+#         if len(args) == 1:
+#             x = args[0]
+#             try:
+#                 return [vectorized_function(xi, **kwargs) for xi in x]
+#             except TypeError:
+#                 return func(x, **kwargs)
+#
+#         elif len(args) == 2:
+#             x, y = args
+#             try:
+#                 return [vectorized_function(xi, yi, **kwargs)
+#                         for xi, yi in zip(x, y)]
+#             except TypeError:
+#                 try:
+#                     return [vectorized_function(xi, y, **kwargs) for xi in x]
+#                 except TypeError:
+#                     try:
+#                         return [vectorized_function(x, yi, **kwargs) for yi in y]
+#                     except TypeError:
+#                         return func(x, y, **kwargs)
+#
+#     n = func.__name__
+#     m = func.__module__
+#     d = func.__doc__
+#
+#     vectorized_function.__name__ = n
+#     vectorized_function.__module__ = m
+#     doc = 'Vectorized {0:} function\n'.format(n)
+#     if d is not None:
+#         doc += d
+#     vectorized_function.__doc__ = doc
+#
+#     return vectorized_function
 
-    - m x m
-    - 1 x m
-    - m x 1
-    - 1 x 1
-    """
-
-    def vectorized_function(*args, **kwargs):
-        if len(args) == 1:
-            x = args[0]
-            try:
-                return [vectorized_function(xi, **kwargs) for xi in x]
-            except TypeError:
-                return func(x, **kwargs)
-
-        elif len(args) == 2:
-            x, y = args
-            try:
-                return [vectorized_function(xi, yi, **kwargs)
-                        for xi, yi in zip(x, y)]
-            except TypeError:
-                try:
-                    return [vectorized_function(xi, y, **kwargs) for xi in x]
-                except TypeError:
-                    try:
-                        return [vectorized_function(x, yi, **kwargs) for yi in y]
-                    except TypeError:
-                        return func(x, y, **kwargs)
-
-    n = func.__name__
-    m = func.__module__
-    d = func.__doc__
-
-    vectorized_function.__name__ = n
-    vectorized_function.__module__ = m
-    doc = 'Vectorized {0:} function\n'.format(n)
-    if d is not None:
-        doc += d
-    vectorized_function.__doc__ = doc
-
-    return vectorized_function
-
-@_vectorize
 def chain_rule(ad, new_val, der):
     """
     Applies chain rule to returns a new AD object with correct value and derivatives.
@@ -73,7 +73,6 @@ def chain_rule(ad, new_val, der):
 # all functions could take either AD object or a number as input
 # will raise TypeError with other inputs 
 
-
 def abs(ad):
     """
     Returns the new AD object after applying absolute value function.
@@ -85,7 +84,7 @@ def abs(ad):
                     new_ad (AD): the new AD object after applying absolute value function
     """
     if isinstance(ad, AD.AD):
-        new_val = math.fabs(ad.val)
+        new_val = np.abs((ad.val))
         if ad.val > 0:
             der = 1
         elif ad.val < 0:
