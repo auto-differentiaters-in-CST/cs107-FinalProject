@@ -1,4 +1,53 @@
 import math
+import numpy as np
+
+
+def _vectorize(func):
+    """
+    Make a function that accepts 1 or 2 arguments work with input arrays (of
+    length m) in the following array length combinations:
+
+    - m x m
+    - 1 x m
+    - m x 1
+    - 1 x 1
+    """
+
+    def vectorized_function(*args, **kwargs):
+        if len(args) == 1:
+            x = args[0]
+            try:
+                return [vectorized_function(xi, **kwargs) for xi in x]
+            except TypeError:
+                return func(x, **kwargs)
+
+        elif len(args) == 2:
+            x, y = args
+            try:
+                return [vectorized_function(xi, yi, **kwargs)
+                        for xi, yi in zip(x, y)]
+            except TypeError:
+                try:
+                    return [vectorized_function(xi, y, **kwargs) for xi in x]
+                except TypeError:
+                    try:
+                        return [vectorized_function(x, yi, **kwargs) for yi in y]
+                    except TypeError:
+                        return func(x, y, **kwargs)
+
+    n = func.__name__
+    m = func.__module__
+    d = func.__doc__
+
+    vectorized_function.__name__ = n
+    vectorized_function.__module__ = m
+    doc = 'Vectorized {0:} function\n'.format(n)
+    if d is not None:
+        doc += d
+    vectorized_function.__doc__ = doc
+
+    return vectorized_function
+
 
 class AD():
 
@@ -15,15 +64,17 @@ class AD():
     
                 Returns:
                         None, but initializes an AD object when called
-        """        
-        self.val = val
+        """
+        self.val = np.array(val) if isinstance(val, list) else val
         if (isinstance(tags, list)) and (isinstance(ders,dict)):
             self.tags = tags
             self.ders = ders
         else:
+            ders = np.ones(len(self.val)) if isinstance(self.val, np.ndarray) else 1
             self.tags = [tags]
             self.ders = {tags: ders}
         self.mode = mode
+
 
     def __repr__(self):
         """
@@ -53,6 +104,7 @@ class AD():
     def __neg__(self):
         return 0 - self
     ## Addition
+    @_vectorize
     def __add__(self, other):
         """
         Overwrites the __add__ dunder method to apply addition to an AD object.
@@ -78,7 +130,7 @@ class AD():
                 else:
                     new_ders[tag_i] = other.ders[tag_i]
                     new_tags.append(tag_i)
-        
+
             new_val = self.val + other.val
             new_self = AD(new_val, new_tags, ders = new_ders)
             return new_self
@@ -90,6 +142,7 @@ class AD():
             else:
                 raise TypeError("Invalid type.")
 
+    @_vectorize
     def __radd__(self, other):
         """
         Overwrites the __radd__ dunder method to apply addition to an AD object 
@@ -103,7 +156,8 @@ class AD():
                         new_self (AD): the new AD object after applying addition
         """          
         return self + other
-    
+
+    @_vectorize
     def __iadd__(self, other):
         """
         Overwrites the __iadd__ dunder method to apply addition to an AD object when the operation "+=" is used.
@@ -118,6 +172,7 @@ class AD():
         return self + other
     
     # Substraction
+    @_vectorize
     def __sub__(self, other):
         """
         Overwrites the __sub__ dunder method to apply substraction to an AD object.
@@ -155,7 +210,8 @@ class AD():
                 return new_self
             else:
                 raise TypeError("Invalid type.")
-    
+
+    @_vectorize
     def __rsub__(self, other):
         """
         Overwrites the __rsub__ dunder method to apply substraction to an AD object 
@@ -170,6 +226,7 @@ class AD():
         """            
         return (self - other)*(-1)
 
+    @_vectorize
     def __isub__(self, other):
         """
         Overwrites the __isub__ dunder method to apply substraction to an AD object when the operation "-=" is used.
@@ -184,6 +241,7 @@ class AD():
         return self - other
 
     # Mod
+    @_vectorize
     def __mod__(self, other):
         """
         Overwrites the __mod__ dunder method to apply mod to an AD object.
@@ -202,6 +260,7 @@ class AD():
         else:
             raise TypeError("You can only mode by an integer or a float.")
 
+    @_vectorize
     def __imod__(self, other):
         """
         Overwrites the __imod__ dunder method to apply mod to an AD object when the operation "%=" is used.
@@ -217,6 +276,7 @@ class AD():
     
     
     ## Multiplication
+    @_vectorize
     def __mul__(self, other):
         """
         Overwrites the __mul__ dunder method to apply multiplication to an AD object.
@@ -259,6 +319,7 @@ class AD():
             else:
                 raise TypeError("Invalid type.")
 
+    @_vectorize
     def __rmul__(self, other):
         """
         Overwrites the __rmul__ dunder method to apply multiplication to an AD object 
@@ -273,6 +334,7 @@ class AD():
         """            
         return self * other
 
+    @_vectorize
     def __imul__(self, other):
         """
         Overwrites the __imul__ dunder method to apply multiplication to an AD object when the operation "*=" is used.
@@ -288,6 +350,7 @@ class AD():
     
     
     ## Division
+    @_vectorize
     def __truediv__(self, other):
         """
         Overwrites the __truediv__ dunder method to apply division to an AD object.
@@ -301,6 +364,7 @@ class AD():
         """           
         return self * (other ** (-1))
 
+    @_vectorize
     def __rtruediv__(self, other):
         """
         Overwrites the __rtruediv__ dunder method to apply division to an AD object 
@@ -325,8 +389,9 @@ class AD():
                 new_self = AD(new_val, self.tags, new_ders)                
                 return new_self
             else:
-                raise TypeError("Invalid type.")        
-        
+                raise TypeError("Invalid type.")
+
+    @_vectorize
     def __itruediv__(self, other):
         """
         Overwrites the __itruediv__ dunder method to apply division to an AD object when the operation "/=" is used.
@@ -342,6 +407,7 @@ class AD():
     
     
   ## power
+    @_vectorize
     def __pow__(self, other):
         """
         Overwrites the __pow__ dunder method to apply power function to an AD object.
@@ -387,8 +453,9 @@ class AD():
                 return new_self
 
             else:
-                raise TypeError("Invalid type.")            
-    
+                raise TypeError("Invalid type.")
+
+    @_vectorize
     def __ipow__(self, other):
         """
         Overwrites the __ipow__ dunder method to apply power function to an AD object when the operation "**=" is used.
@@ -400,8 +467,9 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying power function
         """          
-        return self ** other    
+        return self ** other
 
+    @_vectorize
     def __rpow__(self, other):
         """
         Overwrites the __rpow__ dunder method to apply power function to an AD object 
@@ -465,6 +533,11 @@ def jacobian(ad):
     ders_items.sort()
     jacob = list(i[1] for i in ders_items)
     return jacob
+
+
+
+
+
 
 # if __name__ == "__main__":
 #     x = AD(1,"x")
