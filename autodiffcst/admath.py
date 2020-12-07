@@ -1,9 +1,11 @@
 import math
+import numbers
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import autodiffcst.AD as AD
+import autodiffcst.AD_vec as AD
 import numpy as np
+import sympy as sp
 
 # def _vectorize(func):
 #     """
@@ -51,7 +53,7 @@ import numpy as np
 #
 #     return vectorized_function
 
-def chain_rule(ad, new_val, der):
+def chain_rule(ad, new_val, der, der2, higher_der = None):
     """
     Applies chain rule to returns a new AD object with correct value and derivatives.
 
@@ -63,10 +65,23 @@ def chain_rule(ad, new_val, der):
             Returns:
                     new_ad (AD): a new AD object with correct value and derivatives
     """
-    new_ders = dict()
-    for tag in ad.tags:
-        new_ders[tag] = der * ad.ders[tag]
-    new_ad = AD.AD(new_val, ad.tags, new_ders)
+    new_der = der * ad._der
+    new_der2 = der * ad._der2 + der2 * np.dot(ad._der, ad._der.T)
+    if ad.higher is None:
+        new_ad = AD.AD(new_val, new_der, new_der2)
+    else:
+        new_higher_der = np.array([0.0]*len(ad.higher))
+        new_higher_der[0] = new_der
+        new_higher_der[1] = new_der2
+        for i in range(2, len(ad.higher)):
+            n = i+1
+            sum = 0
+            for k in range(1,n+1):
+                sum += higher_der[k-1]*sp.bell(n, k, ad.higher[0:n-k+1])
+            new_higher_der[i] = sum
+        new_ad = AD.AD(new_val, new_der, new_der2, order = len(ad.higher))
+        new_ad.higher = new_higher_der
+
     return new_ad
 
 
@@ -85,15 +100,26 @@ def abs(ad):
     """
     if isinstance(ad, AD.AD):
         new_val = np.abs((ad.val))
-        if ad.val > 0:
-            der = 1
-        elif ad.val < 0:
-            der = -1
-        else:
-            raise Exception("Derivative undefined")
-        return chain_rule(ad, new_val, der)
+        der = np.array([0]*len(ad))
+        der2 = np.array([0]*len(ad))
+        def get_der(v):
+            if v > 0:
+                return 1
+            elif v < 0:
+                return -1
+            else:
+                raise Exception("Derivative undefined")
+        for i in range(0,len(ad.val)):
+            if isinstance(ad.val[i], numbers.Integral):
+                der[i] = get_der(ad.val[i])
+            else:
+                print(type(ad.val[i]))
+                sub_der = np.array([get_der(v) for v in ad.val[i]])
+                der[i] = sub_der
+                der2[i] = np.array([0]*len(ad.val[i]))
+        return chain_rule(ad, new_val, der, der2)
     else:
-        return math.fabs(ad)
+        return np.abs(ad)
     
 
 def exp(ad):
@@ -107,11 +133,17 @@ def exp(ad):
                     new_ad (AD): the new AD object after applying exponential function
     """
     if isinstance(ad, AD.AD):
-        new_val = math.exp(ad.val)
+        new_val = np.exp(ad.val)
         der = new_val
-        return chain_rule(ad, new_val, der)
+        der2 = new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([new_val]*len(ad.higher))
+            #print(higher_der)
+            return chain_rule(ad, new_val, der, der2, higher_der)
     else:
-        return math.exp(ad)
+        return np.exp(ad)
 
 
 def log(ad): #consider different base?
@@ -125,11 +157,12 @@ def log(ad): #consider different base?
                     new_ad (AD): the new AD object after applying log(base e) function
     """
     if isinstance(ad, AD.AD):
-        new_val = math.log(ad.val)
+        new_val = np.log(ad.val)
         der = 1/ad.val
-        return chain_rule(ad, new_val, der)
+        der2 = -1/ad.val**2
+        return chain_rule(ad, new_val, der, der2)
     else:
-        return math.log(ad)
+        return np.log(ad)
 
 def pow(ad, y):
     """
@@ -171,14 +204,19 @@ def sin(ad):
             Returns:
                     new_ad (AD): the new AD object after applying sine function
     """
+
     if isinstance(ad, AD.AD):
         new_val = sin(ad.val)
         der = cos(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.sin(ad)
+        der2 = -new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher)/4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        return np.sin(ad)
 
 def cos(ad):
     """
@@ -193,11 +231,15 @@ def cos(ad):
     if isinstance(ad, AD.AD):
         new_val = cos(ad.val)
         der = -sin(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.cos(ad)
+        der2 = -new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher)/4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        return np.cos(ad)
 
 def tan(ad):
     """
