@@ -1,9 +1,11 @@
 import math
+import numbers
+
 import numpy as np
 
 class AD():
 
-    def __init__(self, val, der=None, der2=None):
+    def __init__(self, val, der=None, der2=None, order = 2):
         """
         Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
     
@@ -32,7 +34,16 @@ class AD():
         if der2 is None:
             self._der2 = np.array([0]*len(self))
         else:
-            self._der2 = np.array(der2) 
+            self._der2 = np.array(der2)
+        self.higher = None
+        if isinstance(order, numbers.Integral) and order > 2:
+            if len(self) == 1:
+                self.higher = np.array([0] * order)
+                self.higher[0] = self._der
+                self.higher[1] = self._der2
+            else:
+                raise Exception("Cannot handle higher order derivatives for vector function")
+
 
     def __str__(self):
         """
