@@ -1,40 +1,39 @@
-import math
+import numpy as np
 import numbers
 
-import numpy as np
-
-class AD():
+class VAD():
 
     def __init__(self, val, der=None, der2=None, order = 2):
         """
-        Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
+        Overwrites the __init__ dunder method to create a new VAD object with initial value and derivatives.
     
                 Parameters:
-                        val (int or float or list or np.array): the initial value of the new AD object.
+                        val (int or float or list or np.array): the initial value of the new VAD object.
                         der (int or float or list or np.array): first-order derivatives of the new AD object. 
                         der2 (int or float or list or np.array): second-order derivatives of the new AD object. 
 
                 Returns:
                         None, but initializes an AD object when called
         """
-        if isinstance(val, int) or isinstance(val, float):
-            self.val = np.array(val)
-        elif isinstance(val, list) or isinstance(val, np.ndarray): 
+        # Make der and der2 'private' variables so that users cannot input weird derivatives like "a"
+    
+        
+        if isinstance(val, list) or isinstance(val, np.ndarray):
+
             for v in val:
-                if not isinstance(val, int) and isinstance(val, float):
+                if not isinstance(val, numbers.Integral) and isinstance(val, float):
                     raise ValueError("Invalid input of AD object. Please initialize AD with int, float, list or array of numbers.")
             self.val = np.array(val)
         
-        # Make der and der2 'private' variables so that users cannot input weird derivatives like "a"
-        if der is None:
-            self._der = np.eye(len(self))
+            if der is None:
+                self._der = np.ones(len(self))
+                self._der2 = np.zeros(len(self))
+            else:
+                self._der = der
+                self._der2 = der2
         else:
-            self._der = np.array(der)  
+            raise TypeError("You need to initialize VAD with a list or a np.array. Otherwise, please use AD.")
 
-        if der2 is None:
-            self._der2 = np.array([0]*len(self))
-        else:
-            self._der2 = np.array(der2)
         self.higher = None
         if isinstance(order, numbers.Integral) and order > 2:
             if len(self) == 1:
@@ -43,7 +42,6 @@ class AD():
                 self.higher[1] = self._der2
             else:
                 raise Exception("Cannot handle higher order derivatives for vector function")
-
 
     def __str__(self):
         """
@@ -67,7 +65,7 @@ class AD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """           
-        return "AD(value: {0}, first-order derivatives: {1})".format(self.val,self._der)
+        return "VAD(value: {0}, first-order derivatives: {1})".format(self.val,self._der)
     
     def __len__(self):
         try:
@@ -75,7 +73,112 @@ class AD():
         except TypeError:
             return 1
 
+    ## getter
+    def __getitem__(self, pos):
+        return self.val[pos]
 
+
+    ## setter, Do we want this?
+    def __setitem__(self, pos, val):
+        self.val[pos] = val
+        
+    # Comparison Equal
+    def __eq__(self, other):
+        """
+        compare value of two VAD objects 
+        for example:
+            >>> a = AD([1,2,3])
+            >>> b = AD([2,2,3])
+            >>> a == b
+            >>> False
+        """
+        if isinstance(other, VAD):
+            if np.sum(self.val == other.val) == len(self): 
+                return True
+                
+            else:
+                return False
+        else:
+            raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
+            
+    def isequal(self, other):
+        """
+        compare value of two VAD objects element wise
+        for example:
+            a = VAD([1,2,3])
+            b = VAD([2,2,3])
+            >>> a.isequal(b)
+            array([False,True,True]) 
+        """
+        if isinstance(other, VAD):
+            return self.val == other.val      
+        else:
+            raise TypeError("The input must also be a VAD object.")
+
+    def __ge__(self, other):
+        """
+        compare value of two VAD objects 
+        for example:
+            >>> a = AD([1,2,3])
+            >>> b = AD([2,2,3])
+            >>> a > b
+            >>> False
+        """
+        if isinstance(other, VAD):
+            if np.sum(self.val > other.val) == len(self): 
+                return True
+                
+            else:
+                return False
+        else:
+            raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
+            
+    def isgreater(self, other):
+        """
+        compare value of two VAD objects element wise
+        for example:
+            a = VAD([1,2,3])
+            b = VAD([2,2,3])
+            >>> a.isgreater(b)
+            array([False,True,True]) 
+        """
+        if isinstance(other, VAD):
+            return self.val > other.val      
+        else:
+            raise TypeError("The input must also be a VAD object.")
+    
+    def __le__(self, other):
+        """
+        compare value of two VAD objects 
+        for example:
+            >>> a = AD([1,2,3])
+            >>> b = AD([2,2,3])
+            >>> a < b
+            >>> False
+        """
+        if isinstance(other, VAD):
+            if np.sum(self.val < other.val) == len(self): 
+                return True
+                
+            else:
+                return False
+        else:
+            raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
+            
+    def isless(self, other):
+        """
+        compare value of two VAD objects element wise
+        for example:
+            a = VAD([1,2,3])
+            b = VAD([2,2,3])
+            >>> a.isless(b)
+            array([True,False,False]) 
+        """
+        if isinstance(other, VAD):
+            return self.val < other.val      
+        else:
+            raise TypeError("The input must also be a VAD object.")
+                
     ## Unary 
     def __neg__(self):
         return self * (-1)
@@ -92,16 +195,18 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying addition
         """      
-        if isinstance(other, AD):
+        if isinstance(other, VAD): 
             new_val = self.val + other.val
             new_der = self._der + other._der
             new_der2 = self._der2 + other._der2
-            return AD(val = new_val, der = new_der, der2 = new_der2)
+            return VAD(val = new_val, der = new_der, der2 = new_der2)
+
         # elif isinstance(other, int) or isinstance(other, float):
         else:
             try:
                 new_val = self.val + other
-                return AD(val = new_val, der = self._der, der2 = self._der2)
+                return VAD(val = new_val, der = self._der, der2 = self._der2)
+        
             except:
                 raise TypeError("Invalid type. An AD object could only be added with AD or int or float.")
 
@@ -144,37 +249,10 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying substraction
         """      
-            
-        # if isinstance(other, AD):
-        #     new_val = self.val - other.val
-        #     new_der = self._der - other._der]
-        #     new_der2 = self._der2 - other._der2 
-        #     return AD(val = new_val, der = new_der, der2 = new_der2)
-        # # elif isinstance(other, int) or isinstance(other, float):
-        # else:
-        #     try:
-        #         new_val = self.val - other
-        #         return AD(val = new_val, der = self._der, der2 = self._der2)
-        #     except:
-        #         raise TypeError("Invalid type. An AD object could only be added with AD or int or float.")
-    def __sub__(self, other):
         return self + (-1)*other
     
     def __rsub__(self, other):
         return (-1)*self + other
-    # def __rsub__(self, other):
-    #     """
-    #     Overwrites the __rsub__ dunder method to apply substraction to an AD object 
-    #     when the AD object is on the right side of the substraction sign.
-    
-    #             Parameters:
-    #                     self (AD): An AD object to be applied substraction to
-    #                     other (AD or valid input for the numpy operation): the object to be substracted from self
-    
-    #             Returns:
-    #                     new_self (AD): the new AD object after applying substraction
-    #     """            
-    #     return (self - other) * (-1)
     
     def __isub__(self, other):
         """
@@ -234,18 +312,22 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying multiplication
         """        
-        if isinstance(other, AD):
+        if isinstance(other, VAD):
             new_val = self.val * other.val
             new_der = self._der*other.val + self.val*other._der
-            new_der2 = self._der2*other.val + other._der2*self.val
-            return AD(val = new_val, der = new_der, der2 = new_der2)
-        elif isinstance(other, int) or isinstance(other, float):
-            new_val = self.val * other
-            new_der = self._der * other
-            new_der2 = self._der2 * other
-            return AD(val = new_val, der = new_der, der2 = self._der2)
+            new_der2 = self.val*other._der2 + 2*other._der*self._der+other.val*self._der2#self._der2 + other.val
+            return VAD(val = new_val, der = new_der, der2 = new_der2)
+        # elif isinstance(other, int) or isinstance(other, float):
         else:
-            raise TypeError("Invalid type. An AD object could only be subtracted by AD or int or float.")
+            try:
+                # other = np.array([other])
+                new_val = self.val * other
+                new_der = self._der * other
+                
+                new_der2 = self._der2 * other
+                return VAD(val = new_val, der = new_der, der2 = new_der2)
+            except:
+                raise TypeError("Invalid type. An VAD object could only be multiply by list or array or int or float.")
 
     def __rmul__(self, other):
         """
@@ -276,7 +358,6 @@ class AD():
     
     
     ## Division
-    
     def __truediv__(self, other):
         """
         Overwrites the __truediv__ dunder method to apply division to an AD object.
@@ -287,8 +368,11 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying division
-        """           
-        return self * (other ** (-1))
+        """
+        if isinstance(other, list):
+            other = np.array(other)
+
+        return self * (other ** (-1.0))
 
     
     def __rtruediv__(self, other):
@@ -311,7 +395,8 @@ class AD():
                 new_val = other / self.val
                 new_der = self._der * -1 * other / (self.val ** 2)
                 # add second-order
-                new_self = AD(new_val, new_der, self._der2)                
+                new_der2 = self._der2 * -1 * other / (self._der ** 2)
+                new_self = VAD(new_val, new_der, new_der2)                
                 return new_self
             else:
                 raise TypeError("Invalid type.")
@@ -345,32 +430,40 @@ class AD():
                         new_self (AD): the new AD object after applying power function
         """           
         try:
-
             self_der = other.val * self.val**(other.val - 1) * self._der 
             other_der = self.val ** other.val* np.log(self.val) * other._der
             new_der = self_der + other_der
 
             new_val = self.val ** other.val
 
+            self_der2 = other.val * (other.val - 1)* self.val **(other.val - 2) * self._der2 
+            # may need to change
+            other_der2 = self._val ** other._val* np.log(self._val) * other._der2
+            new_der2 = self_der2 + other_der2
+            
             # add second order
-            return AD(new_val, new_der, self._der2)
+            return VAD(new_val, new_der, new_der2)
             
     
         except AttributeError:
-            if isinstance(other, int) or isinstance(other, float):
-                other = float(other)
+        
+
+            if isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
+                try:
+                    other = float(other)
+                except:
+                    other = np.array([float(i) for i in other])
+
                 new_val = self.val ** other
                 new_der = (self.val ** (other - 1)) * other * self._der
-                new_self = AD(new_val, new_der, self._der2)
+                new_der2 = (self.val ** (other - 2)) * other * (other-1) * self._der
+            
+                new_self = VAD(new_val, new_der, self._der2)
 
                 return new_self
 
-                
-                    
-
-
             else:
-                raise TypeError("Invalid type.")
+                raise TypeError("Invalid type. Vectorized AD could only operate with int, float, list or np.ndarray. ")
 
     
     def __ipow__(self, other):
@@ -406,14 +499,13 @@ class AD():
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other ** self.val
                 new_der = np.log(other) * (new_val) * self._der
-                new_self = AD(new_val, new_der, self._der2)  
+                new_der2 = np.log(other) * (new_val) * self._der2
+                new_self = VAD(new_val, new_der, new_der2)  
                 return new_self
             else:
                 raise TypeError("Invalid type.") 
 
     
-
-
 
     def diff(self, direction=None, order = 1):
         """
@@ -442,13 +534,31 @@ class AD():
             raise Exception("Sorry, this model can only handle first order or second order derivatives")
 
 # jacobian
-# hessian
+def jacobian(funcs):
+    diffs = []
+    if isinstance(funcs,VAD):
+        return funcs.diff()
+    else:
+        for func in funcs:
+            if not isinstance(func, VAD):
+                raise TypeError("All functions should be VAD object.")
+            diffs.append(func.diff())
+        return np.vstack(diffs)
 
+# hessian
+def hessian(func):
+    
+    if not isinstance(func, VAD):
+        raise TypeError("All functions should be VAD object.")
+    
+    der2 = func.diff(order = 2)
+    hessian = np.eye(len(func))*der2
+    return hessian
 
 if __name__ == "__main__":
-    x = AD([10,10])
-    y = AD([1,2])
-    f = x/y + [1,2]
-    print(f)
-    print(f.diff())
-    print(f.diff(direction=[[0]]))
+    x = VAD([1,2,3])
+    f1 = x*x*[2,3,4]
+    f2 = x + [2,3,4]
+    print(f1)
+    print("Jacobian: ", jacobian([f1,f2]))
+    print("Hessian: ", hessian(f1))
