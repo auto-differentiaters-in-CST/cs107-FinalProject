@@ -1,10 +1,14 @@
 import numpy as np
 import numbers
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import autodiffcst.AD as ad
 
 class VAD():
 
-    def __init__(self, val, ders=None, ders2=None):
+    def __init__(self, val, der=None, der2=None):
         """
         Overwrites the __init__ dunder method to create a new VAD object with initial value and derivatives.
     
@@ -18,16 +22,22 @@ class VAD():
         """
         # Make der and der2 'private' variables so that users cannot input weird derivatives like "a"
         self.val = np.array(val)
-        if ders is None:
-            self.ders = np.ones(len(self))
-            self.ders2 = np.zeros((len(self),len(self)))
+        if der is None:
+            self.der = np.eye(len(self))
+            self.der2 = np.zeros((len(self),len(self),len(self)))
         else:
-            self.ders = ders
-            self.ders2 = ders2
-        self.tags = np.array(["x"+str(i) for i in range(len(self.val))])
-        arr_ad = np.array([None]*len(self.val))
-        for i in range(len(self.val)):
-            arr_ad[i] = ad.AD(val=self.val[i], tags=self.tags[i], ders=self.ders[i], ders2=self.ders2[i][i])
+            self.der = der
+            self.der2 = der2
+        self.tag = np.array([i for i in range(len(self))])
+
+        self.size = len(self)
+        print(self.der[0], self.der2[0])
+        #self.tag = np.array(["x"+str(i) for i in range(len(self.val))])
+        #arr_ad = np.array([None]*len(self.val))
+        arr_ad = np.array([None]*len(self))
+        for i in range(len(self)):
+            arr_ad[i] = ad.AD(val=self.val[i], tag=self.tag[i], size = self.size,
+                            der=self.der[i], der2=self.der2[i])
         self.variables = arr_ad
 
 
@@ -71,8 +81,8 @@ class VAD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """
-        return "VAD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tags,
-                                                                                             self.ders, self.ders2)
+        return "VAD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tag,
+                                                                                             self.der, self.der2)
 
     def __repr__(self):
         """
@@ -84,8 +94,8 @@ class VAD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """
-        return "AD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tags,
-                                                                                             self.ders, self.ders2)
+        return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tag,
+                                                                                             self.der, self.der2)
 
     def __len__(self):
         try:
@@ -219,7 +229,7 @@ class VAD():
         new_val = np.array([0.0]*len(AD_result))
         for i in range(len(AD_result)):
             new_val[i] = AD_result[i].val
-        return VAD(new_val, self.ders, self.ders2)
+        return VAD(new_val, self.der, self.der2)
         #
         # if isinstance(other, VAD):
         #     new_val = self.val + other.val
@@ -584,10 +594,16 @@ def hessian(func):
 if __name__ == "__main__":
     x = VAD([1,2,3])
     print(x)
-    f = x.variables[0]+x.variables[1]
-    g = x+3
-    print(f)
     print(x.variables[2])
+    print("----------------")
+    f = x.variables[0]+x.variables[1]
+    print(f)
+    print("----------------")
+    g = x+3
     print(g)
+    print("----------------")
     h = f + x.variables[2]
     print(h)
+    print("----------------")
+    y = 10 + h
+    print(y)

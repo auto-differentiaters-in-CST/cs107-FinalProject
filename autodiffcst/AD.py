@@ -1,6 +1,5 @@
 import math
 import numbers
-
 import numpy as np
 
 
@@ -53,14 +52,14 @@ def _vectorize(func):
 
 class AD():
 
-    def __init__(self, val, tags, ders=1, ders2=0, order=2):
+    def __init__(self, val, tag=None, der=None, der2=None, size =None, order=2):
         """
         Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
     
                 Parameters:
                         val (int or float): the initial value of the new AD object.
-                        tags (string or list of strings): the tags, or variable names of the new AD object, such as "x" and "y". 
-                        ders (float or dict): derivatives of the new AD object. 
+                        tag (string or list of strings): the tag, or variable names of the new AD object, such as "x" and "y". 
+                        der (float or dict): derivatives of the new AD object. 
                                               A dictionary shall be used if the object contains multiple variables.
                         mode (string: "forward" or "backward"): a string indicating the mode of the differentiation of the AD object.
     
@@ -69,15 +68,39 @@ class AD():
         """
 
         self.val = val if isinstance(val, np.ndarray) else np.array([val])
-        self.tags = tags if isinstance(tags, np.ndarray) else np.array([tags])
-        self.ders = ders if isinstance(ders, np.ndarray) else np.array([ders])
-        self.ders2 = ders2 if isinstance(ders2, np.ndarray) else np.array([[ders2]])
+        if size:
+            if isinstance(size, numbers.Integral):
+                self.size = size 
+            else:
+                raise TypeError("Invalid size type. The size of AD can only be integers.")
+        else:
+            self.size = len(self.der)
+
+
+        self.tag = tag if isinstance(tag, np.ndarray) else np.array([tag])
+        
+        print(der)
+        print(type(der))
+        # if der != None:
+        if isinstance(der, np.ndarray):
+            self.der = der
+            # self.der = der if isinstance(der, np.ndarray) else np.array([der])
+        else:
+            self.der = np.zeros(self.size)
+            self.der[tag] = 1
+        
+        if isinstance(der2, np.ndarray):
+            self.der2 = der2
+            # self.der2 = der2 if isinstance(der2, np.ndarray) else np.array([[der2]])
+        else:
+            self.der = np.zeros((self.size,self.size))
+        
         self.order = order
         if isinstance(order, numbers.Integral) and order > 2:
             if len(self.val) == 1:
                 self.higher = np.array([0] * order)
-                self.higher[0] = self.ders
-                self.higher[1] = self.ders2
+                self.higher[0] = self.der
+                self.higher[1] = self.der2
             else:
                 raise Exception("Cannot handle higher order derivatives for multiple variables")
 
@@ -92,7 +115,7 @@ class AD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """           
-        return "AD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tags, self.ders, self.ders2)
+        return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tag, self.der, self.der2)
     
     def __str__(self):
         """
@@ -104,7 +127,7 @@ class AD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """        
-        return "AD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tags, self.ders, self.ders2)
+        return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tag, self.der, self.der2)
 
     
     ## Unary 
@@ -122,44 +145,70 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying addition
         """        
-        # other_tag = other.tags
         try:
-            new_val = self.val+other.val
-            new_tags = self.tags
-            new_ders = self.ders
-            new_ders2 = list(self.ders2)
-
-
-            for j in range(len(other.tags)):
-                if other.tags[j] in new_tags:
-                    loc = np.where(other.tags[j])[0]
-                    print(np.where(other.tags[j])[0])
-                    new_ders[loc]+=other.ders[j]
-                    new_ders2[loc]+=other.ders2[j]
-                    break
-                else:
-                    new_tags = np.append(new_tags, other.tags[j])
-                    new_ders = np.append(new_ders, other.ders[j])
-                    new_ders2.append(other.ders2[j])
-            result_ders2 = []
-            for i in range(len(new_ders2)):
-                result_ders2.append(np.pad(new_ders2[i], (0, len(new_tags) - len(new_ders2[i])), mode='constant', constant_values=0))
-            result_ders2 = np.array(result_ders2)
-            if len(new_tags) == 1:
-                new_order = max(self.order, other.order)
-                return AD(new_val, new_tags, new_ders, result_ders2, new_order)
-            else:
-                return AD(new_val, new_tags, new_ders, result_ders2)
-            return AD(new_val)
+            new_der = self.der + other.der
+            new_der2 = self.der2 + other.der2
+            new_val = self.val + other.val
+            new_tag = np.nonzero(new_der)
+            
+            return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+            
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val + other
-                new_self = AD(new_val, self.tags, ders = self.ders)
+                new_self = AD(val = new_val, tag = self.tag, der = self.der, der2 = self.der2,size = self.size)
                 return new_self
             else:
                 raise TypeError("Invalid type.")
 
-    @_vectorize
+    # def __add__(self, other):
+    #     """
+    #     Overwrites the __add__ dunder method to apply addition to an AD object.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied addition to
+    #                     other (AD or int or float): the object to be added to self
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying addition
+    #     """        
+    #     # other_tag = other.tag
+    #     try:
+    #         new_val = self.val+other.val
+    #         new_tag = self.tag
+    #         new_der = self.der
+    #         new_der2 = list(self.der2)
+
+    #         for j in range(len(other.tag)):
+    #             if other.tag[j] in new_tag:
+    #                 loc = np.where(other.tag[j])[0]
+    #                 print(np.where(other.tag[j])[0])
+    #                 new_der[loc]+=other.der[j]
+    #                 new_der2[loc]+=other.der2[j]
+    #                 break
+    #             else:
+    #                 new_tag = np.append(new_tag, other.tag[j])
+    #                 new_der = np.append(new_der, other.der[j])
+    #                 new_der2.append(other.der2[j])
+    #         result_der2 = []
+    #         for i in range(len(new_der2)):
+    #             result_der2.append(np.pad(new_der2[i], (0, len(new_tag) - len(new_der2[i])), mode='constant', constant_values=0))
+    #         result_der2 = np.array(result_der2)
+    #         if len(new_tag) == 1:
+    #             new_order = max(self.order, other.order)
+    #             return AD(new_val, new_tag, new_der, result_der2, new_order)
+    #         else:
+    #             return AD(new_val, new_tag, new_der, result_der2)
+    #         return AD(new_val)
+    #     except AttributeError:
+    #         if isinstance(other, int) or isinstance(other, float):
+    #             new_val = self.val + other
+    #             new_self = AD(new_val, self.tag, der = self.der)
+    #             return new_self
+    #         else:
+    #             raise TypeError("Invalid type.")
+
+    # @_vectorize
     def __radd__(self, other):
         """
         Overwrites the __radd__ dunder method to apply addition to an AD object 
@@ -174,7 +223,7 @@ class AD():
         """          
         return self + other
 
-    @_vectorize
+    # @_vectorize
     def __iadd__(self, other):
         """
         Overwrites the __iadd__ dunder method to apply addition to an AD object when the operation "+=" is used.
@@ -201,29 +250,29 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying substraction
         """          
-        # other_tag = other.tags
+        # other_tag = other.tag
         try:
-            tags1 = self.tags
-            tags2 = other.tags
+            tag1 = self.tag
+            tag2 = other.tag
 
-            new_ders = self.ders.copy()
-            new_tags = self.tags.copy()
+            new_der = self.der.copy()
+            new_tag = self.tag.copy()
         
-            for tag_i in tags2:
-                if tag_i in tags1:
-                    new_ders[tag_i] -= other.ders[tag_i]
+            for tag_i in tag2:
+                if tag_i in tag1:
+                    new_der[tag_i] -= other.der[tag_i]
                 else:
-                    new_ders[tag_i] = -1 * other.ders[tag_i]
-                    new_tags.append(tag_i)
+                    new_der[tag_i] = -1 * other.der[tag_i]
+                    new_tag.append(tag_i)
         
             new_val = self.val - other.val
-            new_self = AD(new_val, new_tags, ders = new_ders)
+            new_self = AD(new_val, new_tag, der = new_der)
             return new_self
 
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val - other
-                new_self = AD(new_val, self.tags, ders = self.ders)
+                new_self = AD(new_val, self.tag, der = self.der)
                 return new_self
             else:
                 raise TypeError("Invalid type.")
@@ -272,7 +321,7 @@ class AD():
         """           
         if isinstance(other, int) or isinstance(other, float):
             new_val = self.val % other
-            new_self = AD(new_val, self.tags, ders = self.ders)
+            new_self = AD(new_val, self.tag, der = self.der)
             return new_self
         else:
             raise TypeError("You can only mode by an integer or a float.")
@@ -306,32 +355,32 @@ class AD():
                         new_self (AD): the new AD object after applying multiplication
         """           
         try:
-            self_tags = self.tags
-            other_tags = other.tags
+            self_tag = self.tag
+            other_tag = other.tag
 
-            new_tags = self.tags.copy()
-            new_ders = self.ders.copy()
+            new_tag = self.tag.copy()
+            new_der = self.der.copy()
 
-            for var in self_tags:
-                if var in other_tags:
-                    new_ders[var] = self.ders[var] * other.val + other.ders[var] * self.val 
+            for var in self_tag:
+                if var in other_tag:
+                    new_der[var] = self.der[var] * other.val + other.der[var] * self.val 
                 else:
-                    new_ders[var] = self.ders[var] * other.val
-            for var in other_tags:
-                if var not in self.tags:
-                    new_ders[var] = other.ders[var] * self.val
-                    new_tags.append(var)
+                    new_der[var] = self.der[var] * other.val
+            for var in other_tag:
+                if var not in self.tag:
+                    new_der[var] = other.der[var] * self.val
+                    new_tag.append(var)
             new_val = self.val * other.val
-            new_self = AD(new_val, new_tags, ders = new_ders)
+            new_self = AD(new_val, new_tag, der = new_der)
             return new_self
 
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val * other
-                new_ders = {}
-                for var in self.tags:
-                    new_ders[var] = self.ders[var] * other
-                new_self = AD(new_val, self.tags, new_ders)
+                new_der = {}
+                for var in self.tag:
+                    new_der[var] = self.der[var] * other
+                new_self = AD(new_val, self.tag, new_der)
                 return new_self
             else:
                 raise TypeError("Invalid type.")
@@ -400,10 +449,10 @@ class AD():
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other / self.val
-                new_ders = {}
-                for var in self.tags:
-                    new_ders[var] = self.ders[var] * -1 * other / (self.val ** 2)
-                new_self = AD(new_val, self.tags, new_ders)                
+                new_der = {}
+                for var in self.tag:
+                    new_der[var] = self.der[var] * -1 * other / (self.val ** 2)
+                new_self = AD(new_val, self.tag, new_der)                
                 return new_self
             else:
                 raise TypeError("Invalid type.")
@@ -437,35 +486,35 @@ class AD():
                         new_self (AD): the new AD object after applying power function
         """           
         try:
-            self_tags = self.tags
-            other_tags = other.tags
+            self_tag = self.tag
+            other_tag = other.tag
     
-            new_tags = self.tags.copy()
-            new_ders = self.ders.copy()
+            new_tag = self.tag.copy()
+            new_der = self.der.copy()
             
             factor = self.val ** (other.val - 1)
-            for var in self_tags:
-                term_1 = other.val * self.ders[var]
-                if var in other_tags:
-                    new_ders[var] = factor * (term_1 + math.log(self.val) * self.val * other.ders[var])
+            for var in self_tag:
+                term_1 = other.val * self.der[var]
+                if var in other_tag:
+                    new_der[var] = factor * (term_1 + math.log(self.val) * self.val * other.der[var])
                 else:
-                    new_ders[var] = factor * term_1
-            for var in other_tags:
-                if var not in self.tags:
-                    term_2 = math.log(self.val) * self.val * other.ders[var]
-                    new_ders[var] = factor * term_2
-                    new_tags.append(var)
+                    new_der[var] = factor * term_1
+            for var in other_tag:
+                if var not in self.tag:
+                    term_2 = math.log(self.val) * self.val * other.der[var]
+                    new_der[var] = factor * term_2
+                    new_tag.append(var)
             new_val = self.val ** other.val
-            new_self = AD(new_val, new_tags, ders = new_ders)
+            new_self = AD(new_val, new_tag, der = new_der)
             return new_self
     
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val ** other
-                new_ders = {}
-                for var in self.tags:
-                    new_ders[var] = (self.val ** (other - 1)) * other * self.ders[var]
-                new_self = AD(new_val, self.tags, new_ders)
+                new_der = {}
+                for var in self.tag:
+                    new_der[var] = (self.val ** (other - 1)) * other * self.der[var]
+                new_self = AD(new_val, self.tag, new_der)
 
                 return new_self
 
@@ -505,10 +554,10 @@ class AD():
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other ** self.val
-                new_ders = {}
-                for var in self.tags:
-                    new_ders[var] = math.log(other) * (new_val) * self.ders[var]
-                new_self = AD(new_val, self.tags, new_ders)  
+                new_der = {}
+                for var in self.tag:
+                    new_der[var] = math.log(other) * (new_val) * self.der[var]
+                new_self = AD(new_val, self.tag, new_der)  
                 return new_self
             else:
                 raise TypeError("Invalid type.") 
@@ -528,9 +577,9 @@ class AD():
                         with directions indicted by the input direction
         """         
         if direction == None:
-            return self.ders
+            return self.der
         try:
-            return self.ders[direction]
+            return self.der[direction]
         except KeyError:
             raise Exception("Invalid direction")
 
@@ -545,10 +594,10 @@ def jacobian(ad):
                     A list representing the Jacobian of the AD object, with the order sorted by the variable names 
                     (i.e. x before y, x1 before x2, ...)
     """        
-    ders = ad.diff()
-    ders_items = list(ders.items())
-    ders_items.sort()
-    jacob = list(i[1] for i in ders_items)
+    der = ad.diff()
+    der_items = list(der.items())
+    der_items.sort()
+    jacob = list(i[1] for i in der_items)
     return jacob
 
 
@@ -562,7 +611,7 @@ def jacobian(ad):
 #     f = 2 - x 
 #     f -= 1  
 #     print(f)
-#     print(f.ders)
+#     print(f.der)
 #     print(f.val)
-#     print(f.tags)
+#     print(f.tag)
 #     print(f.diff())
