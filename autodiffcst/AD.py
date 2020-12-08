@@ -1,4 +1,6 @@
 import math
+import numbers
+
 import numpy as np
 
 
@@ -51,7 +53,7 @@ def _vectorize(func):
 
 class AD():
 
-    def __init__(self, val, tags, ders=1, mode = "forward"):
+    def __init__(self, val, tags, ders=1, ders2=0, order=2):
         """
         Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
     
@@ -65,15 +67,19 @@ class AD():
                 Returns:
                         None, but initializes an AD object when called
         """
-        self.val = np.array(val) if isinstance(val, list) else val
-        if (isinstance(tags, list)) and (isinstance(ders,dict)):
-            self.tags = tags
-            self.ders = ders
-        else:
-            ders = np.ones(len(self.val)) if isinstance(self.val, np.ndarray) else 1
-            self.tags = [tags]
-            self.ders = {tags: ders}
-        self.mode = mode
+
+        self.val = val if isinstance(val, np.ndarray) else np.array([val])
+        self.tags = tags if isinstance(tags, np.ndarray) else np.array([tags])
+        self.ders = ders if isinstance(ders, np.ndarray) else np.array([ders])
+        self.ders2 = ders2 if isinstance(ders2, np.ndarray) else np.array([[ders2]])
+        self.order = order
+        if isinstance(order, numbers.Integral) and order > 2:
+            if len(self.val) == 1:
+                self.higher = np.array([0] * order)
+                self.higher[0] = self.ders
+                self.higher[1] = self.ders2
+            else:
+                raise Exception("Cannot handle higher order derivatives for multiple variables")
 
 
     def __repr__(self):
@@ -86,7 +92,7 @@ class AD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """           
-        return "AD(value: {0}, derivatives: {1})".format(self.val,self.ders)
+        return "AD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tags, self.ders, self.ders2)
     
     def __str__(self):
         """
@@ -98,13 +104,13 @@ class AD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """        
-        return "AD(value: {0}, derivatives: {1})".format(self.val,self.ders)
+        return "AD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tags, self.ders, self.ders2)
+
     
     ## Unary 
     def __neg__(self):
         return 0 - self
     ## Addition
-    @_vectorize
     def __add__(self, other):
         """
         Overwrites the __add__ dunder method to apply addition to an AD object.
@@ -118,22 +124,33 @@ class AD():
         """        
         # other_tag = other.tags
         try:
-            tags1 = self.tags
-            tags2 = other.tags
+            new_val = self.val+other.val
+            new_tags = self.tags
+            new_ders = self.ders
+            new_ders2 = list(self.ders2)
 
-            new_ders = self.ders.copy()
-            new_tags = self.tags.copy()
-        
-            for tag_i in tags2:
-                if tag_i in tags1:
-                    new_ders[tag_i] += other.ders[tag_i]
+
+            for j in range(len(other.tags)):
+                if other.tags[j] in new_tags:
+                    loc = np.where(other.tags[j])[0]
+                    print(np.where(other.tags[j])[0])
+                    new_ders[loc]+=other.ders[j]
+                    new_ders2[loc]+=other.ders2[j]
+                    break
                 else:
-                    new_ders[tag_i] = other.ders[tag_i]
-                    new_tags.append(tag_i)
-
-            new_val = self.val + other.val
-            new_self = AD(new_val, new_tags, ders = new_ders)
-            return new_self
+                    new_tags = np.append(new_tags, other.tags[j])
+                    new_ders = np.append(new_ders, other.ders[j])
+                    new_ders2.append(other.ders2[j])
+            result_ders2 = []
+            for i in range(len(new_ders2)):
+                result_ders2.append(np.pad(new_ders2[i], (0, len(new_tags) - len(new_ders2[i])), mode='constant', constant_values=0))
+            result_ders2 = np.array(result_ders2)
+            if len(new_tags) == 1:
+                new_order = max(self.order, other.order)
+                return AD(new_val, new_tags, new_ders, result_ders2, new_order)
+            else:
+                return AD(new_val, new_tags, new_ders, result_ders2)
+            return AD(new_val)
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val + other

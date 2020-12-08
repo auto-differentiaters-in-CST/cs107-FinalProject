@@ -1,9 +1,10 @@
 import numpy as np
 import numbers
+import autodiffcst.AD as ad
 
 class VAD():
 
-    def __init__(self, val, der=None, der2=None, order = 2):
+    def __init__(self, val, ders=None, ders2=None):
         """
         Overwrites the __init__ dunder method to create a new VAD object with initial value and derivatives.
     
@@ -16,32 +17,49 @@ class VAD():
                         None, but initializes an AD object when called
         """
         # Make der and der2 'private' variables so that users cannot input weird derivatives like "a"
-    
-        
-        if isinstance(val, list) or isinstance(val, np.ndarray):
-
-            for v in val:
-                if not isinstance(val, numbers.Integral) and isinstance(val, float):
-                    raise ValueError("Invalid input of AD object. Please initialize AD with int, float, list or array of numbers.")
-            self.val = np.array(val)
-        
-            if der is None:
-                self._der = np.ones(len(self))
-                self._der2 = np.zeros(len(self))
-            else:
-                self._der = der
-                self._der2 = der2
+        self.val = np.array(val)
+        if ders is None:
+            self.ders = np.ones(len(self))
+            self.ders2 = np.zeros((len(self),len(self)))
         else:
-            raise TypeError("You need to initialize VAD with a list or a np.array. Otherwise, please use AD.")
+            self.ders = ders
+            self.ders2 = ders2
+        self.tags = np.array(["x"+str(i) for i in range(len(self.val))])
+        arr_ad = np.array([None]*len(self.val))
+        for i in range(len(self.val)):
+            arr_ad[i] = ad.AD(val=self.val[i], tags=self.tags[i], ders=self.ders[i], ders2=self.ders2[i][i])
+        self.variables = arr_ad
 
-        self.higher = None
-        if isinstance(order, numbers.Integral) and order > 2:
-            if len(self) == 1:
-                self.higher = np.array([0] * order)
-                self.higher[0] = self._der
-                self.higher[1] = self._der2
-            else:
-                raise Exception("Cannot handle higher order derivatives for vector function")
+
+
+
+
+        #
+        #
+        # if isinstance(val, list) or isinstance(val, np.ndarray):
+        #
+        #     for v in val:
+        #         if not isinstance(val, numbers.Integral) and isinstance(val, float):
+        #             raise ValueError("Invalid input of AD object. Please initialize AD with int, float, list or array of numbers.")
+        #     self.val = np.array(val)
+        #
+        #     if der is None:
+        #         self._der = np.ones(len(self))
+        #         self._der2 = np.zeros(len(self))
+        #     else:
+        #         self._der = der
+        #         self._der2 = der2
+        # else:
+        #     raise TypeError("You need to initialize VAD with a list or a np.array. Otherwise, please use AD.")
+        #
+        # self.higher = None
+        # if isinstance(order, numbers.Integral) and order > 2:
+        #     if len(self) == 1:
+        #         self.higher = np.array([0] * order)
+        #         self.higher[0] = self._der
+        #         self.higher[1] = self._der2
+        #     else:
+        #         raise Exception("Cannot handle higher order derivatives for vector function")
 
     def __str__(self):
         """
@@ -52,8 +70,9 @@ class VAD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
-        """        
-        return "AD(value: {0}, first-order derivatives: {1}, second-order derivatives: {2})".format(self.val, self._der, self._der2)
+        """
+        return "VAD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tags,
+                                                                                             self.ders, self.ders2)
 
     def __repr__(self):
         """
@@ -64,9 +83,10 @@ class VAD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
-        """           
-        return "VAD(value: {0}, first-order derivatives: {1})".format(self.val,self._der)
-    
+        """
+        return "AD(value: {0}, tags: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tags,
+                                                                                             self.ders, self.ders2)
+
     def __len__(self):
         try:
             return len(self.val)
@@ -194,21 +214,27 @@ class VAD():
     
                 Returns:
                         new_self (AD): the new AD object after applying addition
-        """      
-        if isinstance(other, VAD): 
-            new_val = self.val + other.val
-            new_der = self._der + other._der
-            new_der2 = self._der2 + other._der2
-            return VAD(val = new_val, der = new_der, der2 = new_der2)
-
-        # elif isinstance(other, int) or isinstance(other, float):
-        else:
-            try:
-                new_val = self.val + other
-                return VAD(val = new_val, der = self._der, der2 = self._der2)
-        
-            except:
-                raise TypeError("Invalid type. An AD object could only be added with AD or int or float.")
+        """
+        AD_result = self.variables + other
+        new_val = np.array([0.0]*len(AD_result))
+        for i in range(len(AD_result)):
+            new_val[i] = AD_result[i].val
+        return VAD(new_val, self.ders, self.ders2)
+        #
+        # if isinstance(other, VAD):
+        #     new_val = self.val + other.val
+        #     new_der = self._der + other._der
+        #     new_der2 = self._der2 + other._der2
+        #     return VAD(val = new_val, der = new_der, der2 = new_der2)
+        #
+        # # elif isinstance(other, int) or isinstance(other, float):
+        # else:
+        #     try:
+        #         new_val = self.val + other
+        #         return VAD(val = new_val, der = self._der, der2 = self._der2)
+        #
+        #     except:
+        #         raise TypeError("Invalid type. An AD object could only be added with AD or int or float.")
 
     def __radd__(self, other):
         """
@@ -557,8 +583,11 @@ def hessian(func):
 
 if __name__ == "__main__":
     x = VAD([1,2,3])
-    f1 = x*x*[2,3,4]
-    f2 = x + [2,3,4]
-    print(f1)
-    print("Jacobian: ", jacobian([f1,f2]))
-    print("Hessian: ", hessian(f1))
+    print(x)
+    f = x.variables[0]+x.variables[1]
+    g = x+3
+    print(f)
+    print(x.variables[2])
+    print(g)
+    h = f + x.variables[2]
+    print(h)
