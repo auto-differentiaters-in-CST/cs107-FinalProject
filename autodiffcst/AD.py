@@ -79,8 +79,8 @@ class AD():
 
         self.tag = tag if isinstance(tag, np.ndarray) else np.array([tag])
         
-        print(der)
-        print(type(der))
+        # print(der)
+        # print(type(der))
         # if der != None:
         if isinstance(der, np.ndarray):
             self.der = der
@@ -238,68 +238,98 @@ class AD():
         return self + other
     
     # Substraction
-    @_vectorize
+    # @_vectorize
+    # def __sub__(self, other):
+    #     """
+    #     Overwrites the __sub__ dunder method to apply substraction to an AD object.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied substraction to
+    #                     other (AD or int or float): the object to be substracted from self
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying substraction
+    #     """          
+    #     # other_tag = other.tag
+    #     try:
+    #         tag1 = self.tag
+    #         tag2 = other.tag
+
+    #         new_der = self.der.copy()
+    #         new_tag = self.tag.copy()
+        
+    #         for tag_i in tag2:
+    #             if tag_i in tag1:
+    #                 new_der[tag_i] -= other.der[tag_i]
+    #             else:
+    #                 new_der[tag_i] = -1 * other.der[tag_i]
+    #                 new_tag.append(tag_i)
+        
+    #         new_val = self.val - other.val
+    #         new_self = AD(new_val, new_tag, der = new_der)
+    #         return new_self
+
+    #     except AttributeError:
+    #         if isinstance(other, int) or isinstance(other, float):
+    #             new_val = self.val - other
+    #             new_self = AD(new_val, self.tag, der = self.der)
+    #             return new_self
+    #         else:
+    #             raise TypeError("Invalid type.")
+
+    # @_vectorize
+    # def __rsub__(self, other):
+    #     """
+    #     Overwrites the __rsub__ dunder method to apply substraction to an AD object 
+    #     when the AD object is on the right side of the substraction sign.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied substraction to
+    #                     other (AD or int or float): the object to be substracted from self
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying substraction
+    #     """            
+    #     return (self - other)*(-1)
+
+    # @_vectorize
+    # def __isub__(self, other):
+    #     """
+    #     Overwrites the __isub__ dunder method to apply substraction to an AD object when the operation "-=" is used.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied substraction to
+    #                     other (AD or int or float): the object to be substracted from self
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying substraction
+    #     """          
+    #     return self - other
+
+    # Division
     def __sub__(self, other):
         """
         Overwrites the __sub__ dunder method to apply substraction to an AD object.
     
                 Parameters:
                         self (AD): An AD object to be applied substraction to
-                        other (AD or int or float): the object to be substracted from self
+                        other (AD or valid input for the numpy operation): the object to be substracted from self
     
                 Returns:
                         new_self (AD): the new AD object after applying substraction
-        """          
-        # other_tag = other.tag
-        try:
-            tag1 = self.tag
-            tag2 = other.tag
-
-            new_der = self.der.copy()
-            new_tag = self.tag.copy()
-        
-            for tag_i in tag2:
-                if tag_i in tag1:
-                    new_der[tag_i] -= other.der[tag_i]
-                else:
-                    new_der[tag_i] = -1 * other.der[tag_i]
-                    new_tag.append(tag_i)
-        
-            new_val = self.val - other.val
-            new_self = AD(new_val, new_tag, der = new_der)
-            return new_self
-
-        except AttributeError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = self.val - other
-                new_self = AD(new_val, self.tag, der = self.der)
-                return new_self
-            else:
-                raise TypeError("Invalid type.")
-
-    @_vectorize
+        """      
+        return self + (-1)*other
+    
     def __rsub__(self, other):
-        """
-        Overwrites the __rsub__ dunder method to apply substraction to an AD object 
-        when the AD object is on the right side of the substraction sign.
+        return (-1)*self + other
     
-                Parameters:
-                        self (AD): An AD object to be applied substraction to
-                        other (AD or int or float): the object to be substracted from self
-    
-                Returns:
-                        new_self (AD): the new AD object after applying substraction
-        """            
-        return (self - other)*(-1)
-
-    @_vectorize
     def __isub__(self, other):
         """
         Overwrites the __isub__ dunder method to apply substraction to an AD object when the operation "-=" is used.
     
                 Parameters:
                         self (AD): An AD object to be applied substraction to
-                        other (AD or int or float): the object to be substracted from self
+                        other (AD or valid input for the numpy operation): the object to be substracted from self
     
                 Returns:
                         new_self (AD): the new AD object after applying substraction
@@ -307,85 +337,69 @@ class AD():
         return self - other
 
     # Mod
-    @_vectorize
-    def __mod__(self, other):
-        """
-        Overwrites the __mod__ dunder method to apply mod to an AD object.
+    # @_vectorize
+    # def __mod__(self, other):
+    #     """
+    #     Overwrites the __mod__ dunder method to apply mod to an AD object.
     
-                Parameters:
-                        self (AD): An AD object to be applied mod to
-                        other (int or float): the number that self is modded by
+    #             Parameters:
+    #                     self (AD): An AD object to be applied mod to
+    #                     other (int or float): the number that self is modded by
     
-                Returns:
-                        new_self (AD): the new AD object after applying mod
-        """           
-        if isinstance(other, int) or isinstance(other, float):
-            new_val = self.val % other
-            new_self = AD(new_val, self.tag, der = self.der)
-            return new_self
-        else:
-            raise TypeError("You can only mode by an integer or a float.")
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying mod
+    #     """           
+    #     if isinstance(other, int) or isinstance(other, float):
+    #         new_val = self.val % other
+    #         new_self = AD(new_val, self.tag, der = self.der)
+    #         return new_self
+    #     else:
+    #         raise TypeError("You can only mode by an integer or a float.")
 
-    @_vectorize
-    def __imod__(self, other):
-        """
-        Overwrites the __imod__ dunder method to apply mod to an AD object when the operation "%=" is used.
+    # @_vectorize
+    # def __imod__(self, other):
+    #     """
+    #     Overwrites the __imod__ dunder method to apply mod to an AD object when the operation "%=" is used.
     
-                Parameters:
-                        self (AD): An AD object to be applied mod to
-                        other (int or float): the number that self is modded by
+    #             Parameters:
+    #                     self (AD): An AD object to be applied mod to
+    #                     other (int or float): the number that self is modded by
     
-                Returns:
-                        new_self (AD): the new AD object after applying mod
-        """          
-        return self % other
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying mod
+    #     """          
+    #     return self % other
     
-    
-    ## Multiplication
-    @_vectorize
     def __mul__(self, other):
         """
-        Overwrites the __mul__ dunder method to apply multiplication to an AD object.
+        Overwrites the __add__ dunder method to apply addition to an AD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied multiplication to
-                        other (AD or int or float): the object to be multiplied to self
+                        self (AD): An AD object to be applied addition to
+                        other (AD or int or float): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying multiplication
-        """           
+                        new_self (AD): the new AD object after applying addition
+        """        
         try:
-            self_tag = self.tag
-            other_tag = other.tag
-
-            new_tag = self.tag.copy()
-            new_der = self.der.copy()
-
-            for var in self_tag:
-                if var in other_tag:
-                    new_der[var] = self.der[var] * other.val + other.der[var] * self.val 
-                else:
-                    new_der[var] = self.der[var] * other.val
-            for var in other_tag:
-                if var not in self.tag:
-                    new_der[var] = other.der[var] * self.val
-                    new_tag.append(var)
+            new_der = self.der * other.val + self.val * other.der
+            new_der2 = self.val*other.der2 + 2*other.der*self.der+other.val*self.der2
             new_val = self.val * other.val
-            new_self = AD(new_val, new_tag, der = new_der)
-            return new_self
-
+            new_tag = np.nonzero(new_der)
+            
+            return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+            
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val * other
-                new_der = {}
-                for var in self.tag:
-                    new_der[var] = self.der[var] * other
-                new_self = AD(new_val, self.tag, new_der)
+                new_der = self.der * other 
+                new_der2 = self.der2 * other
+
+                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
                 return new_self
             else:
                 raise TypeError("Invalid type.")
 
-    @_vectorize
     def __rmul__(self, other):
         """
         Overwrites the __rmul__ dunder method to apply multiplication to an AD object 
@@ -400,7 +414,6 @@ class AD():
         """            
         return self * other
 
-    @_vectorize
     def __imul__(self, other):
         """
         Overwrites the __imul__ dunder method to apply multiplication to an AD object when the operation "*=" is used.
@@ -416,7 +429,6 @@ class AD():
     
     
     ## Division
-    @_vectorize
     def __truediv__(self, other):
         """
         Overwrites the __truediv__ dunder method to apply division to an AD object.
@@ -427,10 +439,10 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying division
-        """           
-        return self * (other ** (-1))
+        """
+        return self * (other ** (-1.0))
 
-    @_vectorize
+    
     def __rtruediv__(self, other):
         """
         Overwrites the __rtruediv__ dunder method to apply division to an AD object 
@@ -449,15 +461,15 @@ class AD():
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other / self.val
-                new_der = {}
-                for var in self.tag:
-                    new_der[var] = self.der[var] * -1 * other / (self.val ** 2)
-                new_self = AD(new_val, self.tag, new_der)                
+                new_der = self.der * -1 * other / (self.val ** 2)
+                # add second-order
+                new_der2 = self.der2 * -1 * other / (self.der ** 2)
+                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)              
                 return new_self
             else:
-                raise TypeError("Invalid type.")
+                raise TypeError("Invalid division type.")
 
-    @_vectorize
+    
     def __itruediv__(self, other):
         """
         Overwrites the __itruediv__ dunder method to apply division to an AD object when the operation "/=" is used.
@@ -470,10 +482,64 @@ class AD():
                         new_self (AD): the new AD object after applying division
         """          
         return self / other
+    # # @_vectorize
+    # def __truediv__(self, other):
+    #     """
+    #     Overwrites the __truediv__ dunder method to apply division to an AD object.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied division to
+    #                     other (AD or int or float): the object that self is divided by
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying division
+    #     """           
+    #     return self * (other ** (-1))
+
+    # # @_vectorize
+    # def __rtruediv__(self, other):
+    #     """
+    #     Overwrites the __rtruediv__ dunder method to apply division to an AD object 
+    #     when the AD object is on the right side of the division sign.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied division to
+    #                     other (AD or int or float): the object that self is divided by
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying division
+    #     """            
+    #     try:
+    #         return other / self
+        
+    #     except RecursionError:
+    #         if isinstance(other, int) or isinstance(other, float):
+    #             new_val = other / self.val
+    #             new_der = {}
+    #             for var in self.tag:
+    #                 new_der[var] = self.der[var] * -1 * other / (self.val ** 2)
+    #             new_self = AD(new_val, self.tag, new_der)                
+    #             return new_self
+    #         else:
+    #             raise TypeError("Invalid type.")
+
+    # @_vectorize
+    # def __itruediv__(self, other):
+    #     """
+    #     Overwrites the __itruediv__ dunder method to apply division to an AD object when the operation "/=" is used.
+    
+    #             Parameters:
+    #                     self (AD): An AD object to be applied division to
+    #                     other (AD or int or float): the object that self is divided by
+    
+    #             Returns:
+    #                     new_self (AD): the new AD object after applying division
+    #     """          
+    #     return self / other
     
     
   ## power
-    @_vectorize
+    # @_vectorize
     def __pow__(self, other):
         """
         Overwrites the __pow__ dunder method to apply power function to an AD object.
@@ -486,42 +552,69 @@ class AD():
                         new_self (AD): the new AD object after applying power function
         """           
         try:
-            self_tag = self.tag
-            other_tag = other.tag
-    
-            new_tag = self.tag.copy()
-            new_der = self.der.copy()
-            
-            factor = self.val ** (other.val - 1)
-            for var in self_tag:
-                term_1 = other.val * self.der[var]
-                if var in other_tag:
-                    new_der[var] = factor * (term_1 + math.log(self.val) * self.val * other.der[var])
-                else:
-                    new_der[var] = factor * term_1
-            for var in other_tag:
-                if var not in self.tag:
-                    term_2 = math.log(self.val) * self.val * other.der[var]
-                    new_der[var] = factor * term_2
-                    new_tag.append(var)
+            self_der = other.val * self.val**(other.val - 1) * self.der 
+            other_der = self.val ** other.val* np.log(self.val) * other.der
+            new_der = self_der + other_der
+
+            self_der2 = other.val * (other.val - 1)* self.val **(other.val - 2) * self.der2 
+            # may need to change
+            other_der2 = self.val ** other.val* np.log(self.val) * other.der2
+            new_der2 = self_der2 + other_der2
+
             new_val = self.val ** other.val
-            new_self = AD(new_val, new_tag, der = new_der)
-            return new_self
+            new_tag = np.nonzero(new_der)
+            
+            return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+       
+            # self_tag = self.tag
+            # other_tag = other.tag
+    
+            # new_tag = self.tag.copy()
+            # new_der = self.der.copy()
+            
+            # factor = self.val ** (other.val - 1)
+            # for var in self_tag:
+            #     term_1 = other.val * self.der[var]
+            #     if var in other_tag:
+            #         new_der[var] = factor * (term_1 + math.log(self.val) * self.val * other.der[var])
+            #     else:
+            #         new_der[var] = factor * term_1
+            # for var in other_tag:
+            #     if var not in self.tag:
+            #         term_2 = math.log(self.val) * self.val * other.der[var]
+            #         new_der[var] = factor * term_2
+            #         new_tag.append(var)
+            # new_val = self.val ** other.val
+            # new_self = AD(new_val, new_tag, der = new_der)
+            # return new_self
     
         except AttributeError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = self.val ** other
-                new_der = {}
-                for var in self.tag:
-                    new_der[var] = (self.val ** (other - 1)) * other * self.der[var]
-                new_self = AD(new_val, self.tag, new_der)
+            if isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
+                try:
+                    other = float(other)
+                except:
+                    other = np.array([float(i) for i in other])
 
+                new_val = self.val ** other
+                new_der = (self.val ** (other - 1)) * other * self.der
+                new_der2 = (self.val ** (other - 2)) * other * (other-1) * self.der
+            
+                new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+       
                 return new_self
+            # if isinstance(other, int) or isinstance(other, float):
+            #     new_val = self.val ** other
+            #     new_der = {}
+            #     for var in self.tag:
+            #         new_der[var] = (self.val ** (other - 1)) * other * self.der[var]
+            #     new_self = AD(new_val, self.tag, new_der)
+
+            #     return new_self
 
             else:
-                raise TypeError("Invalid type.")
+                raise TypeError("Invalid power type.")
 
-    @_vectorize
+    # @_vectorize
     def __ipow__(self, other):
         """
         Overwrites the __ipow__ dunder method to apply power function to an AD object when the operation "**=" is used.
@@ -535,7 +628,7 @@ class AD():
         """          
         return self ** other
 
-    @_vectorize
+    # @_vectorize
     def __rpow__(self, other):
         """
         Overwrites the __rpow__ dunder method to apply power function to an AD object 
@@ -554,10 +647,12 @@ class AD():
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other ** self.val
-                new_der = {}
-                for var in self.tag:
-                    new_der[var] = math.log(other) * (new_val) * self.der[var]
-                new_self = AD(new_val, self.tag, new_der)  
+                new_der = np.log(other) * (new_val) * self.der
+                # may need to change
+                new_der2 = np.log(other) * (new_val) * self.der2
+                
+                new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+       
                 return new_self
             else:
                 raise TypeError("Invalid type.") 

@@ -20,7 +20,6 @@ class VAD():
                 Returns:
                         None, but initializes an AD object when called
         """
-        # Make der and der2 'private' variables so that users cannot input weird derivatives like "a"
         self.val = np.array(val)
         if der is None:
             self.der = np.eye(len(self))
@@ -31,45 +30,12 @@ class VAD():
         self.tag = np.array([i for i in range(len(self))])
 
         self.size = len(self)
-        print(self.der[0], self.der2[0])
-        #self.tag = np.array(["x"+str(i) for i in range(len(self.val))])
-        #arr_ad = np.array([None]*len(self.val))
+        
         arr_ad = np.array([None]*len(self))
         for i in range(len(self)):
             arr_ad[i] = ad.AD(val=self.val[i], tag=self.tag[i], size = self.size,
                             der=self.der[i], der2=self.der2[i])
         self.variables = arr_ad
-
-
-
-
-
-        #
-        #
-        # if isinstance(val, list) or isinstance(val, np.ndarray):
-        #
-        #     for v in val:
-        #         if not isinstance(val, numbers.Integral) and isinstance(val, float):
-        #             raise ValueError("Invalid input of AD object. Please initialize AD with int, float, list or array of numbers.")
-        #     self.val = np.array(val)
-        #
-        #     if der is None:
-        #         self._der = np.ones(len(self))
-        #         self._der2 = np.zeros(len(self))
-        #     else:
-        #         self._der = der
-        #         self._der2 = der2
-        # else:
-        #     raise TypeError("You need to initialize VAD with a list or a np.array. Otherwise, please use AD.")
-        #
-        # self.higher = None
-        # if isinstance(order, numbers.Integral) and order > 2:
-        #     if len(self) == 1:
-        #         self.higher = np.array([0] * order)
-        #         self.higher[0] = self._der
-        #         self.higher[1] = self._der2
-        #     else:
-        #         raise Exception("Cannot handle higher order derivatives for vector function")
 
     def __str__(self):
         """
@@ -105,12 +71,12 @@ class VAD():
 
     ## getter
     def __getitem__(self, pos):
-        return self.val[pos]
+        return self.variables[pos]
 
 
     ## setter, Do we want this?
-    def __setitem__(self, pos, val):
-        self.val[pos] = val
+    def __setitem__(self, pos, newAD):
+        self.variables[pos] = newAD
         
     # Comparison Equal
     def __eq__(self, other):
@@ -226,26 +192,9 @@ class VAD():
                         new_self (AD): the new AD object after applying addition
         """
         AD_result = self.variables + other
-        new_val = np.array([0.0]*len(AD_result))
-        for i in range(len(AD_result)):
-            new_val[i] = AD_result[i].val
+        new_val = np.array([AD_result[i].val for i in range(len(self))])
         return VAD(new_val, self.der, self.der2)
-        #
-        # if isinstance(other, VAD):
-        #     new_val = self.val + other.val
-        #     new_der = self._der + other._der
-        #     new_der2 = self._der2 + other._der2
-        #     return VAD(val = new_val, der = new_der, der2 = new_der2)
-        #
-        # # elif isinstance(other, int) or isinstance(other, float):
-        # else:
-        #     try:
-        #         new_val = self.val + other
-        #         return VAD(val = new_val, der = self._der, der2 = self._der2)
-        #
-        #     except:
-        #         raise TypeError("Invalid type. An AD object could only be added with AD or int or float.")
-
+        
     def __radd__(self, other):
         """
         Overwrites the __radd__ dunder method to apply addition to an AD object 
@@ -347,23 +296,13 @@ class VAD():
     
                 Returns:
                         new_self (AD): the new AD object after applying multiplication
-        """        
-        if isinstance(other, VAD):
-            new_val = self.val * other.val
-            new_der = self._der*other.val + self.val*other._der
-            new_der2 = self.val*other._der2 + 2*other._der*self._der+other.val*self._der2#self._der2 + other.val
-            return VAD(val = new_val, der = new_der, der2 = new_der2)
-        # elif isinstance(other, int) or isinstance(other, float):
-        else:
-            try:
-                # other = np.array([other])
-                new_val = self.val * other
-                new_der = self._der * other
-                
-                new_der2 = self._der2 * other
-                return VAD(val = new_val, der = new_der, der2 = new_der2)
-            except:
-                raise TypeError("Invalid type. An VAD object could only be multiply by list or array or int or float.")
+        """     
+        AD_result = self.variables / other
+
+        new_val = np.array([AD_result[i].val for i in range(len(self))])
+        new_der = np.array([AD_result[i].der for i in range(len(self))])
+        new_der2 = np.array([AD_result[i].der2 for i in range(len(self))])
+        return VAD(new_val, new_der, new_der2)  
 
     def __rmul__(self, other):
         """
@@ -405,11 +344,13 @@ class VAD():
                 Returns:
                         new_self (AD): the new AD object after applying division
         """
-        if isinstance(other, list):
-            other = np.array(other)
+        AD_result = self.variables / other
 
-        return self * (other ** (-1.0))
-
+        new_val = np.array([AD_result[i].val for i in range(len(self))])
+        new_der = np.array([AD_result[i].der for i in range(len(self))])
+        new_der2 = np.array([AD_result[i].der2 for i in range(len(self))])
+        return VAD(new_val, new_der, new_der2)  
+        
     
     def __rtruediv__(self, other):
         """
@@ -423,15 +364,16 @@ class VAD():
                 Returns:
                         new_self (AD): the new AD object after applying division
         """            
+        
         try:
             return other / self
         
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other / self.val
-                new_der = self._der * -1 * other / (self.val ** 2)
+                new_der = self.der * -1 * other / (self.val ** 2)
                 # add second-order
-                new_der2 = self._der2 * -1 * other / (self._der ** 2)
+                new_der2 = self.der2 * -1 * other / (self.der ** 2)
                 new_self = VAD(new_val, new_der, new_der2)                
                 return new_self
             else:
@@ -465,41 +407,12 @@ class VAD():
                 Returns:
                         new_self (AD): the new AD object after applying power function
         """           
-        try:
-            self_der = other.val * self.val**(other.val - 1) * self._der 
-            other_der = self.val ** other.val* np.log(self.val) * other._der
-            new_der = self_der + other_der
+        AD_result = self.variables ** other
 
-            new_val = self.val ** other.val
-
-            self_der2 = other.val * (other.val - 1)* self.val **(other.val - 2) * self._der2 
-            # may need to change
-            other_der2 = self._val ** other._val* np.log(self._val) * other._der2
-            new_der2 = self_der2 + other_der2
-            
-            # add second order
-            return VAD(new_val, new_der, new_der2)
-            
-    
-        except AttributeError:
-        
-
-            if isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
-                try:
-                    other = float(other)
-                except:
-                    other = np.array([float(i) for i in other])
-
-                new_val = self.val ** other
-                new_der = (self.val ** (other - 1)) * other * self._der
-                new_der2 = (self.val ** (other - 2)) * other * (other-1) * self._der
-            
-                new_self = VAD(new_val, new_der, self._der2)
-
-                return new_self
-
-            else:
-                raise TypeError("Invalid type. Vectorized AD could only operate with int, float, list or np.ndarray. ")
+        new_val = np.array([AD_result[i].val for i in range(len(self))])
+        new_der = np.array([AD_result[i].der for i in range(len(self))])
+        new_der2 = np.array([AD_result[i].der2 for i in range(len(self))])
+        return VAD(new_val, new_der, new_der2)   
 
     
     def __ipow__(self, other):
@@ -534,8 +447,8 @@ class VAD():
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = other ** self.val
-                new_der = np.log(other) * (new_val) * self._der
-                new_der2 = np.log(other) * (new_val) * self._der2
+                new_der = np.log(other) * (new_val) * self.der
+                new_der2 = np.log(other) * (new_val) * self.der2
                 new_self = VAD(new_val, new_der, new_der2)  
                 return new_self
             else:
@@ -557,15 +470,15 @@ class VAD():
         """   
         if order == 1:
             if not direction:
-                return self._der
+                return self.der
             else:
                 
-                return np.take(self._der, direction)
+                return np.take(self.der, direction)
         elif order == 2:
             if not direction:
-                return self._der2
+                return self.der2
             else:
-                return self._der2[direction]
+                return self.der2[direction]
         else:
             raise Exception("Sorry, this model can only handle first order or second order derivatives")
 
@@ -593,17 +506,22 @@ def hessian(func):
 
 if __name__ == "__main__":
     x = VAD([1,2,3])
-    print(x)
+    # print(x)
+    print("case1")
     print(x.variables[2])
     print("----------------")
-    f = x.variables[0]+x.variables[1]
+    print("case2")
+    f = x.variables[1]**x.variables[2]
     print(f)
     print("----------------")
-    g = x+3
+    print("case3")
+    g = x/3
     print(g)
     print("----------------")
-    h = f + x.variables[2]
+    print("case4")
+    h = f - x.variables[2]
     print(h)
     print("----------------")
+    print("case5")
     y = 10 + h
     print(y)
