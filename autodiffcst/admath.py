@@ -5,6 +5,8 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import numpy as np
 import sympy as sp
+#import AD as AD
+#import AD_vec as VAD
 import autodiffcst.AD as AD
 import autodiffcst.AD_vec as VAD
 
@@ -93,8 +95,8 @@ def abs(ad):
         if ad.higher is None:
             return chain_rule(ad, new_val, der, der2)
         else:
-            higher_der = np.array([new_val]*len(ad.higher))
-            #print(higher_der)
+            higher_der = np.array([0.0]*len(ad.higher))
+            higher_der[0] = der
             return chain_rule(ad, new_val, der, der2, higher_der)
     elif isinstance(ad, VAD.VAD):
         AD_result = np.array([abs(advar) for advar in ad.variables])
@@ -137,7 +139,19 @@ def exp(ad):
             raise TypeError("Your input is not valid.")
 
 
-
+def fact_ad(x,n):
+    """
+    Returns x(x-1)(x-2)...(x-n+1), the product of n terms, factorial-like operation
+            Parameters:
+                    x, n: two scalars
+            Returns:
+                    x(x-1)(x-2)...(x-n+1): scalar
+    """
+    prod = 1
+    for i in range(n):
+        prod = prod * (x-i)
+    return prod
+    
 
 def log(ad): #consider different base?
     """
@@ -153,23 +167,30 @@ def log(ad): #consider different base?
         new_val = np.log(ad.val)
         der = 1/ad.val
         der2 = -1/ad.val**2
-        return chain_rule(ad, new_val, der, der2)
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            # starting from the first derivative: x**-1
+            higher_der = np.array([0.0]*len(ad.higher))
+            #print(higher_der)
+            higher_der[0] = der
+            higher_der[1] = der2
+            for i in range(2,len(ad.higher)):
+                n = i + 1
+                coef = fact_ad(-1,n-1)
+                mainval = math.pow(ad.val[0],-n)
+                higher_der[i] = coef*mainval
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([log(advar) for advar in ad.variables])
+        return set_VAD(AD_result) 
     else:
-        return np.log(ad)
+        try:
+            return np.log(ad)
+        except:
+            raise TypeError("Your input is not valid.")
 
-def fact_ad(x,n):
-    """
-    Returns x(x-1)(x-2)...(x-n+1), the product of n terms, factorial-like operation
-            Parameters:
-                    x, n: two scalars
-            Returns:
-                    x(x-1)(x-2)...(x-n+1): scalar
-    """
-    prod = 1
-    for i in range(n):
-        prod = prod * (x-i)
-    return prod
-    
+
 
 def pow(ad, y):
     """
@@ -179,24 +200,38 @@ def pow(ad, y):
             Returns:
                     new_ad (AD): the new AD object after applying power function with power y
     """
-    if isinstance(y, AD.AD):
-        raise TypeError("Error: y cannot be an AD object.")
-    if isinstance(ad, AD.AD):
-        new_val = np.pow(ad.val, y)
-        der = y * np.pow(ad.val, y - 1)
-        der2 = y * (y-1) * np.pow(ad.val, y-2)
+    if isinstance(ad, AD.AD) and isinstance(y,numbers.Number):
+        new_val = np.power(ad.val, y)
+        der = y * np.power(ad.val, y - 1)
+        der2 = y * (y-1) * np.power(ad.val, y-2)
         if ad.higher is None:
             return chain_rule(ad, new_val, der, der2)
         else:
-            higher_der = np.array([0.0]*len(ad.higher))
+            higher_der = np.array([1.0]*len(ad.higher))
             for i in range(len(ad.higher)):
                 n = i + 1
                 # derivative d(i+1) = y(y-1)...(y-n+1) ad.val **(y-i-1)
                 # for example: f = x**6, d(1) = 6*x**5, d(2) = 6*5*x**4, d(3) = 6*5*4*x**3 
                 # so for d(n)=d(i+1), the power after x is y-(i+1), 
                 #                     the coef is y(y-1)...(y-i)=y(y-1)...(y-(n-1)) (product of n terms)
-                higher_der[i] = np.pow(ad.val,y-i) * fact_ad(ad.val,n)
-            print(higher_der)
+                
+                coef = fact_ad(y,n)
+                mainval = math.pow(ad.val[0],y-n)
+                higher_der[i] = coef*mainval
+                #     higher_der[i] = 0
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(y, AD.AD) and isinstance(ad,numbers.Number):
+        new_val = np.power(ad, y.val)
+        der = np.log(y.val) * new_val
+        der2 = np.log(y.val)**2 * new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([1.0]*len(ad.higher))
+            for i in range(len(ad.higher)):
+                n = i + 1
+                higher_der[i] = new_val * np.log(y.val) ** n
+                #     higher_der[i] = 0
             return chain_rule(ad, new_val, der, der2, higher_der)
     elif isinstance(ad, VAD.VAD):
         return ad**y 
@@ -386,6 +421,19 @@ def cosh(ad):
         except:
             raise TypeError("Your input is not valid.")
 
+def sech(ad):
+    """
+    Returns the new AD object after applying hyperbolic secant function.
+            Parameters:
+                    ad (AD): An AD object to be applied hyperbolic secant function on
+            Returns:
+                    new_ad (AD): the new AD object after applying hyperbolic secant function
+    """
+    try:
+        return 1/np.cosh(ad)
+    except:
+        raise TypeError("sec function can only handle number or array.")
+
 
 def tanh(ad):
     """
@@ -397,11 +445,23 @@ def tanh(ad):
             Returns:
                     new_ad (AD): the new AD object after applying hyperbolic tangent function
     """
+
+
     if isinstance(ad, AD.AD):
         new_val = tanh(ad.val)
         der = sech(ad.val)**2
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.tanh(ad)
+        der2 = -2*new_val*der
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher)/4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([tanh(advar) for advar in ad.variables])
+        return set_VAD(AD_result) 
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.tanh(ad)
+        except:
+            raise TypeError("Your input is not valid.")
