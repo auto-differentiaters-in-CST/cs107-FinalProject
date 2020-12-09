@@ -2,53 +2,10 @@ import math
 import numbers
 import numpy as np
 import warnings
-
-# def _vectorize(func):
-#     """
-#     Make a function that accepts 1 or 2 arguments work with input arrays (of
-#     length m) in the following array length combinations:
-
-#     - m x m
-#     - 1 x m
-#     - m x 1
-#     - 1 x 1
-#     """
-
-#     def vectorized_function(*args, **kwargs):
-#         if len(args) == 1:
-#             x = args[0]
-#             try:
-#                 return [vectorized_function(xi, **kwargs) for xi in x]
-#             except TypeError:
-#                 return func(x, **kwargs)
-
-#         elif len(args) == 2:
-#             x, y = args
-#             try:
-#                 return [vectorized_function(xi, yi, **kwargs)
-#                         for xi, yi in zip(x, y)]
-#             except TypeError:
-#                 try:
-#                     return [vectorized_function(xi, y, **kwargs) for xi in x]
-#                 except TypeError:
-#                     try:
-#                         return [vectorized_function(x, yi, **kwargs) for yi in y]
-#                     except TypeError:
-#                         return func(x, y, **kwargs)
-
-#     n = func.__name__
-#     m = func.__module__
-#     d = func.__doc__
-
-#     vectorized_function.__name__ = n
-#     vectorized_function.__module__ = m
-#     doc = 'Vectorized {0:} function\n'.format(n)
-#     if d is not None:
-#         doc += d
-#     vectorized_function.__doc__ = doc
-
-#     return vectorized_function
-
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from autodiffcst.admath import chain_rule,fact_ad,choose
 
 class AD():
 
@@ -234,20 +191,46 @@ class AD():
         """        
         try:
             new_der = self.der * other.val + self.val * other.der
-            new_der2 = self.val* other.der2 + 2*other.der*self.der+other.val*self.der2
+            new_der2 = self.val * other.der2 + 2*other.der*self.der+other.val*self.der2
             new_val = self.val * other.val
-            # new_tag = np.nonzero(new_der)
-            new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
-            return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
             
+            new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
+            # return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+            if self.higher is None or other.higher is None:
+                print("no higher case self,other",self.higher,other.higher)
+                return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+            else:
+                print("has higher case self,other",self.higher,other.higher)
+                higher_der = np.array([0.0] * len(self.higher))
+                for i in range(len(self.higher)):
+                    sumval = 0
+                    n = i #+ 1
+                    for k in range(n):
+                        sumval += choose(n,k) * self.higher[k-1] * other.higher[n-k-1]
+                    higher_der[i] = sumval
+                return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
+                # return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
+            
+
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val * other
                 new_der = self.der * other 
                 new_der2 = self.der2 * other
 
-                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-                return new_self
+                # new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
+                # return new_self
+                if self.higher is None:
+                    print("no higher case self,other#")
+                    new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
+                    return new_self
+                    
+                else:
+                    print("has higher case self,other#")
+                    higher_der = other * self.higher
+                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
+                    # return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
+
             else:
                 raise TypeError("Invalid type.")
 
@@ -347,20 +330,13 @@ class AD():
                         new_self (AD): the new AD object after applying power function
         """           
         try:
-            # if other.val == 1:
-            #     new_der = self.der
-
-            #     return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
-       
+            
             new_val = self.val ** other.val
-            # need to handle special case: self.val = 1, other.val = 1
+           
             self_der = other.val * self.val**(other.val - 1.0) * self.der 
             other_der = self.val ** other.val* np.log(self.val) * other.der
             new_der = self_der + other_der
 
-            # self_der2 = other.val * (other.val - 1.0)* self.val **(other.val - 2.0) * np.matmul(np.array([self.der]).T, np.array([self.der]))
-            # other_der2 = self.val ** other.val * np.log(self.val) * np.matmul(np.array([other.der]).T, np.array([other.der]))
-            # new_der2 = self_der2 + other_der2
             x = self.val
             y = other.val
             h = np.array([[(y-1)*y*x**(y-2), x**(y-1)+y*x**(y-1)*np.log(x)], [x**(y-1)+y*x**(y-1)*np.log(x), x**y*(np.log(x))**2]])
@@ -371,15 +347,12 @@ class AD():
             second_inner[0:-1,0:,0:] = np.array([self.der2, other.der2])
             new_der2 = np.matmul(hessian, np.matmul(first_inner.T, first_inner))+np.matmul(new_der, second_inner)
             
-            # new_tag = np.nonzero(new_der)
             new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
-            #print(new_der)
-            #print(new_tag)
-            
+            print("can't be here")
             return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
-       
     
         except AttributeError:
+            print("should be here")
             if isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
                 try:
                     other = float(other)
@@ -388,12 +361,23 @@ class AD():
 
                 new_val = self.val ** other
                 new_der = (self.val ** (other - 1)) * other * (np.matmul(np.array([self.der]).T, np.array([self.der])))
-                # new_der2 = (self.val ** (other - 2)) * other * (other-1) * (np.matmul(np.array([self.der]).T, np.array([self.der])))
-                # new_tag = np.nonzero(new_der)
+                
                 new_der2 = np.matmul(new_der.T, new_der)
-                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-       
-                return new_self
+
+                new_val = np.power(self.val, other)
+        
+                if self.higher is None:
+                    return chain_rule(self, new_val, new_der, new_der2)
+                else:
+                    higher_der = np.array([1.0]*len(self.higher))
+                    for i in range(len(self.higher)):
+                        n = i + 1
+                        
+                        coef = fact_ad(other,n)
+                        mainval = math.pow(self.val[0],other-n)
+                        higher_der[i] = coef*mainval
+                print("here")
+                return chain_rule(self, new_val, new_der, new_der2, higher_der)
 
             else:
                 raise TypeError("Invalid power type.")

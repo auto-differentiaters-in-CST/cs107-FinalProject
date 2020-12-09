@@ -26,6 +26,9 @@ def set_VAD(ADs):
     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD.VAD(new_val, new_der, new_der2)
 
+# Choose function
+def choose(n,k):
+    return np.math.factorial(n)/(np.math.factorial(k)*np.math.factorial(n-k))
 
 def chain_rule(ad, new_val, der, der2, higher_der = None):
     """
