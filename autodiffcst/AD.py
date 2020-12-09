@@ -1,7 +1,7 @@
 import math
 import numbers
 import numpy as np
-
+import warnings
 
 # def _vectorize(func):
 #     """
@@ -52,7 +52,7 @@ import numpy as np
 
 class AD():
 
-    def __init__(self, val, tag=None, der=None, der2=None,  size =None, order=2): 
+    def __init__(self, val, order=2, size = None, tag=None, der=None, der2=None,   higher=None): 
         """
         Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
     
@@ -69,7 +69,10 @@ class AD():
 
         self.val = val if isinstance(val, np.ndarray) else np.array([val])
         if der is None:
-            if isinstance(size, numbers.Integral):
+            if size is None:
+                self.size = 1
+                warnings.warn("Size is not specified. The default size is set to 1.", Warning)
+            elif isinstance(size, numbers.Integral):
                 self.size = size 
             else:
                 raise TypeError("Invalid size type. The size of AD can only be integers.")
@@ -82,23 +85,25 @@ class AD():
         if isinstance(der, np.ndarray):
             self.der = der
         else:
-
             self.der = np.zeros(self.size)
             self.der[tag] = 1
         
         if isinstance(der2, np.ndarray):
             self.der2 = der2
         else:
-            self.der = np.zeros((self.size,self.size))
+            self.der2 = np.zeros((self.size,self.size))
         
         self.order = order
+        self.higher= higher
         if isinstance(order, numbers.Integral) and order > 2:
             if len(self.val) == 1:
                 self.higher = np.array([0] * order)
                 self.higher[0] = self.der
                 self.higher[1] = self.der2
+                
             else:
                 raise Exception("Cannot handle higher order derivatives for multiple variables")
+    
 
 
     def __repr__(self):
@@ -367,7 +372,7 @@ class AD():
                 new_der = (self.val ** (other - 1)) * other * self.der
                 new_der2 = (self.val ** (other - 2)) * other * (other-1) * self.der
             
-                new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
        
                 return new_self
 
@@ -414,10 +419,10 @@ class AD():
                 return new_self
             else:
                 raise TypeError("Invalid type.") 
-
+    
 
     # Differentiation
-    def diff(self, direction=None):  
+    def diff(self, direction=None, order = 1):  
         """
         Calculate and return the derivatives of the function represented by an AD object.
     
@@ -429,14 +434,33 @@ class AD():
                         A dictionary (or float) representing the derivatives (or derivative) of the AD object, 
                         with directions indicted by the input direction
         """         
-        if direction == None:
-            return self.der
-        try:
-            return self.der[direction]
-        except KeyError:
-            raise Exception("Invalid direction")
+        
+        if order == 1:
+            if not direction:
+                return self.der
+            else:
+                return np.take(self.der, direction)
+        elif order == 2:
+            if not direction:
+                return self.der2
+            else:
+                return self.der2[direction]
+        else:
+            raise Exception("Orders should be 1 or 2. For other orders, please use higherdiff(order).")
 
 
+    # Calculate higher order derivatives
+    def higherdiff(self,order):
+        if not isinstance(order, numbers.Integral):
+            raise TypeError("Highest order of derivatives must be a positive integer.")
+        elif order < 1:
+            raise ValueError("Highest order of derivatives must be at least 1.")
+        elif order > len(self.higher):
+            print(order)
+            print(self.order)
+            raise ValueError("You asked for an order beyond what you stored.")
+
+        return self.higher[order-1]
 
 
 

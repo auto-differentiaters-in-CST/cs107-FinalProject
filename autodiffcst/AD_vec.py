@@ -9,7 +9,7 @@ import autodiffcst.admath as admath
 
 class VAD():
 
-    def __init__(self, val, der=None, der2=None):
+    def __init__(self, val, der=None, der2=None, order=2, higher=None):
         """
         Overwrites the __init__ dunder method to create a new VAD object with initial value and derivatives.
     
@@ -32,11 +32,45 @@ class VAD():
 
         self.size = len(self)
         
-        arr_ad = np.array([None]*len(self))
-        for i in range(len(self)):
-            arr_ad[i] = ad.AD(val=self.val[i], tag=self.tag[i], size = self.size,
-                            der=self.der[i], der2=self.der2[i])
-        self.variables = arr_ad
+        if not isinstance(order, numbers.Integral):
+            raise TypeError("Highest order of derivatives must be a positive integer.")
+        elif order < 1:
+            raise ValueError("Highest order of derivatives must be at least 1.")
+        elif order > 2 and self.size > 1:
+            raise Exception("We cannot handle derivatives of order > 2 for more than one scalar variables.")
+
+        self.order = order
+        self.higher = higher
+
+        if self.size > 1:
+            arr_ad = np.array([None]*len(self))
+            for i in range(len(self)):
+                arr_ad[i] = ad.AD(val=self.val[i], tag=self.tag[i], size = self.size,
+                                der=self.der[i], der2=self.der2[i])
+            self.variables = arr_ad
+        else:
+            arr_ad = np.array([None]*len(self))
+            arr_ad[0] = ad.AD(val=self.val[0], tag=self.tag[0], size = 1,
+                                der=self.der[0], der2=self.der2[0], 
+                                order=self.order, higher = self.higher)
+            self.variables = arr_ad
+
+        # self.val = np.array(val)
+        # if der is None:
+        #     self.der = np.eye(len(self))
+        #     self.der2 = np.zeros((len(self),len(self),len(self)))
+        # else:
+        #     self.der = der
+        #     self.der2 = der2
+        # self.tag = np.array([i for i in range(len(self))])
+
+        # self.size = len(self)
+        
+        # arr_ad = np.array([None]*len(self))
+        # for i in range(len(self)):
+        #     arr_ad[i] = ad.AD(val=self.val[i], tag=self.tag[i], size = self.size,
+        #                     der=self.der[i], der2=self.der2[i])
+        # self.variables = arr_ad
 
     def __str__(self):
         """
