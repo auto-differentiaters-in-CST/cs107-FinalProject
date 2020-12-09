@@ -151,7 +151,8 @@ class AD():
             new_der = self.der + other.der
             new_der2 = self.der2 + other.der2
             new_val = self.val + other.val
-            new_tag = np.nonzero(new_der)
+
+            new_tag = np.unique(np.concatenate((self.tag,other.tag),0))#np.nonzero(new_der)
             
             return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
             
@@ -235,8 +236,8 @@ class AD():
             new_der = self.der * other.val + self.val * other.der
             new_der2 = self.val* other.der2 + 2*other.der*self.der+other.val*self.der2
             new_val = self.val * other.val
-            new_tag = np.nonzero(new_der)
-            
+            # new_tag = np.nonzero(new_der)
+            new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
             return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
             
         except AttributeError:
@@ -351,18 +352,19 @@ class AD():
 
             #     return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
        
-
+            new_val = self.val ** other.val
             # need to handle special case: self.val = 1, other.val = 1
             self_der = other.val * self.val**(other.val - 1.0) * self.der 
             other_der = self.val ** other.val* np.log(self.val) * other.der
             new_der = self_der + other_der
 
-            self_der2 = other.val * (other.val - 1.0)* self.val **(other.val - 2.0) * self.der 
-            other_der2 = self.val ** other.val * np.log(self.val) * other.der
-            new_der2 = self_der2 + other_der2
-
-            new_val = self.val ** other.val
-            new_tag = np.nonzero(new_der)
+            # self_der2 = other.val * (other.val - 1.0)* self.val **(other.val - 2.0) * np.matmul(np.array([self.der]).T, np.array([self.der]))
+            # other_der2 = self.val ** other.val * np.log(self.val) * np.matmul(np.array([other.der]).T, np.array([other.der]))
+            # new_der2 = self_der2 + other_der2
+            new_der2 = np.matmul(new_der.T, new_der)
+            
+            # new_tag = np.nonzero(new_der)
+            new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
             #print(new_der)
             #print(new_tag)
             
@@ -377,11 +379,11 @@ class AD():
                     other = np.array([float(i) for i in other])
 
                 new_val = self.val ** other
-                new_der = (self.val ** (other - 1)) * other * self.der
-                new_der2 = (self.val ** (other - 2)) * other * (other-1) * self.der
-                new_tag = np.nonzero(new_der)
-            
-                new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+                new_der = (self.val ** (other - 1)) * other * (np.matmul(np.array([self.der]).T, np.array([self.der])))
+                # new_der2 = (self.val ** (other - 2)) * other * (other-1) * (np.matmul(np.array([self.der]).T, np.array([self.der])))
+                # new_tag = np.nonzero(new_der)
+                new_der2 = np.matmul(new_der.T, new_der)
+                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
        
                 return new_self
 
@@ -422,9 +424,9 @@ class AD():
                 new_der = np.log(other) * (new_val) * self.der
                 # may need to change
                 new_der2 = (np.log(other) ** 2) * (new_val) * self.der
-                new_tag = np.nonzero(new_der)
+                # new_tag = np.nonzero(new_der)
 
-                new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+                new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
        
                 return new_self
             else:

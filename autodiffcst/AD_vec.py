@@ -55,23 +55,6 @@ class VAD():
                                 order=self.order, higher = self.higher)
             self.variables = arr_ad
 
-        # self.val = np.array(val)
-        # if der is None:
-        #     self.der = np.eye(len(self))
-        #     self.der2 = np.zeros((len(self),len(self),len(self)))
-        # else:
-        #     self.der = der
-        #     self.der2 = der2
-        # self.tag = np.array([i for i in range(len(self))])
-
-        # self.size = len(self)
-        
-        # arr_ad = np.array([None]*len(self))
-        # for i in range(len(self)):
-        #     arr_ad[i] = ad.AD(val=self.val[i], tag=self.tag[i], size = self.size,
-        #                     der=self.der[i], der2=self.der2[i])
-        # self.variables = arr_ad
-
     def __str__(self):
         """
         Overwrites the __str__ dunder method to nicely turn an AD object into a string.
