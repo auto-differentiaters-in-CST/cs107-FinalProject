@@ -520,7 +520,6 @@ if __name__ == "__main__":
     '''
     print("----------------")
     print("case2")
-<<<<<<< HEAD
     
     f = 2**x.variables[1]
     print(f)
