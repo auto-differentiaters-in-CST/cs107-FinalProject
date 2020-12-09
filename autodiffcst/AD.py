@@ -52,7 +52,7 @@ import warnings
 
 class AD():
 
-    def __init__(self, val, order=2, size = None, tag=None, der=None, der2=None,   higher=None): 
+    def __init__(self, val, order=2, size = None, tag=None, der=None, der2=None,  higher=None): 
         """
         Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
     
@@ -61,7 +61,7 @@ class AD():
                         tag (string or list of strings): the tag, or variable names of the new AD object, such as "x" and "y". 
                         der (float or dict): derivatives of the new AD object. 
                                               A dictionary shall be used if the object contains multiple variables.
-                        mode (string: "forward" or "backward"): a string indicating the mode of the differentiation of the AD object.
+                        order (int): the highest order of derivatives the user wants to evaluate
     
                 Returns:
                         None, but initializes an AD object when called
@@ -363,8 +363,8 @@ class AD():
 
             new_val = self.val ** other.val
             new_tag = np.nonzero(new_der)
-            print(new_der)
-            print(new_tag)
+            #print(new_der)
+            #print(new_tag)
             
             return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
        
@@ -461,13 +461,25 @@ class AD():
 
     # Calculate higher order derivatives
     def higherdiff(self,order):
+        """
+        Return the derivative of the desired order. Only works for one scalar variable and one scalar function.
+    
+                Parameters:
+                        self (AD): the AD object whose derivatives will be calculated.
+                        order (string): the order of derivative
+    
+                Returns:
+                        the derivative of the given order evaluated at the point of self.val
+        """
         if not isinstance(order, numbers.Integral):
             raise TypeError("Highest order of derivatives must be a positive integer.")
         elif order < 1:
             raise ValueError("Highest order of derivatives must be at least 1.")
+        elif self.higher is None:
+            raise Exception("You didn't initialize higher order")
         elif order > len(self.higher):
-            print(order)
-            print(self.order)
+            #print(order)
+            #print(self.order)
             raise ValueError("You asked for an order beyond what you stored.")
 
         return self.higher[order-1]
