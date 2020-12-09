@@ -182,9 +182,9 @@ def pow(ad, y):
     if isinstance(y, AD.AD):
         raise TypeError("Error: y cannot be an AD object.")
     if isinstance(ad, AD.AD):
-        new_val = math.pow(ad.val, y)
-        der = y * math.pow(ad.val, y - 1)
-        der2 = y * (y-1) * math.pow(ad.val, y-2)
+        new_val = np.pow(ad.val, y)
+        der = y * np.pow(ad.val, y - 1)
+        der2 = y * (y-1) * np.pow(ad.val, y-2)
         if ad.higher is None:
             return chain_rule(ad, new_val, der, der2)
         else:
@@ -195,7 +195,7 @@ def pow(ad, y):
                 # for example: f = x**6, d(1) = 6*x**5, d(2) = 6*5*x**4, d(3) = 6*5*4*x**3 
                 # so for d(n)=d(i+1), the power after x is y-(i+1), 
                 #                     the coef is y(y-1)...(y-i)=y(y-1)...(y-(n-1)) (product of n terms)
-                higher_der[i] = math.pow(ad.val,y-i) * fact_ad(ad.val,n)
+                higher_der[i] = np.pow(ad.val,y-i) * fact_ad(ad.val,n)
             print(higher_der)
             return chain_rule(ad, new_val, der, der2, higher_der)
     elif isinstance(ad, VAD.VAD):
