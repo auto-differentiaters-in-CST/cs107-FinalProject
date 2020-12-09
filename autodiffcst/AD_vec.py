@@ -5,6 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import autodiffcst.AD as ad
+import autodiffcst.admath as admath
 
 class VAD():
 
@@ -498,6 +499,15 @@ def hessian(func):
     hessian = np.eye(len(func))*der2
     return hessian
 
+def sin(vad):
+    AD_result = np.array([admath.sin(ad) for ad in vad.variables])
+    return set_VAD(AD_result)
+
+def cos(vad):
+    AD_result = np.array([admath.cos(ad) for ad in vad.variables])
+    return set_VAD(AD_result)
+
+
 if __name__ == "__main__":
     x = VAD([1,2,3])
     # print(x)
@@ -519,3 +529,12 @@ if __name__ == "__main__":
     print("case5")
     y = 10 + h
     print(y)
+    print("----------------")
+    print("case6")
+    y = sin(x)
+    print(y)
+    print("----------------")
+    print("case7")
+    y = cos(x)
+    print(y)
+

@@ -3,9 +3,11 @@ import numbers
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import autodiffcst.AD_vec as AD
+import autodiffcst.AD as AD
 import numpy as np
 import sympy as sp
+
+
 
 # def _vectorize(func):
 #     """
@@ -65,10 +67,10 @@ def chain_rule(ad, new_val, der, der2, higher_der = None):
             Returns:
                     new_ad (AD): a new AD object with correct value and derivatives
     """
-    new_der = der * ad._der
-    new_der2 = der * ad._der2 + der2 * np.dot(ad._der, ad._der.T)
+    new_der = der * ad.der
+    new_der2 = der * ad.der2 + der2 * np.matmul(np.array([ad.der]).T, np.array([ad.der]))
     if ad.higher is None:
-        new_ad = AD.AD(new_val, new_der, new_der2)
+        new_ad = AD.AD(new_val, tag=ad.tag, der=new_der, der2=new_der2)
     else:
         new_higher_der = np.array([0.0]*len(ad.higher))
         new_higher_der[0] = new_der
@@ -79,7 +81,7 @@ def chain_rule(ad, new_val, der, der2, higher_der = None):
             for k in range(1,n+1):
                 sum += higher_der[k-1]*sp.bell(n, k, ad.higher[0:n-k+1])
             new_higher_der[i] = sum
-        new_ad = AD.AD(new_val, new_der, new_der2, order = len(ad.higher))
+        new_ad = AD.AD(new_val,tag=ad.tag, der=new_der, der2=new_der2, order = len(ad.higher))
         new_ad.higher = new_higher_der
 
     return new_ad
@@ -231,16 +233,15 @@ def cos(ad):
     if isinstance(ad, AD.AD):
         new_val = cos(ad.val)
         der = -sin(ad.val)
-        der2 = -new_val
+        der2 = -cos(ad.val)
         if ad.higher is None:
             return chain_rule(ad, new_val, der, der2)
         else:
-            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher)/4)))
+            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
     else:
         return np.cos(ad)
-
 def tan(ad):
     """
     Returns the new AD object after applying tangent function.
