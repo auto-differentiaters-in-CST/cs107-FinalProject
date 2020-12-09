@@ -517,14 +517,6 @@ def hessian(func):
         raise TypeError("Invalid Type. Function should be an AD object.")
 
 
-def sin(vad):
-    AD_result = np.array([admath.sin(ad) for ad in vad.variables])
-    return set_VAD(AD_result)
-
-def cos(vad):
-    AD_result = np.array([admath.cos(ad) for ad in vad.variables])
-    return set_VAD(AD_result)
-
 
 if __name__ == "__main__":
     [x,y,z]= VAD([1,2,3])
