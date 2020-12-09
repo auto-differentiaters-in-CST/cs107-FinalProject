@@ -342,7 +342,6 @@ class AD():
             self_der = other.val * self.val**(other.val - 1) * self.der 
             other_der = self.val ** other.val* np.log(self.val) * other.der
             new_der = self_der + other_der
-
             self_der2 = other.val * (other.val - 1)* self.val **(other.val - 2) * self.der2 
             # may need to change
             other_der2 = self.val ** other.val * np.log(self.val) * other.der2
@@ -364,6 +363,7 @@ class AD():
                 new_val = self.val ** other
                 new_der = (self.val ** (other - 1)) * other * self.der
                 new_der2 = (self.val ** (other - 2)) * other * (other-1) * self.der
+                new_tag = np.nonzero(new_der)
             
                 new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
        
@@ -405,7 +405,8 @@ class AD():
                 new_val = other ** self.val
                 new_der = np.log(other) * (new_val) * self.der
                 # may need to change
-                new_der2 = np.log(other) * (new_val) * self.der2
+                new_der2 = (np.log(other) ** 2) * (new_val) * self.der
+                new_tag = np.nonzero(new_der)
 
                 new_self = AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
        
