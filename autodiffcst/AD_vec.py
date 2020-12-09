@@ -544,22 +544,29 @@ def cos(vad):
 
 
 if __name__ == "__main__":
-    x = VAD([1,2,3])
-    # print(x)
+    x = VAD([1,4,3])
+    [a,b,c] = VAD([1,2,3]) 
+    print(a.der)
+    '''
     print("case1")
     y = x * 3
     print(y.diff())
-
+    '''
     print("----------------")
     print("case2")
-    f = x.variables[1]**x.variables[2]
+    
+    f = 2**x.variables[1]
+    print(f)
+
+    '''
     print(jacobian([f]))
     print(hessian(f))
     print("----------------")
     print("case3")
     g = x/3
     print(g)
-    print("----------------")
+    print("--------------)
     print("case4")
     h = f - x.variables[2]
     print(h)
+    '''
