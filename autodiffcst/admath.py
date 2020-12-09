@@ -9,7 +9,6 @@ import autodiffcst.AD as AD
 import autodiffcst.AD_vec as VAD
 
 
-
 def set_VAD(ADs):
     """
     Uses the information of new ADs to generate a new VAD
@@ -281,7 +280,7 @@ def cos(ad):
             raise TypeError("Your input is not valid.")
 
 
-def tan(ad):
+def tan(ad): ## problem
     """
     Returns the new AD object after applying tangent function.
 
@@ -294,14 +293,37 @@ def tan(ad):
     if isinstance(ad, AD.AD):
         new_val = tan(ad.val)
         der = sec(ad.val)**2
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.tan(ad)
+        der2 = 2*tan(ad.val)*sec(ad.val)**2
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([tan(advar) for advar in ad.variables])
+        return set_VAD(AD_result) 
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.tan(ad)
+        except:
+            raise TypeError("Your input is not valid.")
 
 
 
+# helper function for tan
+def sec(num): 
+    """
+    Returns the new AD object after applying secant function.
+            Parameters:
+                    num: a number or array
+            Returns:
+                    the result after applying secant function
+    """
+    try:
+        return 1/np.cos(num)
+    except:
+        raise TypeError("sec function can only handle number or array.")
 
 
 # hyperbolic trig
@@ -318,11 +340,22 @@ def sinh(ad):
     if isinstance(ad, AD.AD):
         new_val = sinh(ad.val)
         der = cosh(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.sinh(ad)
+        der2 = sinh(ad.val)
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher)/4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([sinh(advar) for advar in ad.variables])
+        return set_VAD(AD_result) 
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.sinh(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
 
 def cosh(ad):
     """
@@ -337,11 +370,22 @@ def cosh(ad):
     if isinstance(ad, AD.AD):
         new_val = cosh(ad.val)
         der = sinh(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.cosh(ad)
+        der2 = new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher)/4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([cosh(advar) for advar in ad.variables])
+        return set_VAD(AD_result) 
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.cosh(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
 
 def tanh(ad):
     """
