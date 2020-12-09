@@ -61,7 +61,7 @@ class VAD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """
-        return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tag,
+        return "VAD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tag,
                                                                                              self.der, self.der2)
 
     def __len__(self):
@@ -178,7 +178,8 @@ class VAD():
                 
     ## Unary 
     def __neg__(self):
-        return self * (-1)
+        AD_result = self.variables * -1
+        return set_VAD(AD_result) 
 
     ## Addition
     def __add__(self, other):
