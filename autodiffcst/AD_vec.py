@@ -296,7 +296,7 @@ class VAD():
                 Returns:
                         new_self (AD): the new AD object after applying multiplication
         """     
-        AD_result = self.variables / other
+        AD_result = self.variables * other
         return set_VAD(AD_result)    
 
     def __rmul__(self, other):
@@ -475,7 +475,6 @@ def set_VAD(ADs):
     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD(new_val, new_der, new_der2)
 
-
 # jacobian
 def jacobian(funcs):
     diffs = []
@@ -502,7 +501,9 @@ if __name__ == "__main__":
     x = VAD([1,2,3])
     # print(x)
     print("case1")
-    print(x.variables[2])
+    y = x * 3
+    print(y.diff())
+
     print("----------------")
     print("case2")
     f = x.variables[1]**x.variables[2]
@@ -515,7 +516,4 @@ if __name__ == "__main__":
     print("case4")
     h = f - x.variables[2]
     print(h)
-    print("----------------")
-    print("case5")
-    y = 10 + h
-    print(y)
+    print(h.diff())
