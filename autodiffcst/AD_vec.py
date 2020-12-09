@@ -479,24 +479,25 @@ def set_VAD(ADs):
 # jacobian
 def jacobian(funcs):
     diffs = []
-    if isinstance(funcs,VAD):
+    if isinstance(funcs,VAD) or isinstance(funcs,ad.AD):
         return funcs.diff()
-    else:
+    elif isinstance(funcs,list) or isinstance(funcs,np.ndarray):
         for func in funcs:
-            if not isinstance(func, VAD):
-                raise TypeError("All functions should be VAD object.")
+            if not isinstance(func, ad.AD):
+                raise TypeError("Invalid Type. All functions should be AD object.")
             diffs.append(func.diff())
         return np.vstack(diffs)
 
 # hessian
 def hessian(func):
-    
-    if not isinstance(func, VAD):
-        raise TypeError("All functions should be VAD object.")
-    
-    der2 = func.diff(order = 2)
-    hessian = np.eye(len(func))*der2
-    return hessian
+    if isinstance(func, VAD):
+        raise TypeError("Invalid Type. Sorry, we cannot handle multiple functions for Hessian.")
+    elif isinstance(func, ad.AD):
+        hessian = func.der2
+        return hessian
+    else:
+        raise TypeError("Invalid Type. Function should be an AD object.")
+
 
 def sin(vad):
     AD_result = np.array([admath.sin(ad) for ad in vad.variables])
@@ -517,7 +518,8 @@ if __name__ == "__main__":
     print("----------------")
     print("case2")
     f = x.variables[1]**x.variables[2]
-    print(f)
+    print(jacobian([f]))
+    print(hessian(f))
     print("----------------")
     print("case3")
     g = x/3
