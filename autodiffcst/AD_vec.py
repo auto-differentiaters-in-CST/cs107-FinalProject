@@ -192,8 +192,7 @@ class VAD():
                         new_self (AD): the new AD object after applying addition
         """
         AD_result = self.variables + other
-        new_val = np.array([AD_result[i].val for i in range(len(self))])
-        return VAD(new_val, self.der, self.der2)
+        return set_VAD(AD_result)  
         
     def __radd__(self, other):
         """
@@ -298,11 +297,7 @@ class VAD():
                         new_self (AD): the new AD object after applying multiplication
         """     
         AD_result = self.variables / other
-
-        new_val = np.array([AD_result[i].val for i in range(len(self))])
-        new_der = np.array([AD_result[i].der for i in range(len(self))])
-        new_der2 = np.array([AD_result[i].der2 for i in range(len(self))])
-        return VAD(new_val, new_der, new_der2)  
+        return set_VAD(AD_result)    
 
     def __rmul__(self, other):
         """
@@ -345,11 +340,7 @@ class VAD():
                         new_self (AD): the new AD object after applying division
         """
         AD_result = self.variables / other
-
-        new_val = np.array([AD_result[i].val for i in range(len(self))])
-        new_der = np.array([AD_result[i].der for i in range(len(self))])
-        new_der2 = np.array([AD_result[i].der2 for i in range(len(self))])
-        return VAD(new_val, new_der, new_der2)  
+        return set_VAD(AD_result)   
         
     
     def __rtruediv__(self, other):
@@ -408,11 +399,7 @@ class VAD():
                         new_self (AD): the new AD object after applying power function
         """           
         AD_result = self.variables ** other
-
-        new_val = np.array([AD_result[i].val for i in range(len(self))])
-        new_der = np.array([AD_result[i].der for i in range(len(self))])
-        new_der2 = np.array([AD_result[i].der2 for i in range(len(self))])
-        return VAD(new_val, new_der, new_der2)   
+        return set_VAD(AD_result)  
 
     
     def __ipow__(self, other):
@@ -455,7 +442,6 @@ class VAD():
                 raise TypeError("Invalid type.") 
 
     
-
     def diff(self, direction=None, order = 1):
         """
         Calculate and return the derivatives of the function represented by an AD object.
@@ -481,6 +467,14 @@ class VAD():
                 return self.der2[direction]
         else:
             raise Exception("Sorry, this model can only handle first order or second order derivatives")
+
+# helper function
+def set_VAD(ADs):
+    new_val = np.array([ADs[i].val for i in range(len(self))])
+    new_der = np.array([ADs[i].der for i in range(len(self))])
+    new_der2 = np.array([ADs[i].der2 for i in range(len(self))])
+    return VAD(new_val, new_der, new_der2)
+
 
 # jacobian
 def jacobian(funcs):
