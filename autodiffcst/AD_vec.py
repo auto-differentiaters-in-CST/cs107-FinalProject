@@ -470,9 +470,9 @@ class VAD():
 
 # helper function
 def set_VAD(ADs):
-    new_val = np.array([ADs[i].val for i in range(len(self))])
-    new_der = np.array([ADs[i].der for i in range(len(self))])
-    new_der2 = np.array([ADs[i].der2 for i in range(len(self))])
+    new_val = np.array([ADs[i].val for i in range(len(ADs))])
+    new_der = np.array([ADs[i].der for i in range(len(ADs))])
+    new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD(new_val, new_der, new_der2)
 
 
