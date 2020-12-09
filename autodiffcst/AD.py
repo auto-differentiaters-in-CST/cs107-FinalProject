@@ -52,7 +52,7 @@ import numpy as np
 
 class AD():
 
-    def __init__(self, val, tag=None, der=None, der2=None, size =None, order=2):
+    def __init__(self, val, tag=None, der=None, der2=None,  size =None, order=2): 
         """
         Overwrites the __init__ dunder method to create a new AD object with initial value and derivatives.
     
@@ -68,13 +68,13 @@ class AD():
         """
 
         self.val = val if isinstance(val, np.ndarray) else np.array([val])
-        if size:
+        if der is None:
             if isinstance(size, numbers.Integral):
                 self.size = size 
             else:
                 raise TypeError("Invalid size type. The size of AD can only be integers.")
         else:
-            self.size = len(self.der)
+            self.size = len(der)
 
 
         self.tag = tag if isinstance(tag, np.ndarray) else np.array([tag])
@@ -82,6 +82,7 @@ class AD():
         if isinstance(der, np.ndarray):
             self.der = der
         else:
+
             self.der = np.zeros(self.size)
             self.der[tag] = 1
         
@@ -124,10 +125,11 @@ class AD():
         """        
         return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tag, self.der, self.der2)
 
-    
+    def __len__(self):
+        return len(self.tag)
     ## Unary 
     def __neg__(self):
-        return 0 - self
+        return self*(-1)
     ## Addition
     def __add__(self, other):
         """
