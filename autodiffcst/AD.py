@@ -361,7 +361,15 @@ class AD():
             # self_der2 = other.val * (other.val - 1.0)* self.val **(other.val - 2.0) * np.matmul(np.array([self.der]).T, np.array([self.der]))
             # other_der2 = self.val ** other.val * np.log(self.val) * np.matmul(np.array([other.der]).T, np.array([other.der]))
             # new_der2 = self_der2 + other_der2
-            new_der2 = np.matmul(new_der.T, new_der)
+            x = self.val
+            y = other.val
+            h = np.array([[(y-1)*y*x**(y-2), x**(y-1)+y*x**(y-1)*np.log(x)], [x**(y-1)+y*x**(y-1)*np.log(x), x**y*(np.log(x))**2]])
+            hessian = np.zeros((self.size,self.size))
+            hessian[0:-1,0:-1] = h[:,:,0]
+            first_inner = np.array([self.der, other.der])
+            second_inner = np.zeros((self.size,self.size, self.size))
+            second_inner[0:-1,0:,0:] = np.array([self.der2, other.der2])
+            new_der2 = np.matmul(hessian, np.matmul(first_inner.T, first_inner))+np.matmul(new_der, second_inner)
             
             # new_tag = np.nonzero(new_der)
             new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
@@ -488,13 +496,3 @@ class AD():
 
 
 
-# if __name__ == "__main__":
-#     x = AD(1,"x")
-#     y = AD(2,"y")
-#     f = 2 - x 
-#     f -= 1  
-#     print(f)
-#     print(f.der)
-#     print(f.val)
-#     print(f.tag)
-#     print(f.diff())
