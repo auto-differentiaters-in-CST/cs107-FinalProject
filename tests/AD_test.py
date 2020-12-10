@@ -49,17 +49,45 @@ def test_negative():
     assert np.sum(f.der == np.array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])) == 9, "Error: VAD first derivative of negation is wrong."
     assert np.sum(f.der2 == np.array([[[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]]])) == 27, "Error: VAD second derivative of negation is wrong"
 
-def test_add_constant():
+def test_eq_VAD():
     A = vad.VAD([1,2,3])
-    f = A + 3 
-    g = 3 + A
-    assert f == , "Error: AD first derivative of negation is wrong."
-    assert np.sum(x.der2 == np.array([[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]])) == 9, "Error: AD second derivative of negation is wrong"
+    B = vad.VAD([1,2,1])
+    eq1 = A == B
+    eq2 = A == A
+    assert eq1 == False, "Error: dunder equal for VAD is wrong."
+    assert eq2 == True, "Error: dunder equal for VAD is wrong."
 
-    f = vad.VAD([3,4,5])
-    f = -f
-    assert np.sum(f.der == np.array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])) == 9, "Error: VAD first derivative of negation is wrong."
-    assert np.sum(f.der2 == np.array([[[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]]])) == 27, "Error: VAD second derivative of negation is wrong"
+def test_eq_AD():
+    A = vad.VAD([1,2,3])
+    B = vad.VAD([1,2,1])
+    eq1 = A[0] == B[2]
+    eq2 = A[0] == A[2]
+    assert eq1 == True, "Error: dunder equal for VAD is wrong."
+    assert eq2 == False, "Error: dunder equal for VAD is wrong."
+
+def test_isequal_VAD():
+    A = vad.VAD([1,2,3])
+    B = vad.VAD([1,2,1])
+    eq1 = A.isequal(B)
+    eq2 = A.isequal(A)
+    print(eq1.shape, eq2.shape)
+    print(type(eq1), type(eq2))
+    assert np.sum(eq1 == np.array([True, True, False])) == 3, "Error: isequal for VAD is wrong."
+    assert np.sum(eq2 == np.array([True, True, True])) == 3, "Error: isequal for VAD is wrong."
+
+
+
+# def test_add_constant():
+#     A = vad.VAD([1,2,3])
+#     f = A + 3 
+#     g = 3 + A
+#     assert f == , "Error: AD first derivative of negation is wrong."
+#     assert np.sum(x.der2 == np.array([[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]])) == 9, "Error: AD second derivative of negation is wrong"
+
+#     f = vad.VAD([3,4,5])
+#     f = -f
+#     assert np.sum(f.der == np.array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])) == 9, "Error: VAD first derivative of negation is wrong."
+#     assert np.sum(f.der2 == np.array([[[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]]])) == 27, "Error: VAD second derivative of negation is wrong"
 
     
     

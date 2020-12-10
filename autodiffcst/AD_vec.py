@@ -99,7 +99,7 @@ class VAD():
     # Comparison Equal
     def __eq__(self, other):
         """
-        compare value of two VAD objects 
+        compare value of two VAD objects' values 
         for example:
             >>> a = AD([1,2,3])
             >>> b = AD([2,2,3])
@@ -114,10 +114,13 @@ class VAD():
                 return False
         else:
             raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
-            
+
+    def __ne__(self, other):
+        return not self == other
+
     def isequal(self, other):
         """
-        compare value of two VAD objects element wise
+        compare value of two VAD objects' values element wise
         for example:
             a = VAD([1,2,3])
             b = VAD([2,2,3])
@@ -128,6 +131,27 @@ class VAD():
             return self.val == other.val      
         else:
             raise TypeError("The input must also be a VAD object.")
+    
+    def fullequal(self, other):
+        """
+        compare value of two VAD objects element wise
+        for example:
+            a = VAD([1,2,3])
+            b = VAD([1,2,3]) * 2
+            >>> a.fullequal(b)
+            array(False) 
+        """
+        if isinstance(other, VAD):
+            if (self.val == other.val) and (self.der == other.der) and (self.der2 == other.der2): 
+                return True
+            else:
+                return False
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+    
+
+
+
 
     def __ge__(self, other):
         """

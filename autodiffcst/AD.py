@@ -101,12 +101,26 @@ class AD():
 
     def __eq__(self, other):
         if isinstance(other, AD):
+            if self.val == other.val: 
+                return True
+            else:
+                return False
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+    
+    def __ne__(self, other):
+        return not self == other
+    
+    def fullequal(self, other):
+        if isinstance(other, AD):
             if (self.val == other.val) and (self.der == other.der) and (self.der2 == other.der2): 
                 return True
             else:
                 return False
         else:
             raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+    
+
 
     def __le__(self, other):
         pass
