@@ -6,7 +6,7 @@ import warnings
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from autodiffcst.admath import chain_rule,fact_ad,choose
+from autodiffcst.admath import chain_rule,fact_ad,choose, log, exp
 # from admath import chain_rule,fact_ad,choose
 
 class AD():
@@ -25,7 +25,7 @@ class AD():
                 Returns:
                         None, but initializes an AD object when called
         """
-
+        print(higher==None)
         self.val = val if isinstance(val, np.ndarray) else np.array([val])
         if der is None:
             if size is None:
@@ -61,6 +61,7 @@ class AD():
                     self.higher[0] = self.der
                     self.higher[1] = self.der2
                 else:
+                    print("reach here")
                     self.higher = higher
             elif order > 2:
                 raise Exception("Cannot handle higher order derivatives for multiple variables")    
@@ -143,8 +144,12 @@ class AD():
                 return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, order=len(self.higher),size = self.size,higher=self.higher+other.higher)
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
+
                 new_val = self.val + other
-                new_self = AD(val = new_val, tag = self.tag, der = self.der, der2 = self.der2,order=len(self.higher),size = self.size,higher=self.higher)
+                if self.higher is None:
+                    new_self = AD(val=new_val, tag=self.tag, der=self.der, der2=self.der2, size=self.size)
+                else:
+                    new_self = AD(val = new_val, tag = self.tag, der = self.der, der2 = self.der2,order=len(self.higher),size = self.size,higher=self.higher)
                 return new_self
             else:
                 raise TypeError("Invalid type.")
@@ -219,18 +224,19 @@ class AD():
         """        
         try:
             new_der = self.der * other.val + self.val * other.der
+            print("aaaaaaa",new_der)
             new_der2 = self.val * other.der2 + 2*other.der*self.der+other.val*self.der2
             new_val = self.val * other.val
             
             new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
             # return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
-            if self.higher is None or other.higher is None:
-                #print("no higher case self,other",self.higher,other.higher)
-                return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
-            else:
-                #print("has higher case self,other",self.higher,other.higher)
+            higher_der = None
+            if self.higher is not None and other.higher is not None and self.tag == other.tag :
+                print("???")
                 higher_der = np.array([0.0] * len(self.higher))
-                for i in range(len(self.higher)):
+                higher_der[0] = new_der
+                higher_der[1] = new_der2
+                for i in range(0,len(self.higher)):
                     sumval = 0
                     n = i + 1
                     for k in range(n+1):
@@ -238,28 +244,27 @@ class AD():
                         #print(other.higher[n-k-1])
                         if k == 0:
                             sumval += choose(n,k) * self.val * other.higher[n-k-1]
-                        if k == n:
+                        elif k == n:
                             sumval += choose(n,k) * self.higher[k-1] * other.val
-                        sumval += choose(n,k) * self.higher[k-1] * other.higher[n-k-1]
+                        else:
+                            sumval += choose(n,k) * self.higher[k-1] * other.higher[n-k-1]
                     higher_der[i] = sumval
-                    
-                return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
-                
+            print("higher_der", higher_der)
+            print("self.order", self.order)
+            return AD(val=new_val,tag = new_tag, der=new_der, der2=new_der2, order = self.order, size=self.size, higher=higher_der)
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
                 new_val = self.val * other
                 new_der = self.der * other 
                 new_der2 = self.der2 * other
-
                 if self.higher is None:
                     #print("no higher case self,other#")
                     new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-                    return new_self
-                    
                 else:
                     #print("has higher case self,other#")
                     higher_der = other * self.higher
-                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
+                    new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
+                return new_self
                     # return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
 
             else:
@@ -305,6 +310,7 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying division
         """
+        print("call truediv")
         return self * (other ** (-1.0))
 
     
@@ -325,26 +331,26 @@ class AD():
         
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
-                new_val = other / self.val
-                new_der = self.der * -1 * other / (self.val ** 2)
-                # add second-order
-                new_der2 = self.der2 * -1 * other / (self.der ** 2)
-                              
-                if self.higher is None:
-                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-                else:
+                return other*self **(-1)
 
-                    higher_der = np.array([0.0]*len(self.higher))
-                    #print(higher_der)
-                    higher_der[0] = new_der
-                    higher_der[1] = new_der2
-                    for i in range(2,len(self.higher)):
-                        n = i + 1
-                        coef = other*fact_ad(-1,n)
-                        mainval = math.pow(self.val[0],-n-1)
-                        higher_der[i] = coef*mainval
-                        # higher_der[i] = self.higher[i] * -1 * other / (self.higher[i-1] ** 2)
-                    return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
+                    #new_val = other / self.val
+
+            #     new_der = - other / (self.val ** 2)
+            #     # add second-order
+            #     new_der2 = 2*other / (self.val ** 3)
+            #     higher_der = None
+            #     if self.higher:
+            #         higher_der = np.array([0.0]*len(self.higher))
+            #         #print(higher_der)
+            #         higher_der[0] = new_der
+            #         higher_der[1] = new_der2
+            #         for i in range(2,len(self.higher)):
+            #             n = i + 1
+            #             coef = other*fact_ad(-1,n)
+            #             mainval = math.pow(self.val[0],-n-1)
+            #             higher_der[i] = coef*mainval
+            #             # higher_der[i] = self.higher[i] * -1 * other / (self.higher[i-1] ** 2)
+            #     return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
                     # return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
             else:
                 raise TypeError("Invalid division type.")
@@ -374,49 +380,43 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying power function
-        """           
+        """
         try:
-            
-            new_val = self.val ** other.val
-           
-            self_der = other.val * self.val**(other.val - 1.0) * self.der 
-            other_der = self.val ** other.val* np.log(self.val) * other.der
-            new_der = self_der + other_der
-
-            x = self.val
-            y = other.val
-            h = np.array([[(y-1)*y*x**(y-2), x**(y-1)+y*x**(y-1)*np.log(x)], [x**(y-1)+y*x**(y-1)*np.log(x), x**y*(np.log(x))**2]])
-            hessian = np.zeros((self.size,self.size))
-            hessian[0:-1,0:-1] = h[:,:,0]
-            first_inner = np.array([self.der, other.der])
-            second_inner = np.zeros((self.size,self.size, self.size))
-            second_inner[0:-1,0:,0:] = np.array([self.der2, other.der2])
-            new_der2 = np.matmul(hessian, np.matmul(first_inner.T, first_inner))+np.matmul(new_der, second_inner)
-            
-            new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
-            
-            # if self.higher is None:
-            return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
+            return exp(log(self)*other)
+            # new_val = self.val ** other.val
+            #
+            # self_der = other.val * self.val**(other.val - 1.0)
+            # other_der = self.val ** other.val* np.log(self.val)
+            # new_der = self_der + other_der
+            #
+            # x = self.val
+            # y = other.val
+            # h = np.array([[(y-1)*y*x**(y-2), x**(y-1)+y*x**(y-1)*np.log(x)], [x**(y-1)+y*x**(y-1)*np.log(x), x**y*(np.log(x))**2]])
+            # hessian = np.zeros((self.size,self.size))
+            # hessian[0:-1,0:-1] = h[:,:,0]
+            # first_inner = np.array([self.der, other.der])
+            # second_inner = np.zeros((self.size,self.size, self.size))
+            # second_inner[0:-1,0:,0:] = np.array([self.der2, other.der2])
+            # new_der2 = np.matmul(hessian, np.matmul(first_inner.T, first_inner))+np.matmul(new_der, second_inner)
+            #
+            # new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
+            #
+            # # if self.higher is None:
+            # return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
     
         except AttributeError:
-            
             if isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
                 try:
                     other = float(other)
                 except:
                     other = np.array([float(i) for i in other])
 
-                new_val = self.val ** other
-                new_der = (self.val ** (other - 1.)) * other * (np.matmul(np.array([self.der]).T, np.array([self.der])))
-                
-                new_der2 = (self.val ** (other - 2.)) * other * (other-1.0) * (np.matmul(np.array([self.der]).T, np.array([self.der])))
+                new_der = (self.val ** (other - 1.)) * other
+                new_der2 = (self.val ** (other - 2.)) * other * (other-1.0)
 
                 new_val = np.power(self.val, other)
         
-                if self.higher is None:
-                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-                    # return chain_rule(self, new_val, new_der, new_der2)
-                else:
+                if self.higher is not None:
                     higher_der = np.array([1.0]*len(self.higher))
                     for i in range(len(self.higher)):
                         n = i + 1
@@ -426,8 +426,7 @@ class AD():
                         higher_der[i] = coef*mainval
                 # print("here")
                 # return chain_rule(self, new_val, new_der, new_der2, higher_der)
-                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
-
+                    return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
 
             else:
                 raise TypeError("Invalid power type.")
