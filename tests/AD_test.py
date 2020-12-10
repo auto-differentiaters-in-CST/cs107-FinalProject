@@ -154,26 +154,45 @@ def test_mul_VAD():
     assert np.sum(g.der == np.array([[4, 0], [0, 4]])) == 4, "Error: mul der for VAD is wrong."
     assert np.sum(g.der2 == np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])) == 8, "Error: mul der2 for VAD is wrong."
 
-# def test_div_AD():
-#     [x, y] = vad.VAD([3,1])
-#     f = x * y
-#     g = 4 * x
-#     assert f.val == 4, "Error: mul value for AD is wrong."
-#     assert np.sum(f.der == np.array([1, 3])) == 2, "Error: mul der for AD is wrong."
-#     assert np.sum(f.der2 == np.array([[0, 0],[0, 0]])) == 4, "Error: mul der for AD is wrong."
-#
-#     assert g.val == 12, "Error: mul value for AD is wrong."
-#     assert np.sum(f.der == np.array([4, 0])) == 2, "Error: mul der for AD is wrong."
-#     assert np.sum(f.der2 == np.array([[0, 0], [0, 0]])) == 4, "Error: mul der for AD is wrong."
-#
-#
-# def test_div_VAD():
-#     f = vad.VAD([3,1])
-#     g = 4*f
-#     assert np.sum(g.val == np.array([12, 4])) == 2, "Error: mul value for VAD is wrong."
-#     assert np.sum(g.der == np.array([[4, 0], [0, 4]])) == 4, "Error: mul der for VAD is wrong."
-#     assert np.sum(g.der2 == np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])) == 8, "Error: mul der2 for VAD is wrong."
+def test_div_AD():
+    [x, y] = vad.VAD([3,1])
+    f = x / y
+    g = 9 / x
+    assert f.val == 3, "Error: div value for AD is wrong."
+    assert np.sum(f.der == np.array([1, -3])) == 2, "Error: div der for AD is wrong."
+    assert np.sum(f.der2 == np.array([[0, -1],[-1, 6]])) == 4, "Error: div der for AD is wrong."
 
+    assert g.val == 3, "Error: div value for AD is wrong."
+    assert np.sum(g.der == np.array([-1, 0])) == 2, "Error: div der for AD is wrong."
+    assert np.sum(g.der2 == np.array([[18/27, 0], [0, 0]])) == 4, "Error: div der for AD is wrong."
+
+def test_div_VAD():
+    f = vad.VAD([3,1])
+    h = f / 3
+    g = 1 / f
+    assert np.sum(h.val == np.array([1, 1/3])) == 2, "Error: div value for AD is wrong."
+    assert np.sum(h.der == np.array([[1/3, 0], [0, 1/3]])) == 4, "Error: div der for AD is wrong."
+    assert np.sum(h.der2 == np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])) == 8, "Error: div der for AD is wrong."
+    print(g)
+    assert np.sum(g.val == np.array([1/3, 1])) == 2, "Error: div value for AD is wrong."
+    assert np.sum(g.der == np.array([[-1/9, 0], [0, -1]])) == 4, "Error: div der for AD is wrong."
+    assert np.sum(g.der2 == np.array([[[2/27, 0], [0, 0]], [[0, 0], [0, 2]]])) == 8, "Error: div der for AD is wrong."
+
+def test_pow_AD():
+    [x, y] = vad.VAD([3,1])
+    f = x ** 2
+    assert f.val == 9, "Error: pow value for AD is wrong."
+    assert np.sum(f.der == np.array([6, 0])) == 2, "Error: pow der for AD is wrong."
+    assert np.sum(f.der2 == np.array([[2, 0],[0, 0]])) == 4, "Error: pow der for AD is wrong."
+    g = 2 ** x
+    print(g)
+    # precision is different from np
+    assert np.sum(g.val == np.array([8.0])) == 1, "Error: pow value for AD is wrong."
+    assert np.sum(g.der == np.array([8*np.log(2), 0.0])) == 2, "Error: pow der for AD is wrong."
+    print(np.array([8*np.log(2), 0]))
+
+    assert np.sum(g.der2 == np.array([[8*np.log(2)*np.log(2), 0.0], [0., 0.]])) == 8, "Error: pow der for AD is wrong."
+    print(np.array([[8*np.log(2)*np.log(2), 0], [0, 0]]))
 
 
 

@@ -490,22 +490,27 @@ class AD():
         
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
-                new_val = other ** self.val
-                new_der = np.log(other) * (new_val) * self.der
-                # may need to change
-                new_der2 = (np.log(other) ** 2) * (new_val) * self.der
-                
-                if self.higher is None:
-                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
+                # new_val = other ** self.val
+                # new_der = np.log(other) * (new_val) * self.der
+                # # may need to change
+                # new_der2 = (np.log(other) ** 2) * (new_val) * self.der2
+                return exp(log(other) * self)
+                # y = exp(log(other) * self)
+                # new_val = other ** self.val
+                # new_der = y.der
+                # new_der2 = y.der2
 
-                else:
-                    higher_der = np.array([1.0]*len(self.higher))
-                    for i in range(len(self.higher)):
-                        n = i + 1
-                        higher_der[i] = new_val * np.log(other) ** n
+                # if self.higher is None:
+                #     return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
+
+                # else:
+                #     higher_der = np.array([1.0]*len(self.higher))
+                #     for i in range(len(self.higher)):
+                #         n = i + 1
+                #         higher_der[i] = new_val * np.log(other) ** n
                
-                    # return chain_rule(ad, new_val, der, der2, higher_der)
-                    return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
+                #     # return chain_rule(ad, new_val, der, der2, higher_der)
+                #     return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
 
                 # new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
        

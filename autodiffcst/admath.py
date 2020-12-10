@@ -190,7 +190,8 @@ def log(ad):  # consider different base?
             for i in range(2, len(ad.higher)):
                 n = i + 1
                 coef = fact_ad(-1, n - 1)
-                mainval = math.pow(ad.val[0], -n)
+                mainval = np.power(ad.val[0], float(-n))
+                # mainval = math.pow(ad.val[0], -n)
                 higher_der[i] = coef * mainval
             return chain_rule(ad, new_val, der, der2, higher_der)
     elif isinstance(ad, VAD.VAD):
