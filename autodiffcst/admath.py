@@ -30,6 +30,15 @@ def set_VAD(ADs):
 
 # Choose function
 def choose(n, k):
+    """
+    A helper function that gives the value of n choose k, according to math definition
+
+            Parameters:
+                    n, k: both natural numbers, invalid input cases handled by numpy
+            
+            Returns:
+                    the arithmetic value of n choose k, a scalar
+    """
     return np.math.factorial(n) / (np.math.factorial(k) * np.math.factorial(n - k))
 
 
@@ -198,54 +207,7 @@ def log(ad):  # consider different base?
             raise TypeError("Your input is not valid.")
 
 
-# def pow(ad, y):
-#     """
-#     Returns the new AD object after applying power function with power y.
-#             Parameters:
-#                     ad (AD): An AD object to be applied power function with power y on
-#             Returns:
-#                     new_ad (AD): the new AD object after applying power function with power y
-#     """
-#     if isinstance(ad, AD.AD) and isinstance(y, numbers.Number):
-#         new_val = np.power(ad.val, y)
-#         der = y * np.power(ad.val, y - 1)
-#         der2 = y * (y - 1) * np.power(ad.val, y - 2)
-#         if ad.higher is None:
-#             return chain_rule(ad, new_val, der, der2)
-#         else:
-#             higher_der = np.array([1.0] * len(ad.higher))
-#             for i in range(len(ad.higher)):
-#                 n = i + 1
-#                 # derivative d(i+1) = y(y-1)...(y-n+1) ad.val **(y-i-1)
-#                 # for example: f = x**6, d(1) = 6*x**5, d(2) = 6*5*x**4, d(3) = 6*5*4*x**3
-#                 # so for d(n)=d(i+1), the power after x is y-(i+1),
-#                 #                     the coef is y(y-1)...(y-i)=y(y-1)...(y-(n-1)) (product of n terms)
-#
-#                 coef = fact_ad(y, n)
-#                 mainval = math.pow(ad.val[0], y - n)
-#                 higher_der[i] = coef * mainval
-#                 #     higher_der[i] = 0
-#             return chain_rule(ad, new_val, der, der2, higher_der)
-#     elif isinstance(y, AD.AD) and isinstance(ad, numbers.Number):
-#         new_val = np.power(ad, y.val)
-#         der = np.log(y.val) * new_val
-#         der2 = np.log(y.val) ** 2 * new_val
-#         if ad.higher is None:
-#             return chain_rule(ad, new_val, der, der2)
-#         else:
-#             higher_der = np.array([1.0] * len(ad.higher))
-#             for i in range(len(ad.higher)):
-#                 n = i + 1
-#                 higher_der[i] = new_val * np.log(y.val) ** n
-#                 #     higher_der[i] = 0
-#             return chain_rule(ad, new_val, der, der2, higher_der)
-#     elif isinstance(ad, VAD.VAD):
-#         return ad ** y
-#     else:
-#         try:
-#             return np.power(ad, y)
-#         except:
-#             raise TypeError("Your input is not valid.")
+
 
 
 def sqrt(ad):
