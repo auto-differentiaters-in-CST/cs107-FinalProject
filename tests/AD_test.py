@@ -67,12 +67,56 @@ def test_isequal_VAD():
     B = vad.VAD([1,2,1])
     eq1 = A.isequal(B)
     eq2 = A.isequal(A)
-    print(eq1.shape, eq2.shape)
-    print(type(eq1), type(eq2))
     assert np.sum(eq1 == np.array([True, True, False])) == 3, "Error: isequal for VAD is wrong."
     assert np.sum(eq2 == np.array([True, True, True])) == 3, "Error: isequal for VAD is wrong."
 
+def test_add_AD():
+    # x = ad.AD(3)
+    # y = ad.AD(1)
+    [x, y] = vad.VAD([3,1])
+    f = x + y
+    g = x + 1
+    
+    assert f.val == 4, "Error: add value for AD is wrong."
+    assert np.sum(f.der == np.array([1, 1])) == 2, "Error: add der for AD is wrong."
+    
+    assert np.sum(f.der2 == np.array([[0, 0],[0, 0]])) == 4, "Error: add der2 for AD is wrong."
+    assert f == g, "Error: add comparison for AD is wrong."
 
+def test_add_VAD():
+    
+    f = vad.VAD([3,1])
+    g = f + 4
+    h = vad.VAD([1,1]) + vad.VAD([6,4])
+    assert np.sum(g.val == np.array([7, 5])) == 2, "Error: add value for VAD is wrong."
+    assert np.sum(g.der == np.array([[1, 0],[0,1]])) == 4, "Error: add der for VAD is wrong."
+    
+    assert np.sum(g.der2 == np.array([[[0, 0],[0, 0]],[[0, 0],[0, 0]]])) == 8, "Error: add der2 for VAD is wrong."
+    
+    assert g == h, "Error: add value for VAD is wrong."
+
+def test_sub_AD():
+    # x = ad.AD(3)
+    # y = ad.AD(1)
+    [x, y] = vad.VAD([3,1])
+    f = x - y
+    print(f.der, f.der2)
+    assert f.val == 2, "Error: truediv value for AD is wrong."
+    assert np.sum(f.der == np.array([1, -1])) == 2, "Error: truediv der for AD is wrong."
+    print(f.der2)
+    assert np.sum(f.der2 == np.array([[0, 0],[0, 0]])) == 4, "Error: truediv der for AD is wrong."
+
+
+# def test_div_AD():
+#     # x = ad.AD(3)
+#     # y = ad.AD(1)
+#     [x, y] = vad.VAD([3,1])
+#     f = x/y
+#     print(f.der, f.der2)
+#     assert f.val == 3, "Error: truediv value for AD is wrong."
+#     assert np.sum(f.der == np.array([1, -3])) == 2, "Error: truediv der for AD is wrong."
+#     print(f.der2)
+#     assert f.der2 == np.array([[0, -1],[-1, 6]]), "Error: truediv der for AD is wrong."
 
 # def test_add_constant():
 #     A = vad.VAD([1,2,3])
@@ -545,4 +589,3 @@ def test_isequal_VAD():
 #     y = AD.AD(3, "y")
 #     assert abs(acsch(x*y).val - math.log(1/6+math.sqrt(1/36+1))) <= epsilon, "Error: acsch(x*y), false value."
 #     assert abs(acsch(x*y).diff('x') + 3/(6*math.sqrt(1+36))) <= epsilon, "Error: acsch(x*y), false derivative."
-
