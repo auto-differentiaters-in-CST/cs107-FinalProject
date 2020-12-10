@@ -199,7 +199,7 @@ def test_tan_ad():
     der2[0,0,0] = 2*tan(1)*sec(1)**2
     der2[1,1,1] = 2*tan(2)*sec(2)**2
     assert np.allclose(f.der,der1), "Error: tan(VAD[1,2]), false der1."
-    #assert np.allclose(f.der2,der2), "Error: tan(VAD[1,2]), false der2."
+    assert np.allclose(f.der2,der2), "Error: tan(VAD[1,2]), false der2."
     [z] = VAD.VAD([1],order=3)
     h = tan(z)
     calc = 2*sec(1)**2*(2*tan(1)**2+sec(1)**2)
@@ -280,7 +280,7 @@ def test_tanh_ad():
     der2[0,0,0] = -2*tanh(1)*sech(1)**2
     der2[1,1,1] = -2*tanh(2)*sech(2)**2
     assert np.allclose(f.der,der1), "Error: tanh(VAD[1,2]), false der1."
-    #assert np.allclose(f.der2,der2), "Error: tanh(VAD[1,2]), false der2."
+    assert np.allclose(f.der2,der2), "Error: tanh(VAD[1,2]), false der2."
     [z] = VAD.VAD([1],order=3)
     h = tanh(z)
     calc = 4*tanh(1)**2*sech(1)**2 - 2*sech(1)**4
