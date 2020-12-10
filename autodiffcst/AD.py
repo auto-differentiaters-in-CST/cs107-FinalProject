@@ -323,7 +323,7 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying division
         """
-        print("call truediv")
+        #print("call truediv")
         return self * (other ** (-1.0))
 
     
