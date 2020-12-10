@@ -477,7 +477,7 @@ class VAD():
         return set_VAD(AD_result)
 
 
-def diff(self, direction=None, order = 1):
+    def diff(self, direction=None, order = 1):
         """
         Calculate and return the derivatives of the function represented by an AD object.
     

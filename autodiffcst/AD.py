@@ -236,9 +236,18 @@ class AD():
                         new_self (AD): the new AD object after applying addition
         """        
         try:
+            # print(other.der, other.der.shape)
+            # print(self.der, self.der.shape)
+
+            # print(other.der2, other.der2.shape)
+            # print(self.der2, self.der2.shape)
+
+
             new_der = self.der * other.val + self.val * other.der
-            #print("aaaaaaa",new_der)
-            new_der2 = self.val * other.der2 + 2 * np.matmul(np.array([other.der]).T,np.array([self.der])) + other.val * self.der2
+            
+            new_der2 = self.val * other.der2 + np.matmul(np.array([other.der]).T,np.array([self.der]))  \
+                        + np.matmul(np.array([self.der]).T,np.array([other.der]))+ other.val * self.der2
+
             new_val = self.val * other.val
             
             new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
