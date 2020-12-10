@@ -56,7 +56,7 @@ class AD():
         if isinstance(order, numbers.Integral):
             if len(self.val) == 1 and order > 2:
                 if higher is None:
-                    self.higher = np.array([0] * order)
+                    self.higher = np.array([0.0] * order)
                     self.higher[0] = self.der
                     self.higher[1] = self.der2
                 else:
