@@ -28,7 +28,6 @@ def set_VAD(ADs):
     return VAD.VAD(new_val, new_der, new_der2)
 
 
-# Choose function
 def choose(n, k):
     """
     A helper function that gives the value of n choose k, according to math definition
@@ -74,8 +73,7 @@ def chain_rule(ad, new_val, der, der2, higher_der=None):
     return new_ad
 
 
-# all functions could take either AD object or a number as input
-# will raise TypeError with other inputs 
+# all functions could take either VAD, or AD object or a number/array/list (equivalent to numpy functions) as input
 
 def abs(ad):
     """
@@ -143,7 +141,6 @@ def exp(ad):
             return chain_rule(ad, new_val, der, der2)
         else:
             higher_der = np.array([new_val] * len(ad.higher))
-            # print(higher_der)
             return chain_rule(ad, new_val, der, der2, higher_der)
     elif isinstance(ad, VAD.VAD):
         AD_result = np.array([exp(advar) for advar in ad.variables])
@@ -188,7 +185,6 @@ def log(ad):  # consider different base?
         else:
             # starting from the first derivative: x**-1
             higher_der = np.array([0.0] * len(ad.higher))
-            # print(higher_der)
             higher_der[0] = der
             higher_der[1] = der2
             for i in range(2, len(ad.higher)):
@@ -285,7 +281,7 @@ def cos(ad):
             raise TypeError("Your input is not valid.")
 
 
-def tan(ad):  ## problem
+def tan(ad):
     """
     Returns the new AD object after applying tangent function.
 
