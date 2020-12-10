@@ -1,7 +1,6 @@
 import math
 import numbers
 import numpy as np
-# import sympy as sp
 import warnings
 import os
 import sys
@@ -25,7 +24,7 @@ class AD():
                 Returns:
                         None, but initializes an AD object when called
         """
-        print(higher==None)
+        #print(higher==None)
         self.val = val if isinstance(val, np.ndarray) else np.array([val])
         if der is None:
             if size is None:
@@ -61,7 +60,7 @@ class AD():
                     self.higher[0] = self.der
                     self.higher[1] = self.der2
                 else:
-                    print("reach here")
+                    #print("reach here")
                     self.higher = higher
             elif order > 2:
                 raise Exception("Cannot handle higher order derivatives for multiple variables")    
@@ -224,7 +223,7 @@ class AD():
         """        
         try:
             new_der = self.der * other.val + self.val * other.der
-            print("aaaaaaa",new_der)
+            #print("aaaaaaa",new_der)
             new_der2 = self.val * other.der2 + 2*other.der*self.der+other.val*self.der2
             new_val = self.val * other.val
             
@@ -232,7 +231,7 @@ class AD():
             # return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
             higher_der = None
             if self.higher is not None and other.higher is not None and self.tag == other.tag :
-                print("???")
+                #print("???")
                 higher_der = np.array([0.0] * len(self.higher))
                 higher_der[0] = new_der
                 higher_der[1] = new_der2
@@ -249,8 +248,8 @@ class AD():
                         else:
                             sumval += choose(n,k) * self.higher[k-1] * other.higher[n-k-1]
                     higher_der[i] = sumval
-            print("higher_der", higher_der)
-            print("self.order", self.order)
+            #print("higher_der", higher_der)
+            #print("self.order", self.order)
             return AD(val=new_val,tag = new_tag, der=new_der, der2=new_der2, order = self.order, size=self.size, higher=higher_der)
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
