@@ -238,7 +238,7 @@ class AD():
         try:
             new_der = self.der * other.val + self.val * other.der
             #print("aaaaaaa",new_der)
-            new_der2 = self.val * other.der2 + 2*other.der*self.der+other.val*self.der2
+            new_der2 = self.val * other.der2 + 2 * np.matmul(np.array([other.der]).T,np.array([self.der])) + other.val * self.der2
             new_val = self.val * other.val
             
             new_tag = np.unique(np.concatenate((self.tag,other.tag),0))

@@ -397,21 +397,23 @@ class VAD():
     
                 Returns:
                         new_self (AD): the new AD object after applying division
-        """            
-        
-        try:
-            return other / self
-        
-        except RecursionError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = other / self.val
-                new_der = self.der * -1 * other / (self.val ** 2)
-                # add second-order
-                new_der2 = self.der2 * -1 * other / (self.der ** 2)
-                new_self = VAD(new_val, new_der, new_der2)                
-                return new_self
-            else:
-                raise TypeError("Invalid type.")
+        """
+
+        AD_result = other/self.variables
+        return set_VAD(AD_result)
+        # try:
+        #     return other / self
+        #
+        # except RecursionError:
+        #     if isinstance(other, int) or isinstance(other, float):
+        #         new_val = other / self.val
+        #         new_der = self.der * -1 * other / (self.val ** 2)
+        #         # add second-order
+        #         new_der2 = self.der2 * -1 * other / (self.der ** 2)
+        #         new_self = VAD(new_val, new_der, new_der2)
+        #         return new_self
+        #     else:
+        #         raise TypeError("Invalid type.")
 
     
     def __itruediv__(self, other):
@@ -470,22 +472,12 @@ class VAD():
     
                 Returns:
                         new_self (AD): the new AD object after applying power function
-        """            
-        try:
-            return other ** self
-        
-        except RecursionError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = other ** self.val
-                new_der = np.log(other) * (new_val) * self.der
-                new_der2 = np.log(other) * (new_val) * self.der2
-                new_self = VAD(new_val, new_der, new_der2)  
-                return new_self
-            else:
-                raise TypeError("Invalid type.") 
+        """
+        AD_result = other ** self.variables
+        return set_VAD(AD_result)
 
-    
-    def diff(self, direction=None, order = 1):
+
+def diff(self, direction=None, order = 1):
         """
         Calculate and return the derivatives of the function represented by an AD object.
     
@@ -543,9 +535,15 @@ def hessian(func):
 
 
 if __name__ == "__main__":
-    [x,y] = VAD([2,2])
-    f = x**y
+    x = VAD([1,2])
+    f = admath.sin(x[0])
     print(f)
+    g = admath.cos(x[0])
+    k = g**(-1.0)
+    print(k)
+    print(f*k)
+
+
     # f = (x[0]**3)*(x[0]**2)
     # print(f)
     # print(f.higher)
