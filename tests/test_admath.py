@@ -18,15 +18,16 @@ def test_set_VAD():
     ad1 = vadtest[0]
     ad2 = vadtest[1]
     ad3 = vadtest[2]
-    new_vad = set_VAD(np.array(ad1,ad2,ad3))
+    new_vad = set_VAD(np.array([ad1,ad2,ad3]))
     assert new_vad == vadtest, "Error: returned object not good."
     assert sin(vadtest) == set_VAD(np.array([sin(ad1),sin(ad2),sin(ad3)])),"Error: returned object not good."
 
 def test_abs():
-    x = VAD.VAD([1,2,3])
+    x = VAD.VAD([-1,2,3])
     f = abs(x)
-    assert f.val == array([[1],[2],[3]]), "Error: abs didn't apply properly on VAD."
-    assert f.der == array([[1., 0., 0.],[0., 1., 0.],[0., 0., 1.]]), "Error: der1 for abs(VAD) is not correct."
+    print(f.der)
+    assert np.sum(f.val == np.array([[1],[2],[3]])) == 3, "Error: abs didn't apply properly on VAD."
+    assert np.sum(f.der == np.array([[-1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])) == 9, "Error: der1 for abs(VAD) is not correct."
     x = AD.AD(-1, tag=0)
     f = abs(x)
     assert f.val == 1, "Error: abs didn't apply properly on AD."
@@ -40,9 +41,15 @@ def test_chain_rule():
     x = AD.AD(2,order=5)
     newad = 5*x**3+2
     higherde = np.array([60,60,30,0,0])
-    adres = chain_rule(x, 40, 60, 60, higher_der=higherde)
+    adres = chain_rule(x, 42, 60, 60, higher_der=higherde)
     assert newad == adres, "Error: chain rule doesn't apply to AD object properly."
-    assert newad.higher == adres.higher, "Error: chain rule doesn't carry higher derivatives properly."
+    assert np.allclose(newad.higher,adres.higher), "Error: chain rule doesn't carry higher derivatives properly."
+    # x = AD.AD(2,order=5)
+    # newad = 5*x**3+2
+    # higherde = np.array([60,60,30,0,0])
+    # adres = chain_rule(x, 40, 60, 60, higher_der=higherde)
+    # assert newad == adres, "Error: chain rule doesn't apply to AD object properly."
+    # assert newad.higher == adres.higher, "Error: chain rule doesn't carry higher derivatives properly."
 
 def test_choose():
     assert choose(6,0) == 1, "Error: choose function doesn't calculate correctly."
@@ -212,7 +219,7 @@ def test_sec_float():
 # hyperbolic trig
 def test_sinh_float():
     ad = 2
-    assert abs(sinh(ad)-math.sinh(2)) <= epsilon, "Error: sinh(x), false value."
+    assert abs(sinh(ad)-math.sinh(2)) <= 1e-8, "Error: sinh(x), false value."
 
 def test_sinh_ad():
     [x,y] = VAD.VAD([1,2])
