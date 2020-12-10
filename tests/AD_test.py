@@ -2,16 +2,13 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # import sys
 # sys.path.append('../')
 
 import pytest
 import math
 import numpy as np
-
-# import autodiffcst.AD as AD
-# from autodiffcst.admath import *
 
 import autodiffcst.AD as ad
 import autodiffcst.AD_vec as vad
