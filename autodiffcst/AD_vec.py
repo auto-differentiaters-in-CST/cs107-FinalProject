@@ -519,28 +519,30 @@ def hessian(func):
 
 
 if __name__ == "__main__":
-    x = VAD([1], order = 10)
-
+    [x,y] = VAD([2,2])
+    f = x**y
+    print(f)
     # f = (x[0]**3)*(x[0]**2)
     # print(f)
     # print(f.higher)
     # k = admath.sin(admath.sin(x[0]))
     # f = admath.sin(x[0])*admath.cos(x[0])
     #
-    a = admath.sin(x[0])
-    b = admath.cos(x[0])
-    # #g = admath.tan(x[0])
-    k = a*b
-    #
-    print(a)
-    print(a.higher)
-    # # h = a**(-1)
-    # # print(h)
-    # # print(h.higher)
-    print(b)
-    print(b.higher)
-    # # print (g)
-    # # print(g.higher)
-    # #mul wrong!!!!
-    print(k)
-    print(k.higher)
+    # a = admath.sin(x[0])
+    # b = admath.cos(x[0])
+    # # #g = admath.tan(x[0])
+    # k = a*b
+    # #
+    # print(a)
+    # print(a.higher)
+    # # # h = a**(-1)
+    # # # print(h)
+    # # # print(h.higher)
+    # print(b)
+    # print(b.higher)
+    # # # print (g)
+    # # # print(g.higher)
+    # # #mul wrong!!!!
+    # print(k)
+    # print(k.higher)
+
