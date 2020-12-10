@@ -381,8 +381,16 @@ class AD():
                 Returns:
                         new_self (AD): the new AD object after applying power function
         """
-        try:
-            return exp(log(self)*other)
+        if isinstance(other, AD):
+            if self.val[0] != 0:
+                return exp(log(self)*other)
+            else:
+                if other.val <= 2:
+                    raise ValueError("Derivative is undefined.")
+                else:
+                    return AD(0, tag = self.tag, der = np.zeros(self.size), der2 = np.zeros((self.size, self.size)))
+
+
             # new_val = self.val ** other.val
             #
             # self_der = other.val * self.val**(other.val - 1.0)
@@ -404,32 +412,31 @@ class AD():
             # # if self.higher is None:
             # return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
     
-        except AttributeError:
-            if isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
-                try:
-                    other = float(other)
-                except:
-                    other = np.array([float(i) for i in other])
+        elif isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
+            try:
+                other = float(other)
+            except:
+                other = np.array([float(i) for i in other])
 
-                new_der = (self.val ** (other - 1.)) * other
-                new_der2 = (self.val ** (other - 2.)) * other * (other-1.0)
+            new_der = (self.val ** (other - 1.)) * other
+            new_der2 = (self.val ** (other - 2.)) * other * (other-1.0)
 
-                new_val = np.power(self.val, other)
-        
-                if self.higher is not None:
-                    higher_der = np.array([1.0]*len(self.higher))
-                    for i in range(len(self.higher)):
-                        n = i + 1
-                        
-                        coef = fact_ad(other,n)
-                        mainval = math.pow(self.val[0],other-n)
-                        higher_der[i] = coef*mainval
-                # print("here")
-                # return chain_rule(self, new_val, new_der, new_der2, higher_der)
-                    return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
+            new_val = np.power(self.val, other)
+            higher_der = None
+            if self.higher is not None:
+                higher_der = np.array([1.0]*len(self.higher))
+                for i in range(len(self.higher)):
+                    n = i + 1
 
-            else:
-                raise TypeError("Invalid power type.")
+                    coef = fact_ad(other,n)
+                    mainval = math.pow(self.val[0],other-n)
+                    higher_der[i] = coef*mainval
+            # print("here")
+            # return chain_rule(self, new_val, new_der, new_der2, higher_der)
+            return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
+
+        else:
+            raise TypeError("Invalid power type.")
 
     def __ipow__(self, other):
         """
