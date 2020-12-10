@@ -1,41 +1,62 @@
 # Use a simple (but explicit) path modification to resolve the package properly
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+# import sys
+# sys.path.append('../')
 
 import pytest
 import math
 import numpy as np
-# import src.autodiffcst.AD as AD
-# from src.autodiffcst.trigmath import *
-from autodiffcst.AD import *
-from autodiffcst.AD_vec import *
-from autodiffcst.admath import *
+
+# import autodiffcst.AD as AD
+# from autodiffcst.admath import *
+
+import autodiffcst.AD as ad
+import autodiffcst.AD_vec as vad
+# from autodiffcst.AD import AD
+# from autodiffcst.AD_vec import VAD, jacobian, hessian
+import autodiffcst.admath as admath
+
 
 def test_initialize_base():
-    x = VAD([1,2])
+    x = vad.VAD(val = [1,2])
+    print(x)
     assert np.sum(x.val == np.array([1,2])) == len(x),"Error: initialize x value."
     assert np.sum(x.der == np.array([[1,0],[0,1]])) == 4,"Error: initialize x value."
     assert np.sum(x.der2 == np.array([[[0., 0.],[0., 0.]],[[0., 0.],[0., 0.]]])) == 8,"Error: initialize x value."
 
 def test_initialize_advanced():
-    [x,y] = VAD([1,2])
+    [x,y] = vad.VAD([1,2])
     assert np.sum(x.val == np.array([1])) == len(x),"Error: initialize x value."
     assert np.sum(x.der == np.array([1., 0.])) == 2,"Error: initialize x value."
     assert np.sum(x.der2 == np.array([[0., 0.],[0., 0.]])) == 4,"Error: initialize x value."
 
 def test_repr():
-    x = VAD([1])
+    x = vad.VAD([1])
     print(x)
     assert repr(x) == "VAD(value: [1], tag: [0], derivatives: [[1.]], second derivatives: [[[0.]]])", "Error: repr is not working"
 
 def test_negative():
-    [x,y,z] = VAD([1,2,3])
+    [x,y,z] = vad.VAD([1,2,3])
     x = -x 
     assert np.sum(x.der == np.array([[-1, 0, 0]])) == 3, "Error: AD first derivative of negation is wrong."
     assert np.sum(x.der2 == np.array([[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]])) == 9, "Error: AD second derivative of negation is wrong"
 
-    f = VAD([3,4,5])
+    f = vad.VAD([3,4,5])
+    f = -f
+    assert np.sum(f.der == np.array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])) == 9, "Error: VAD first derivative of negation is wrong."
+    assert np.sum(f.der2 == np.array([[[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]]])) == 27, "Error: VAD second derivative of negation is wrong"
+
+def test_add_constant():
+    A = vad.VAD([1,2,3])
+    f = A + 3 
+    g = 3 + A
+    assert f == , "Error: AD first derivative of negation is wrong."
+    assert np.sum(x.der2 == np.array([[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]])) == 9, "Error: AD second derivative of negation is wrong"
+
+    f = vad.VAD([3,4,5])
     f = -f
     assert np.sum(f.der == np.array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])) == 9, "Error: VAD first derivative of negation is wrong."
     assert np.sum(f.der2 == np.array([[[0., 0., 0.], [0., 0., 0.],[0., 0., 0.]]])) == 27, "Error: VAD second derivative of negation is wrong"
