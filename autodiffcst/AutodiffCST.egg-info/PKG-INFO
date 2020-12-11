@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: autodiffCST
-Version: 0.0.1.post0.dev3+g02ad4e9.dirty
+Version: 0.0.post0.dev188+gce56d7d.dirty
 Summary: This package autodiffCST implements automatic differentiation. Users could perform forward mode, and use it for higher order differentiation.
 Home-page: https://github.com/auto-differentiaters-in-CST/cs107-FinalProject
 Author: Xiaohan Yang, Hanwen Zhang, Runting Yang, Max Li

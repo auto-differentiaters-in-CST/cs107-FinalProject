@@ -9,23 +9,23 @@ import sympy as sp
 # import AD as AD
 # import AD_vec as VAD
 import autodiffcst.AD as AD
-import autodiffcst.AD_vec as VAD
 
 
-def set_VAD(ADs):
-    """
-    Uses the information of new ADs to generate a new VAD
 
-            Parameters:
-                    ADs: An array of AD objects
-            
-            Returns:
-                    A new VAD object, which has all the variables and their val, der, der2
-    """
-    new_val = np.array([ADs[i].val for i in range(len(ADs))])
-    new_der = np.array([ADs[i].der for i in range(len(ADs))])
-    new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
-    return VAD.VAD(new_val, new_der, new_der2)
+# def set_VAD(ADs):
+#     """
+#     Uses the information of new ADs to generate a new VAD
+#
+#             Parameters:
+#                     ADs: An array of AD objects
+#
+#             Returns:
+#                     A new VAD object, which has all the variables and their val, der, der2
+#     """
+#     new_val = np.array([ADs[i].val for i in range(len(ADs))])
+#     new_der = np.array([ADs[i].der for i in range(len(ADs))])
+#     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
+#     return VAD.VAD(new_val, new_der, new_der2)
 
 
 def choose(n, k):
@@ -113,9 +113,9 @@ def abs(ad):
             higher_der = np.array([0.0] * len(ad.higher))
             higher_der[0] = der
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([abs(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([abs(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.abs(ad)
@@ -142,9 +142,9 @@ def exp(ad):
         else:
             higher_der = np.array([new_val] * len(ad.higher))
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([exp(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([exp(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.exp(ad)
@@ -194,9 +194,9 @@ def log(ad):  # consider different base?
                 # mainval = math.pow(ad.val[0], -n)
                 higher_der[i] = coef * mainval
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([log(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([log(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.log(ad)
@@ -242,9 +242,9 @@ def sin(ad):
             higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([sin(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([sin(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.sin(ad)
@@ -272,9 +272,9 @@ def cos(ad):
             higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([cos(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([cos(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.cos(ad)
@@ -294,9 +294,9 @@ def tan(ad):
     """
     if isinstance(ad, AD.AD):
         return sin(ad) / cos(ad)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([tan(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([tan(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.tan(ad)
@@ -340,9 +340,9 @@ def sinh(ad):
             higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([sinh(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([sinh(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.sinh(ad)
@@ -370,9 +370,9 @@ def cosh(ad):
             higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([cosh(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([cosh(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.cosh(ad)
@@ -407,9 +407,9 @@ def tanh(ad):
 
     if isinstance(ad, AD.AD):
         return sinh(ad)/cosh(ad)
-    elif isinstance(ad, VAD.VAD):
-        AD_result = np.array([tanh(advar) for advar in ad.variables])
-        return set_VAD(AD_result)
+    # elif isinstance(ad, VAD.VAD):
+    #     AD_result = np.array([tanh(advar) for advar in ad.variables])
+    #     return set_VAD(AD_result)
     else:
         try:
             return np.tanh(ad)
