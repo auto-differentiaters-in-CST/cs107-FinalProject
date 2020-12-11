@@ -1,10 +1,47 @@
 import math
+import numbers
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import autodiffcst.AD as AD
 
-def chain_rule(ad, new_val, der):
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import numpy as np
+import sympy as sp
+# import AD as AD
+# import AD_vec as VAD
+import autodiffcst.AD as AD
+import autodiffcst.AD_vec as VAD
+
+
+def set_VAD(ADs):
+    """
+    Uses the information of new ADs to generate a new VAD
+
+            Parameters:
+                    ADs: An array of AD objects
+            
+            Returns:
+                    A new VAD object, which has all the variables and their val, der, der2
+    """
+    new_val = np.array([ADs[i].val for i in range(len(ADs))])
+    new_der = np.array([ADs[i].der for i in range(len(ADs))])
+    new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
+    return VAD.VAD(new_val, new_der, new_der2)
+
+
+def choose(n, k):
+    """
+    A helper function that gives the value of n choose k, according to math definition
+
+            Parameters:
+                    n, k: both natural numbers, invalid input cases handled by numpy
+            
+            Returns:
+                    the arithmetic value of n choose k, a scalar
+    """
+    return np.math.factorial(n) / (np.math.factorial(k) * np.math.factorial(n - k))
+
+
+def chain_rule(ad, new_val, der, der2, higher_der=None):
     """
     Applies chain rule to returns a new AD object with correct value and derivatives.
 
@@ -16,15 +53,27 @@ def chain_rule(ad, new_val, der):
             Returns:
                     new_ad (AD): a new AD object with correct value and derivatives
     """
-    new_ders = dict()
-    for tag in ad.tags:
-        new_ders[tag] = der * ad.ders[tag]
-    new_ad = AD.AD(new_val, ad.tags, new_ders)
+    new_der = der * ad.der
+    new_der2 = der * ad.der2 + der2 * np.matmul(np.array([ad.der]).T, np.array([ad.der]))
+    if ad.higher is None:
+        new_ad = AD.AD(new_val, tag=ad.tag, der=new_der, der2=new_der2)
+    else:
+        new_higher_der = np.array([0.0] * len(ad.higher))
+        new_higher_der[0] = new_der
+        new_higher_der[1] = new_der2
+        for i in range(2, len(ad.higher)):
+            n = i + 1
+            sum = 0
+            for k in range(1, n + 1):
+                sum += higher_der[k - 1] * sp.bell(n, k, ad.higher[0:n - k + 1])
+            new_higher_der[i] = sum
+        new_ad = AD.AD(new_val, tag=ad.tag, der=new_der, der2=new_der2, order=len(ad.higher))
+        new_ad.higher = new_higher_der
+
     return new_ad
 
 
-# all functions could take either AD object or a number as input
-# will raise TypeError with other inputs 
+# all functions could take either VAD, or AD object or a number/array/list (equivalent to numpy functions) as input
 
 def abs(ad):
     """
@@ -37,17 +86,42 @@ def abs(ad):
                     new_ad (AD): the new AD object after applying absolute value function
     """
     if isinstance(ad, AD.AD):
-        new_val = math.fabs(ad.val)
-        if ad.val > 0:
-            der = 1
-        elif ad.val < 0:
-            der = -1
+        new_val = np.abs((ad.val))
+        der = np.array([0] * len(ad))
+        der2 = np.array([0] * len(ad))
+
+        def get_der(v):
+            if v > 0:
+                return 1
+            elif v < 0:
+                return -1
+            else:
+                raise Exception("Derivative undefined")
+
+        for i in range(0, len(ad.val)):
+            if isinstance(ad.val[i], numbers.Integral):
+                der[i] = get_der(ad.val[i])
+            else:
+                print(type(ad.val[i]))
+                sub_der = np.array([get_der(v) for v in ad.val[i]])
+                der[i] = sub_der
+                der2[i] = np.array([0] * len(ad.val[i]))
+
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
         else:
-            raise Exception("Derivative undefined")
-        return chain_rule(ad, new_val, der)
+            higher_der = np.array([0.0] * len(ad.higher))
+            higher_der[0] = der
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([abs(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        return math.fabs(ad)
-    
+        try:
+            return np.abs(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
 
 def exp(ad):
     """
@@ -60,14 +134,39 @@ def exp(ad):
                     new_ad (AD): the new AD object after applying exponential function
     """
     if isinstance(ad, AD.AD):
-        new_val = math.exp(ad.val)
+        new_val = np.exp(ad.val)
         der = new_val
-        return chain_rule(ad, new_val, der)
+        der2 = new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([new_val] * len(ad.higher))
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([exp(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        return math.exp(ad)
+        try:
+            return np.exp(ad)
+        except:
+            raise TypeError("Your input is not valid.")
 
 
-def log(ad): #consider different base?
+def fact_ad(x, n):
+    """
+    Returns x(x-1)(x-2)...(x-n+1), the product of n terms, factorial-like operation
+            Parameters:
+                    x, n: two scalars
+            Returns:
+                    x(x-1)(x-2)...(x-n+1): scalar
+    """
+    prod = 1
+    for i in range(n):
+        prod = prod * (x - i)
+    return prod
+
+
+def log(ad):  # consider different base?
     """
     Returns the new AD object after applying log(base e) function.
 
@@ -78,28 +177,34 @@ def log(ad): #consider different base?
                     new_ad (AD): the new AD object after applying log(base e) function
     """
     if isinstance(ad, AD.AD):
-        new_val = math.log(ad.val)
-        der = 1/ad.val
-        return chain_rule(ad, new_val, der)
+        new_val = np.log(ad.val)
+        der = 1 / ad.val
+        der2 = -1 / ad.val ** 2
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            # starting from the first derivative: x**-1
+            higher_der = np.array([0.0] * len(ad.higher))
+            higher_der[0] = der
+            higher_der[1] = der2
+            for i in range(2, len(ad.higher)):
+                n = i + 1
+                coef = fact_ad(-1, n - 1)
+                mainval = math.pow(ad.val[0], -n)
+                higher_der[i] = coef * mainval
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([log(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        return math.log(ad)
+        try:
+            return np.log(ad)
+        except:
+            raise TypeError("Your input is not valid.")
 
-def pow(ad, y):
-    """
-    Returns the new AD object after applying power function with power y.
 
-            Parameters:
-                    ad (AD): An AD object to be applied power function with power y on
 
-            Returns:
-                    new_ad (AD): the new AD object after applying power function with power y
-    """
-    if isinstance(ad, AD.AD):
-        new_val = math.pow(ad.val, y)
-        der = y * math.pow(ad.val, y - 1)
-        return chain_rule(ad, new_val, der)
-    else:
-        return math.pow(ad, y)
+
 
 def sqrt(ad):
     """
@@ -113,6 +218,7 @@ def sqrt(ad):
     """
     return ad ** 0.5
 
+
 # trig
 def sin(ad):
     """
@@ -124,14 +230,26 @@ def sin(ad):
             Returns:
                     new_ad (AD): the new AD object after applying sine function
     """
+    print(type(ad))
     if isinstance(ad, AD.AD):
         new_val = sin(ad.val)
         der = cos(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.sin(ad)
+        der2 = -new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([sin(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.sin(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
 
 def cos(ad):
     """
@@ -146,11 +264,22 @@ def cos(ad):
     if isinstance(ad, AD.AD):
         new_val = cos(ad.val)
         der = -sin(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.cos(ad)
+        der2 = -cos(ad.val)
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([cos(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.cos(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
 
 def tan(ad):
     """
@@ -163,71 +292,30 @@ def tan(ad):
                     new_ad (AD): the new AD object after applying tangent function
     """
     if isinstance(ad, AD.AD):
-        new_val = tan(ad.val)
-        der = sec(ad.val)**2
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.tan(ad)
+        return sin(ad) / cos(ad)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([tan(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.tan(ad)
+        except:
+            raise TypeError("Your input is not valid.")
 
-def cot(ad):
-    """
-    Returns the new AD object after applying cotangent function.
 
-            Parameters:
-                    ad (AD): An AD object to be applied cotangent function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying cotangent function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = cot(ad.val)
-        der = -csc(ad.val)**2
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return 1/math.tan(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def sec(ad):
+# helper function for tan
+def sec(num):
     """
     Returns the new AD object after applying secant function.
-
             Parameters:
-                    ad (AD): An AD object to be applied secant function on
-
+                    num: a number or array
             Returns:
-                    new_ad (AD): the new AD object after applying secant function
+                    the result after applying secant function
     """
-    if isinstance(ad, AD.AD):
-        new_val = sec(ad.val)
-        der = sec(ad.val)*tan(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return 1/math.cos(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def csc(ad):
-    """
-    Returns the new AD object after applying cosecant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied cosecant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying cosecant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = csc(ad.val)
-        der = -csc(ad.val)*cot(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return 1/math.sin(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
+    try:
+        return 1 / np.cos(num)
+    except:
+        raise TypeError("sec function can only handle number or array.")
 
 
 # hyperbolic trig
@@ -244,11 +332,22 @@ def sinh(ad):
     if isinstance(ad, AD.AD):
         new_val = sinh(ad.val)
         der = cosh(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.sinh(ad)
+        der2 = sinh(ad.val)
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher) / 4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([sinh(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.sinh(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
 
 def cosh(ad):
     """
@@ -263,11 +362,36 @@ def cosh(ad):
     if isinstance(ad, AD.AD):
         new_val = cosh(ad.val)
         der = sinh(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.cosh(ad)
+        der2 = new_val
+        if ad.higher is None:
+            return chain_rule(ad, new_val, der, der2)
+        else:
+            higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher) / 4)))
+            higher_der = higher_der[0:len(ad.higher)]
+            return chain_rule(ad, new_val, der, der2, higher_der)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([cosh(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.cosh(ad)
+        except:
+            raise TypeError("Your input is not valid.")
+
+
+def sech(ad):
+    """
+    Returns the new AD object after applying hyperbolic secant function.
+            Parameters:
+                    ad (AD): An AD object to be applied hyperbolic secant function on
+            Returns:
+                    new_ad (AD): the new AD object after applying hyperbolic secant function
+    """
+    try:
+        return 1 / np.cosh(ad)
+    except:
+        raise TypeError("sec function can only handle number or array.")
+
 
 def tanh(ad):
     """
@@ -279,324 +403,14 @@ def tanh(ad):
             Returns:
                     new_ad (AD): the new AD object after applying hyperbolic tangent function
     """
+
     if isinstance(ad, AD.AD):
-        new_val = tanh(ad.val)
-        der = sech(ad.val)**2
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.tanh(ad)
+        return sinh(ad)/cosh(ad)
+    elif isinstance(ad, VAD.VAD):
+        AD_result = np.array([tanh(advar) for advar in ad.variables])
+        return set_VAD(AD_result)
     else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def coth(ad):
-    """
-    Returns the new AD object after applying hyperbolic cotangent function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic cotangent function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic cotangent function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = coth(ad.val)
-        der = -csch(ad.val)**2
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.cosh(ad)/math.sinh(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def sech(ad):
-    """
-    Returns the new AD object after applying hyperbolic secant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic secant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic secant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = sech(ad.val)
-        der = -sech(ad.val)*tanh(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return 1/math.cosh(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def csch(ad):
-    """
-    Returns the new AD object after applying hyperbolic cosecant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic cosecant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic cosecant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = csch(ad.val)
-        der = -csch(ad.val)*coth(ad.val)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return 1/math.sinh(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-
-
-
-# inverse trig
-def asin(ad):
-    """
-    Returns the new AD object after applying arc sine function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied arc sine function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying arc sine function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = asin(ad.val)
-        der = 1/math.sqrt(1-ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.asin(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def acos(ad):
-    """
-    Returns the new AD object after applying arc cosine function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied arc cosine function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying arc cosine function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = acos(ad.val)
-        der = -1/math.sqrt(1-ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.acos(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def atan(ad):
-    """
-    Returns the new AD object after applying arc tangent function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied arc tangent function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying arc tangent function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = atan(ad.val)
-        der = 1/(1+ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.atan(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def acot(ad):
-    """
-    Returns the new AD object after applying arc cotangent function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied arc cotangent function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying arc cotangent function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = acot(ad.val)
-        der = -1/(1+ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.atan(1/ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def asec(ad):
-    """
-    Returns the new AD object after applying arc secant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied arc secant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying arc secant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = asec(ad.val)
-        if abs(ad.val) <= 1:
-            raise ValueError("To be differentiable, asec cannot take input within (-1,1).")
-        else:
-            der = 1/(abs(ad.val)*math.sqrt(ad.val**2-1))
-            return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.acos(1/ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def acsc(ad):
-    """
-    Returns the new AD object after applying arc cosecant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied arc cosecant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying arc cosecant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = acsc(ad.val)
-        if abs(ad.val) <= 1:
-            raise ValueError("To be differentiable, acsc cannot take input within (-1,1).")
-        else:
-            der = -1/(abs(ad.val)*math.sqrt(ad.val**2-1))
-            return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.asin(1/ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-    
-
-
-# inverse hyperbolic trig
-def asinh(ad):
-    """
-    Returns the new AD object after applying hyperbolic arc sine function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic arc sine function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic arc sine function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = asinh(ad.val)
-        der = 1/math.sqrt(1+ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        return math.asinh(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def acosh(ad):
-    """
-    Returns the new AD object after applying hyperbolic arc cosine function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic arc cosine function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic arc cosine function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = acosh(ad.val)
-        der = 1/math.sqrt(ad.val**2-1)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        if ad < 1:
-            raise ValueError("The domain of acosh is [1,infty).")
-        else:
-            return math.acosh(ad)
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def atanh(ad):
-    """
-    Returns the new AD object after applying hyperbolic arc tangent function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic arc tangent function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic arc tangent function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = atanh(ad.val)
-        der = 1/(1-ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        if ad > -1 and ad < 1:
-            return math.atanh(ad)
-        else:
-            raise ValueError("The domain of atanh is (-1,1).")
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def acoth(ad):
-    """
-    Returns the new AD object after applying hyperbolic arc cotangent function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic arc cotangent function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic arc cotangent function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = acoth(ad.val)
-        der = 1/(1-ad.val**2)
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        if -1 <= ad and ad <= 1:
-            raise ValueError("The domain of acoth is (-infty,-1)U(1,infty).")
-        else:
-            return 0.5*math.log((ad+1)/(ad-1))
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def asech(ad):
-    """
-    Returns the new AD object after applying hyperbolic arc secant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic arc secant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic arc secant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = asech(ad.val)
-        der = -1/(ad.val*(ad.val+1)*math.sqrt((1-ad.val)/(1+ad.val)))
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        if ad > 0 and ad <= 1: 
-            return math.log((1+math.sqrt(1-ad**2))/ad)
-        else:
-            raise ValueError("The domain of asech is (0,1].")
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
-
-def acsch(ad):
-    """
-    Returns the new AD object after applying hyperbolic arc cosecant function.
-
-            Parameters:
-                    ad (AD): An AD object to be applied hyperbolic arc cosecant function on
-
-            Returns:
-                    new_ad (AD): the new AD object after applying hyperbolic arc cosecant function
-    """
-    if isinstance(ad, AD.AD):
-        new_val = acsch(ad.val)
-        der = -1/(ad.val**2*math.sqrt(1/ad.val**2+1))
-        return chain_rule(ad, new_val, der)
-    elif isinstance(ad, int) or isinstance(ad, float):
-        if ad == 0:
-            raise ValueError("The domain of acsch is (-infty,0)U(0,infty).")
-        else:
-            return math.log(1/ad+math.sqrt(1/(ad**2)+1))
-    else:
-        raise TypeError("Input should be either an AD object or a number.")
+        try:
+            return np.tanh(ad)
+        except:
+            raise TypeError("Your input is not valid.")
