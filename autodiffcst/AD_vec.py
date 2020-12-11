@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import autodiffcst.AD as ad
 import autodiffcst.admath as admath
 
+
 class VAD():
 
     def __init__(self, val, der=None, der2=None, order=2, higher=None):
@@ -477,7 +478,7 @@ class VAD():
         return set_VAD(AD_result)
 
 
-    def diff(self, direction=None, order = 1):
+    def diff(self, direction, order = 1):
         """
         Calculate and return the derivatives of the function represented by an AD object.
     
@@ -489,19 +490,13 @@ class VAD():
                         An array representing the derivatives (or derivative) of the AD object, 
                         with directions indicted by the input direction
         """   
-        if order == 1:
-            if not direction:
-                return self.der
-            else:
+        if order == 1 and isinstance(direction,int):
+            return self.der[:,direction]
                 
-                return np.take(self.der, direction)
-        elif order == 2:
-            if not direction:
-                return self.der2
-            else:
-                return self.der2[direction]
+        elif order == 2 and isinstance(direction, list) and len(direction) ==2:
+            return self.der2[:,direction[0],direction[1]]
         else:
-            raise Exception("Sorry, this model can only handle first order or second order derivatives")
+            raise Exception("Order exceeds 2 or length of direction and order don't match.")
 
 # helper function
 def set_VAD(ADs):
@@ -510,16 +505,47 @@ def set_VAD(ADs):
     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD(new_val, new_der, new_der2)
 
+def my_decorator(func):
+    def wrapper(vad):
+        try:
+            AD_result = np.array([func(ad) for ad in vad.variables])
+            return set_VAD(AD_result)
+        except:
+            return func(vad)
+    return wrapper
+
+
+exp = my_decorator(admath.exp)
+abs = my_decorator(admath.abs)
+log = my_decorator(admath.log)
+sqrt = my_decorator(admath.sqrt)
+sin = my_decorator(admath.sin)
+cos = my_decorator(admath.cos)
+tan = my_decorator(admath.tan)
+sinh = my_decorator(admath.sinh)
+cosh = my_decorator(admath.cosh)
+tanh = my_decorator(admath.tanh)
+
+
+def pow(vad,y):
+    try:
+        AD_result = np.array([ad**y for ad in vad.variables])
+        return set_VAD(AD_result)
+    except:
+        return np.power(vad,y)
+
+
+
 # jacobian
 def jacobian(funcs):
     diffs = []
     if isinstance(funcs,VAD) or isinstance(funcs,ad.AD):
-        return funcs.diff()
+        return funcs.der
     elif isinstance(funcs,list) or isinstance(funcs,np.ndarray):
         for func in funcs:
             if not isinstance(func, ad.AD):
                 raise TypeError("Invalid Type. All functions should be AD object.")
-            diffs.append(func.diff())
+            diffs.append(func.der)
         return np.vstack(diffs)
 
 # hessian
@@ -535,13 +561,28 @@ def hessian(func):
 
 
 if __name__ == "__main__":
-    x = VAD([1,2])
-    f = admath.sin(x[0])
-    print(f)
-    g = admath.cos(x[0])
-    k = g**(-1.0)
-    print(k)
-    print(f*k)
+
+    # x = VAD([3,1])
+    # f = 2*x
+    # g = x[1]*x[0]
+    # print(f.diff(1,1))
+    # print(f.diff([1,0],2))
+    # print(g.diff(0,1))
+    # print(g.diff(1,1))
+    # print(g.diff([0,0],2))
+    # #print(f)
+    # print(f.diff(0,1))
+    x = ad.AD(1, tag=0, size=2)
+    y = ad.AD(2, tag=1, size=2)
+    ADs = np.array([x, y])
+    print
+
+    # f = admath.sin(x[0])
+    # print(f)
+    # g = admath.cos(x[0])
+    # k = g**(-1.0)
+    # print(k)
+    # print(f*k)
 
 
     # f = (x[0]**3)*(x[0]**2)

@@ -531,20 +531,14 @@ class AD():
                 Returns:
                         A dictionary (or float) representing the derivatives (or derivative) of the AD object, 
                         with directions indicted by the input direction
-        """         
-        
-        if order == 1:
-            if not direction:
-                return self.der
-            else:
-                return np.take(self.der, direction)
-        elif order == 2:
-            if not direction:
-                return self.der2
-            else:
-                return self.der2[direction]
+        """
+        if order == 1 and isinstance(direction, int):
+            return self.der[direction]
+
+        elif order == 2 and isinstance(direction, list) and len(direction) == 2:
+            return self.der2[direction[0], direction[1]]
         else:
-            raise Exception("Orders should be 1 or 2. For other orders, please use higherdiff(order).")
+            raise Exception("Order exceeds 2 or length of direction and order don't match.")
 
 
     # Calculate higher order derivatives
