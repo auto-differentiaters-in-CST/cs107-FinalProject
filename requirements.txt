@@ -12,9 +12,10 @@
 # pip install -r requirements.txt
 # Remember to also add them in setup.cfg but unpinned.
 # Example:
-# pytest-cov #== 2.10.1
+
 numpy 
 sympy >= 1.0
 pytest 
 coverage
+pytest-cov == 2.10.1
 
