@@ -73,7 +73,7 @@ def test_log():
     assert np.allclose(f.higher,higherarr), "Error: higherder for log(AD) is not correct."
     y = VAD([1,2,3])
     g = log(y)
-    assert np.allclose(g.val, np.log([[1],[2],[3]])), "Error: log didn't apply properly on VAD."
+    assert np.allclose(g.val, np.log([1,2,3])), "Error: log didn't apply properly on VAD."
     dertest = np.zeros((3,3))
     dertest[0,0] = 1
     dertest[1,1] = 1/2
@@ -102,7 +102,7 @@ def test_exp():
     assert np.allclose(f.higher,higherarr), "Error: higherder for exp(AD) is not correct."
     y = VAD([1,2,3])
     g = exp(y)
-    assert np.allclose(g.val, np.exp([[1],[2],[3]])), "Error: exp didn't apply properly on VAD."
+    assert np.allclose(g.val, np.exp([1,2,3])), "Error: exp didn't apply properly on VAD."
     dertest = np.zeros((3,3))
     dertest[0,0] = np.exp(1)
     dertest[1,1] = np.exp(2)
@@ -124,7 +124,7 @@ def test_sqrt():
     assert np.abs(f.higherdiff(3) - 3/32/np.sqrt(2))<1e-8, "Error: higherder for sqrt(AD) is not correct."
     y = VAD([1,2])
     g = sqrt(y)
-    assert np.allclose(g.val, np.sqrt([[1],[2]])), "Error: sqrt didn't apply properly on VAD."
+    assert np.allclose(g.val, np.sqrt([1,2])), "Error: sqrt didn't apply properly on VAD."
     dertest = np.zeros((2,2))
     dertest[0,0] = 0.5
     dertest[1,1] = 0.5*1/np.sqrt(2)
@@ -146,7 +146,7 @@ def test_sin_ad():
     assert sin(x+y).val[0] == np.sin(3), "Error: sin(x+y), false value."
     assert np.allclose(jacobian(sin(x+y)),np.array([np.cos(3),np.cos(3)])), "Error: sin(x+y), false derivative."
     f = sin(VAD([1,2]))
-    assert np.allclose(f.val,np.array([[np.sin(1)],[np.sin(2)]])), "Error: sin(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.sin(1),np.sin(2)])), "Error: sin(VAD[1,2]), false value."
     assert np.allclose(sin(x+y).der2,np.array([[-np.sin(3),-np.sin(3)],[-np.sin(3),-np.sin(3)]])), "Error: sin(x+y), false der2."
     der1 = np.zeros((2,2))
     der1[0,0] = np.cos(1)
@@ -173,7 +173,7 @@ def test_cos_ad():
     assert np.allclose(jacobian(cos(x+y)),np.array([-np.sin(3),-np.sin(3)])), "Error: cos(x+y), false derivative."
     f = cos(VAD([1,2]))
     assert np.allclose(cos(x+y).der2,np.array([[-np.cos(3),-np.cos(3)],[-np.cos(3),-np.cos(3)]])), "Error: cos(x+y), false der2."
-    assert np.allclose(f.val,np.array([[np.cos(1)],[np.cos(2)]])), "Error: cos(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.cos(1),np.cos(2)])), "Error: cos(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = -np.sin(1)
     der1[1,1] = -np.sin(2)
@@ -198,7 +198,7 @@ def test_tan_ad():
     assert tan(x+y).val[0] == np.tan(3), "Error: tan(x+y), false value."
     assert np.allclose(jacobian(tan(x+y)),np.array([admath.sec(3)**2,admath.sec(3)**2])), "Error: tan(x+y), false derivative."
     f = tan(VAD([1,2]))
-    assert np.allclose(f.val,np.array([[np.tan(1)],[np.tan(2)]])), "Error: tan(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.tan(1),np.tan(2)])), "Error: tan(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     assert np.allclose(tan(x+y).der2,np.array([[2*tan(3)*admath.sec(3)**2,2*tan(3)*admath.sec(3)**2],[2*tan(3)*admath.sec(3)**2,2*tan(3)*admath.sec(3)**2]])), "Error: tan(x+y), false der2."
     der1[0,0] = admath.sec(1)**2
@@ -228,7 +228,7 @@ def test_sinh_ad():
     assert np.allclose(jacobian(sinh(x+y)),np.array([np.cosh(3),np.cosh(3)])), "Error: sinh(x+y), false derivative."
     f = sinh(VAD([1,2]))
     assert np.allclose(sinh(x+y).der2,np.array([[np.sinh(3),np.sinh(3)],[np.sinh(3),np.sinh(3)]])), "Error: cosh(x+y), false der2."
-    assert np.allclose(f.val,np.array([[np.sinh(1)],[np.sinh(2)]])), "Error: cosh(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.sinh(1),np.sinh(2)])), "Error: cosh(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = np.cosh(1)
     der1[1,1] = np.cosh(2)
@@ -254,7 +254,7 @@ def test_cosh_ad():
     assert np.allclose(jacobian(cosh(x+y)),np.array([np.sinh(3),np.sinh(3)])), "Error: cosh(x+y), false derivative."
     f = cosh(VAD([1,2]))
     assert np.allclose(cosh(x+y).der2,np.array([[np.cosh(3),np.cosh(3)],[np.cosh(3),np.cosh(3)]])), "Error: cosh(x+y), false der2."
-    assert np.allclose(f.val,np.array([[np.cosh(1)],[np.cosh(2)]])), "Error: cosh(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.cosh(1),np.cosh(2)])), "Error: cosh(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = np.sinh(1)
     der1[1,1] = np.sinh(2)
@@ -280,7 +280,7 @@ def test_tanh_ad():
     assert np.allclose(jacobian(tanh(x+y)),np.array([admath.sech(3)**2,admath.sech(3)**2])), "Error: tanh(x+y), false derivative."
     assert np.allclose(tanh(x+y).der2,np.array([[-2*tanh(3)*admath.sech(3)**2,-2*tanh(3)*admath.sech(3)**2],[-2*tanh(3)*admath.sech(3)**2,-2*tanh(3)*admath.sech(3)**2]])), "Error: tanh(x+y), false der2."
     f = tanh(VAD([1,2]))
-    assert np.allclose(f.val,np.array([[np.tanh(1)],[np.tanh(2)]])), "Error: tanh(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.tanh(1),np.tanh(2)])), "Error: tanh(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = admath.sech(1)**2
     der1[1,1] = admath.sech(2)**2
