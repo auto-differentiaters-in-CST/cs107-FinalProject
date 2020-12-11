@@ -1,0 +1,13 @@
+README.rst
+setup.cfg
+setup.py
+src/autodiffCST.egg-info/PKG-INFO
+src/autodiffCST.egg-info/SOURCES.txt
+src/autodiffCST.egg-info/dependency_links.txt
+src/autodiffCST.egg-info/not-zip-safe
+src/autodiffCST.egg-info/requires.txt
+src/autodiffCST.egg-info/top_level.txt
+src/autodiffcst/AD.py
+src/autodiffcst/AD_vec.py
+src/autodiffcst/__init__.py
+src/autodiffcst/admath.py
