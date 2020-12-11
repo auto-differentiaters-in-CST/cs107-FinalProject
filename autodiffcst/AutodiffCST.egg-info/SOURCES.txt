@@ -277,7 +277,6 @@ docs/api/modules.rst
 tests/.DS_Store
 tests/AD_test.py
 tests/test_admath.py
-tests/using_VAD_for_Newtons_method.py
 tests/__pycache__/AD_test.cpython-37-pytest-5.2.1.pyc
 tests/__pycache__/conftest.cpython-37-pytest-5.2.1.pyc
 tests/__pycache__/test_skeleton.cpython-37-pytest-5.2.1.pyc

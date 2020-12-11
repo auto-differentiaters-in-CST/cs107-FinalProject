@@ -83,9 +83,9 @@ class AD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
-        """           
-        return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tag, self.der, self.der2)
-    
+        """
+        return "AD(value: {0}, derivatives: {1})".format(self.val, self.der)
+
     def __str__(self):
         """
         Overwrites the __str__ dunder method to nicely turn an AD object into a string.
@@ -96,7 +96,7 @@ class AD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """        
-        return "AD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val,self.tag, self.der, self.der2)
+        return "AD(value: {0}, derivatives: {1})".format(self.val,self.der)
 
     def __eq__(self, other):
         if isinstance(other, AD):
@@ -112,19 +112,37 @@ class AD():
     
     def fullequal(self, other):
         if isinstance(other, AD):
-            if (self.val == other.val) and (self.der == other.der) and (self.der2 == other.der2): 
-                return True
-            else:
-                return False
+            return np.allclose(self.val, other.val) and np.allclose(self.der,other.der) and np.allclose(self.der2, other.der2)
         else:
             raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
-    
 
+
+    def __lt__(self, other):
+        if isinstance(other, AD):
+            return self.val < other.val
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+
+    def __gt__(self, other):
+        if isinstance(other, AD):
+            return self.val > other.val
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
 
     def __le__(self, other):
-        pass
+        if isinstance(other, AD):
+            return self.val <= other.val
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+
+
     def __ge__(self, other):
-        pass
+        if isinstance(other, AD):
+            return self.val >= other.val
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+
+
     def __len__(self):
         return len(self.tag)
     ## Unary 
@@ -531,20 +549,14 @@ class AD():
                 Returns:
                         A dictionary (or float) representing the derivatives (or derivative) of the AD object, 
                         with directions indicted by the input direction
-        """         
-        
-        if order == 1:
-            if not direction:
-                return self.der
-            else:
-                return np.take(self.der, direction)
-        elif order == 2:
-            if not direction:
-                return self.der2
-            else:
-                return self.der2[direction]
+        """
+        if order == 1 and isinstance(direction, int):
+            return self.der[direction]
+
+        elif order == 2 and isinstance(direction, list) and len(direction) == 2:
+            return self.der2[direction[0], direction[1]]
         else:
-            raise Exception("Orders should be 1 or 2. For other orders, please use higherdiff(order).")
+            raise Exception("Order exceeds 2 or length of direction and order don't match.")
 
 
     # Calculate higher order derivatives
