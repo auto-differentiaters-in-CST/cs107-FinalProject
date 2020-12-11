@@ -6,26 +6,10 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import numpy as np
 import sympy as sp
-# import AD as AD
-# import AD_vec as VAD
 import autodiffcst.AD as AD
 
 
 
-# def set_VAD(ADs):
-#     """
-#     Uses the information of new ADs to generate a new VAD
-#
-#             Parameters:
-#                     ADs: An array of AD objects
-#
-#             Returns:
-#                     A new VAD object, which has all the variables and their val, der, der2
-#     """
-#     new_val = np.array([ADs[i].val for i in range(len(ADs))])
-#     new_der = np.array([ADs[i].der for i in range(len(ADs))])
-#     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
-#     return VAD.VAD(new_val, new_der, new_der2)
 
 
 def choose(n, k):
@@ -37,6 +21,10 @@ def choose(n, k):
             
             Returns:
                     the arithmetic value of n choose k, a scalar
+            
+            Example:
+            >>> choose(5,4)
+            5.0 
     """
     return np.math.factorial(n) / (np.math.factorial(k) * np.math.factorial(n - k))
 
@@ -52,6 +40,14 @@ def chain_rule(ad, new_val, der, der2, higher_der=None):
 
             Returns:
                     new_ad (AD): a new AD object with correct value and derivatives
+
+            Example:
+            >>> import AD as AD
+            >>> x = AD.AD(2,order=5)
+            >>> newad = 5*x**3+2
+            >>> higherde = np.array([60,60,30,0,0])
+            >>> chain_rule(x, 42, 60, 60, higher_der=higherde)
+            AD(value: [42], derivatives: [60.])
     """
     new_der = der * ad.der
     new_der2 = der * ad.der2 + der2 * np.matmul(np.array([ad.der]).T, np.array([ad.der]))
@@ -73,8 +69,6 @@ def chain_rule(ad, new_val, der, der2, higher_der=None):
     return new_ad
 
 
-# all functions could take either VAD, or AD object or a number/array/list (equivalent to numpy functions) as input
-
 def abs(ad):
     """
     Returns the new AD object after applying absolute value function.
@@ -84,6 +78,11 @@ def abs(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying absolute value function
+
+            Example:
+            >>> x = AD.AD(-2,order=5) 
+            >>> abs(x)
+            AD(value: [2], derivatives: [-1.])
     """
     if isinstance(ad, AD.AD):
         new_val = np.abs((ad.val))
@@ -113,9 +112,6 @@ def abs(ad):
             higher_der = np.array([0.0] * len(ad.higher))
             higher_der[0] = der
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([abs(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.abs(ad)
@@ -132,6 +128,11 @@ def exp(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying exponential function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> exp(x)
+            AD(value: [7.3890561], derivatives: [7.3890561])
     """
     if isinstance(ad, AD.AD):
         new_val = np.exp(ad.val)
@@ -142,9 +143,6 @@ def exp(ad):
         else:
             higher_der = np.array([new_val] * len(ad.higher))
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([exp(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.exp(ad)
@@ -155,10 +153,17 @@ def exp(ad):
 def fact_ad(x, n):
     """
     Returns x(x-1)(x-2)...(x-n+1), the product of n terms, factorial-like operation
+
             Parameters:
                     x, n: two scalars
+
             Returns:
                     x(x-1)(x-2)...(x-n+1): scalar
+
+            Example:
+            >>> fact_ad(5,4)
+            120
+
     """
     prod = 1
     for i in range(n):
@@ -175,6 +180,11 @@ def log(ad):  # consider different base?
 
             Returns:
                     new_ad (AD): the new AD object after applying log(base e) function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> log(x)
+            AD(value: [0.69314718], derivatives: [0.5])
     """
     if isinstance(ad, AD.AD):
         new_val = np.log(ad.val)
@@ -194,9 +204,6 @@ def log(ad):  # consider different base?
                 # mainval = math.pow(ad.val[0], -n)
                 higher_der[i] = coef * mainval
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([log(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.log(ad)
@@ -216,6 +223,11 @@ def sqrt(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying square root function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> sqrt(x)
+            AD(value: [1.41421356], derivatives: [0.35355339])
     """
     return ad ** 0.5
 
@@ -230,6 +242,11 @@ def sin(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying sine function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> sin(x)
+            AD(value: [0.90929743], derivatives: [-0.41614684])
     """
 
     if isinstance(ad, AD.AD):
@@ -242,9 +259,6 @@ def sin(ad):
             higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([sin(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.sin(ad)
@@ -261,6 +275,11 @@ def cos(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying cosine function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> cos(x)
+            AD(value: [-0.41614684], derivatives: [-0.90929743])
     """
     if isinstance(ad, AD.AD):
         new_val = cos(ad.val)
@@ -272,9 +291,6 @@ def cos(ad):
             higher_der = np.array([der, der2, -der, -der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([cos(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.cos(ad)
@@ -291,12 +307,15 @@ def tan(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying tangent function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> tan(x)
+            AD(value: [-2.18503986], derivatives: [5.7743992])
+
     """
     if isinstance(ad, AD.AD):
         return sin(ad) / cos(ad)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([tan(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.tan(ad)
@@ -312,6 +331,10 @@ def sec(num):
                     num: a number or array
             Returns:
                     the result after applying secant function
+
+            Example:
+            >>> sec(np.array([1,2,3]))
+            array([ 1.85081572, -2.40299796, -1.01010867])
     """
     try:
         return 1 / np.cos(num)
@@ -329,6 +352,11 @@ def sinh(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying hyperbolic sine function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> sinh(x)
+            AD(value: [3.62686041], derivatives: [3.76219569])
     """
     if isinstance(ad, AD.AD):
         new_val = sinh(ad.val)
@@ -340,9 +368,6 @@ def sinh(ad):
             higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([sinh(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.sinh(ad)
@@ -359,6 +384,11 @@ def cosh(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying hyperbolic cosine function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> cosh(x)
+            AD(value: [3.76219569], derivatives: [3.62686041])
     """
     if isinstance(ad, AD.AD):
         new_val = cosh(ad.val)
@@ -370,9 +400,6 @@ def cosh(ad):
             higher_der = np.array([der, der2, der, der2] * int(np.ceil(len(ad.higher) / 4)))
             higher_der = higher_der[0:len(ad.higher)]
             return chain_rule(ad, new_val, der, der2, higher_der)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([cosh(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.cosh(ad)
@@ -383,10 +410,17 @@ def cosh(ad):
 def sech(ad):
     """
     Returns the new AD object after applying hyperbolic secant function.
+
             Parameters:
                     ad (AD): An AD object to be applied hyperbolic secant function on
+
             Returns:
                     new_ad (AD): the new AD object after applying hyperbolic secant function
+
+            Example:
+            >>> sech(np.array([1,2,3]))
+            array([0.64805427, 0.26580223, 0.09932793])
+
     """
     try:
         return 1 / np.cosh(ad)
@@ -403,13 +437,15 @@ def tanh(ad):
 
             Returns:
                     new_ad (AD): the new AD object after applying hyperbolic tangent function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> tanh(x)
+            AD(value: [0.96402758], derivatives: [0.07065082])
     """
 
     if isinstance(ad, AD.AD):
         return sinh(ad)/cosh(ad)
-    # elif isinstance(ad, VAD.VAD):
-    #     AD_result = np.array([tanh(advar) for advar in ad.variables])
-    #     return set_VAD(AD_result)
     else:
         try:
             return np.tanh(ad)
