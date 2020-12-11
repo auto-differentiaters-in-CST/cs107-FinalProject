@@ -237,7 +237,7 @@ setup.py
 .eggs/pytest_cov-2.10.1-py3.7.egg/pytest_cov/__pycache__/plugin.cpython-37-pytest-5.2.1.pyc
 autodiffcst/.DS_Store
 autodiffcst/AD.py
-autodiffcst/VecAD.py
+autodiffcst/AD_vec.py
 autodiffcst/__init__.py
 autodiffcst/admath.py
 autodiffcst/AutodiffCST.egg-info/PKG-INFO
@@ -251,6 +251,12 @@ autodiffcst/__pycache__/__init__.cpython-37.pyc
 autodiffcst/__pycache__/admath.cpython-37.pyc
 autodiffcst/__pycache__/skeleton.cpython-37.pyc
 autodiffcst/__pycache__/trigmath.cpython-37.pyc
+autodiffcst/autodiffCST.egg-info/PKG-INFO
+autodiffcst/autodiffCST.egg-info/SOURCES.txt
+autodiffcst/autodiffCST.egg-info/dependency_links.txt
+autodiffcst/autodiffCST.egg-info/not-zip-safe
+autodiffcst/autodiffCST.egg-info/requires.txt
+autodiffcst/autodiffCST.egg-info/top_level.txt
 docs/.DS_Store
 docs/C_graph_example.jpg
 docs/Makefile
@@ -270,6 +276,8 @@ docs/api/autodiffcst.rst
 docs/api/modules.rst
 tests/.DS_Store
 tests/AD_test.py
+tests/test_admath.py
+tests/using_VAD_for_Newtons_method.py
 tests/__pycache__/AD_test.cpython-37-pytest-5.2.1.pyc
 tests/__pycache__/conftest.cpython-37-pytest-5.2.1.pyc
 tests/__pycache__/test_skeleton.cpython-37-pytest-5.2.1.pyc

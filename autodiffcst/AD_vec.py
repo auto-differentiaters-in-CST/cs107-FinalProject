@@ -99,7 +99,7 @@ class VAD():
     # Comparison Equal
     def __eq__(self, other):
         """
-        compare value of two VAD objects 
+        compare value of two VAD objects' values 
         for example:
             >>> a = AD([1,2,3])
             >>> b = AD([2,2,3])
@@ -114,10 +114,13 @@ class VAD():
                 return False
         else:
             raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
-            
+
+    def __ne__(self, other):
+        return not self == other
+
     def isequal(self, other):
         """
-        compare value of two VAD objects element wise
+        compare value of two VAD objects' values element wise
         for example:
             a = VAD([1,2,3])
             b = VAD([2,2,3])
@@ -128,6 +131,27 @@ class VAD():
             return self.val == other.val      
         else:
             raise TypeError("The input must also be a VAD object.")
+    
+    def fullequal(self, other):
+        """
+        compare value of two VAD objects element wise
+        for example:
+            a = VAD([1,2,3])
+            b = VAD([1,2,3]) * 2
+            >>> a.fullequal(b)
+            array(False) 
+        """
+        if isinstance(other, VAD):
+            if (self.val == other.val) and (self.der == other.der) and (self.der2 == other.der2): 
+                return True
+            else:
+                return False
+        else:
+            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
+    
+
+
+
 
     def __ge__(self, other):
         """
@@ -373,21 +397,23 @@ class VAD():
     
                 Returns:
                         new_self (AD): the new AD object after applying division
-        """            
-        
-        try:
-            return other / self
-        
-        except RecursionError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = other / self.val
-                new_der = self.der * -1 * other / (self.val ** 2)
-                # add second-order
-                new_der2 = self.der2 * -1 * other / (self.der ** 2)
-                new_self = VAD(new_val, new_der, new_der2)                
-                return new_self
-            else:
-                raise TypeError("Invalid type.")
+        """
+
+        AD_result = other/self.variables
+        return set_VAD(AD_result)
+        # try:
+        #     return other / self
+        #
+        # except RecursionError:
+        #     if isinstance(other, int) or isinstance(other, float):
+        #         new_val = other / self.val
+        #         new_der = self.der * -1 * other / (self.val ** 2)
+        #         # add second-order
+        #         new_der2 = self.der2 * -1 * other / (self.der ** 2)
+        #         new_self = VAD(new_val, new_der, new_der2)
+        #         return new_self
+        #     else:
+        #         raise TypeError("Invalid type.")
 
     
     def __itruediv__(self, other):
@@ -446,21 +472,11 @@ class VAD():
     
                 Returns:
                         new_self (AD): the new AD object after applying power function
-        """            
-        try:
-            return other ** self
-        
-        except RecursionError:
-            if isinstance(other, int) or isinstance(other, float):
-                new_val = other ** self.val
-                new_der = np.log(other) * (new_val) * self.der
-                new_der2 = np.log(other) * (new_val) * self.der2
-                new_self = VAD(new_val, new_der, new_der2)  
-                return new_self
-            else:
-                raise TypeError("Invalid type.") 
+        """
+        AD_result = other ** self.variables
+        return set_VAD(AD_result)
 
-    
+
     def diff(self, direction=None, order = 1):
         """
         Calculate and return the derivatives of the function represented by an AD object.
@@ -519,7 +535,14 @@ def hessian(func):
 
 
 if __name__ == "__main__":
-    x = VAD([1], order = 10)
+    x = VAD([1,2])
+    f = admath.sin(x[0])
+    print(f)
+    g = admath.cos(x[0])
+    k = g**(-1.0)
+    print(k)
+    print(f*k)
+
 
     # f = (x[0]**3)*(x[0]**2)
     # print(f)
@@ -527,20 +550,21 @@ if __name__ == "__main__":
     # k = admath.sin(admath.sin(x[0]))
     # f = admath.sin(x[0])*admath.cos(x[0])
     #
-    a = admath.sin(x[0])
-    b = admath.cos(x[0])
-    # #g = admath.tan(x[0])
-    k = a*b
-    #
-    print(a)
-    print(a.higher)
-    # # h = a**(-1)
-    # # print(h)
-    # # print(h.higher)
-    print(b)
-    print(b.higher)
-    # # print (g)
-    # # print(g.higher)
-    # #mul wrong!!!!
-    print(k)
-    print(k.higher)
+    # a = admath.sin(x[0])
+    # b = admath.cos(x[0])
+    # # #g = admath.tan(x[0])
+    # k = a*b
+    # #
+    # print(a)
+    # print(a.higher)
+    # # # h = a**(-1)
+    # # # print(h)
+    # # # print(h.higher)
+    # print(b)
+    # print(b.higher)
+    # # # print (g)
+    # # # print(g.higher)
+    # # #mul wrong!!!!
+    # print(k)
+    # print(k.higher)
+
