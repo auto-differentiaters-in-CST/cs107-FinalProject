@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     setuptools.setup(
         name="autodiffCST", # Replace with your own username
-        version="0.0.9.6",
+        version="0.0.9.7",
         author="Xiaohan Yang, Hanwen Zhang, Runting Yang, Max Li",
         author_email="xiaohan_yang@g.harvard.edu, hzhang1@g.harvard.edu, runting_yang@hsph.harvard.edu, manli@fas.harvard.edu",
         description="This package autodiffCST implements automatic differentiation. Users could perform forward mode, and use it for higher order differentiation.",
