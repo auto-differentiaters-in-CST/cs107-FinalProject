@@ -4,8 +4,7 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-  - pytest tests
-  - coverage run tests
+  - pytest --cov-report term --cov=investpy tests/
 after_success:
 - bash <(curl -s https://codecov.io/bash) -t 2353b173-0e01-4f2e-88fc-12b7fd616f01
 
