@@ -30,9 +30,8 @@ class VAD():
             self.der = der
             self.der2 = der2
         self.tag = np.array([i for i in range(len(self))])
-
         self.size = len(self)
-        
+
         if not isinstance(order, numbers.Integral):
             raise TypeError("Highest order of derivatives must be a positive integer.")
         elif order < 1:
@@ -66,8 +65,7 @@ class VAD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """
-        return "VAD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tag,
-                                                                                             self.der, self.der2)
+        return "VAD(value: {0}, derivatives: {1})".format(self.val, self.der)
 
     def __repr__(self):
         """
@@ -79,8 +77,7 @@ class VAD():
                 Returns:
                         A string containing the current value and derivatives of the AD object.
         """
-        return "VAD(value: {0}, tag: {1}, derivatives: {2}, second derivatives: {3})".format(self.val, self.tag,
-                                                                                             self.der, self.der2)
+        return "VAD(value: {0}, derivatives: {1})".format(self.val, self.der)
 
     def __len__(self):
         try:
@@ -143,14 +140,24 @@ class VAD():
             array(False) 
         """
         if isinstance(other, VAD):
-            if (self.val == other.val) and (self.der == other.der) and (self.der2 == other.der2): 
-                return True
-            else:
-                return False
+            return np.allclose(self.val, other.val) and np.allclose(self.der,other.der) and np.allclose(self.der2, other.der2)
         else:
-            raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
-    
+            raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
 
+
+    def __gt__(self, other):
+        """
+        compare value of two VAD objects
+        for example:
+            >>> a = AD([1,2,3])
+            >>> b = AD([2,2,3])
+            >>> a > b
+            >>> False
+        """
+        if isinstance(other, VAD):
+            return np.sum(self.val > other.val) == len(self)
+        else:
+            raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
 
 
 
@@ -164,11 +171,7 @@ class VAD():
             >>> False
         """
         if isinstance(other, VAD):
-            if np.sum(self.val > other.val) == len(self): 
-                return True
-                
-            else:
-                return False
+            return np.sum(self.val >= other.val) == len(self)
         else:
             raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
             
@@ -176,16 +179,32 @@ class VAD():
         """
         compare value of two VAD objects element wise
         for example:
-            a = VAD([1,2,3])
+            a = VAD([1,3,3])
             b = VAD([2,2,3])
             >>> a.isgreater(b)
-            array([False,True,True]) 
+            array([False,True,False])
         """
         if isinstance(other, VAD):
             return self.val > other.val      
         else:
             raise TypeError("The input must also be a VAD object.")
-    
+
+
+    def __lt__(self, other):
+        """
+        compare value of two VAD objects
+        for example:
+            >>> a = AD([1,2,3])
+            >>> b = AD([2,2,3])
+            >>> a < b
+            >>> False
+        """
+        if isinstance(other, VAD):
+            return np.sum(self.val < other.val) == len(self)
+        else:
+            raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
+
+
     def __le__(self, other):
         """
         compare value of two VAD objects 
@@ -196,11 +215,7 @@ class VAD():
             >>> False
         """
         if isinstance(other, VAD):
-            if np.sum(self.val < other.val) == len(self): 
-                return True
-                
-            else:
-                return False
+            return np.sum(self.val <= other.val) == len(self)
         else:
             raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
             
@@ -562,9 +577,11 @@ def hessian(func):
 
 if __name__ == "__main__":
 
-    # x = VAD([3,1])
+    x = VAD([3,1])
     # f = 2*x
-    # g = x[1]*x[0]
+    g = x[1]*x[0]
+    print(x)
+    print(g)
     # print(f.diff(1,1))
     # print(f.diff([1,0],2))
     # print(g.diff(0,1))
@@ -572,10 +589,7 @@ if __name__ == "__main__":
     # print(g.diff([0,0],2))
     # #print(f)
     # print(f.diff(0,1))
-    x = ad.AD(1, tag=0, size=2)
-    y = ad.AD(2, tag=1, size=2)
-    ADs = np.array([x, y])
-    print
+
 
     # f = admath.sin(x[0])
     # print(f)

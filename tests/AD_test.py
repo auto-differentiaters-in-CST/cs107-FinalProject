@@ -23,6 +23,14 @@ def test_initialize_base():
     assert np.sum(x.val == np.array([1,2])) == len(x),"Error: initialize x value."
     assert np.sum(x.der == np.array([[1,0],[0,1]])) == 4,"Error: initialize x value."
     assert np.sum(x.der2 == np.array([[[0., 0.],[0., 0.]],[[0., 0.],[0., 0.]]])) == 8,"Error: initialize x value."
+    with pytest.raises(TypeError):
+        y = VAD([1,2], order=1.2)
+    with pytest.raises(ValueError):
+        y = VAD([1, 2], order=-1)
+    with pytest.raises(Exception):
+        y = VAD([1, 2], order=3)
+
+
 
 def test_initialize_advanced():
     [x,y] = VAD([1,2])
@@ -224,10 +232,75 @@ def test_diff():
     assert g.diff(0, 1) == 1.0
     assert g.diff(1, 1) == 3.0
     assert g.diff([0, 0], 2) ==0.0
+    with pytest.raises(Exception):
+        g.diff(0, 2)
 
 
+def test_fullequal():
+    a = VAD([1, 2, 3])
+    b = VAD([1, 2, 3]) * 2
+    assert np.sum(a.fullequal(b)) ==0
+    assert a[0].fullequal(a[0])
+    with pytest.raises(TypeError):
+        a.fullequal(1)
+
+def test_gt():
+    a = VAD([1, 2, 3])
+    b = VAD([2, 2, 3])
+    assert not a > b
+    assert b[0] > a[0]
+    with pytest.raises(TypeError):
+        assert a > 1
+
+def test_ge():
+    a = VAD([1, 2, 3])
+    b = VAD([2, 2, 3])
+    assert not a >= b
+    assert b[0] >= a[0]
+    with pytest.raises(TypeError):
+        assert a>= 1
 
 
+def test_isgreater():
+    a = VAD([1, 3, 3])
+    b = VAD([2, 2, 3])
+    assert np.sum(a.isgreater(b) == np.array([False, True, False])) == 3
+    with pytest.raises(TypeError):
+        a.isgreater(2)
+
+def test_le():
+    a = VAD([1, 1, 1])
+    b = VAD([2, 2, 3])
+    assert a <= b
+    assert not b[0] <= a[0]
+    with pytest.raises(TypeError):
+        assert a <= 1
+
+def test_lt():
+    a = VAD([1, 2, 3])
+    b = VAD([2, 2, 3])
+    assert not a < b
+    assert not b[0] <= a[0]
+    with pytest.raises(TypeError):
+        assert a < 1
+
+def test_isless():
+    a = VAD([1, 2, 3])
+    b = VAD([2, 2, 3])
+    assert np.sum(a.isless(b) == np.array([True, False, False])) ==3
+    with pytest.raises(TypeError):
+        a.isless(3)
+
+def test_rsub():
+    a = VAD([1])
+    assert (1-a).val == 0.0
+
+
+def test_mod():
+    a = VAD([10])
+    assert a%3 == 1
+    with pytest.raises(TypeError):
+        assert a%[1,2] ==1
 
 
 
