@@ -19,7 +19,6 @@ import autodiffcst.admath as admath
 
 def test_initialize_base():
     x = VAD(val = [1,2])
-    print(x)
     assert np.sum(x.val == np.array([1,2])) == len(x),"Error: initialize x value."
     assert np.sum(x.der == np.array([[1,0],[0,1]])) == 4,"Error: initialize x value."
     assert np.sum(x.der2 == np.array([[[0., 0.],[0., 0.]],[[0., 0.],[0., 0.]]])) == 8,"Error: initialize x value."
@@ -40,8 +39,7 @@ def test_initialize_advanced():
 
 def test_repr():
     x = VAD([1])
-    print(x)
-    assert repr(x) == "VAD(value: [1], tag: [0], derivatives: [[1.]], second derivatives: [[[0.]]])", "Error: repr is not working"
+    assert repr(x) == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
 
 def test_negative():
     [x,y,z] = VAD([1,2,3])
@@ -105,7 +103,6 @@ def test_add_VAD():
     
     h = VAD([0,0]) + VAD([6,4])
     assert np.sum(g.val == np.array([6, 4])) == 2, "Error: add value for VAD is wrong."
-    print(g)
     assert np.sum(g.der == np.array([[2, 0],[0,2]])) == 4, "Error: add der for VAD is wrong."
     
     assert np.sum(g.der2 == np.array([[[0, 0],[0, 0]],[[0, 0],[0, 0]]])) == 8, "Error: add der2 for VAD is wrong."
@@ -117,10 +114,8 @@ def test_sub_AD():
     # y = ad.AD(1)
     [x, y] = VAD([3,1])
     f = 0 - (x - y)
-    print(f.der, f.der2)
     assert f.val == -2, "Error: truediv value for AD is wrong."
     assert np.sum(f.der == np.array([-1, 1])) == 2, "Error: truediv der for AD is wrong."
-    print(f.der2)
     assert np.sum(f.der2 == np.array([[0, 0],[0, 0]])) == 4, "Error: truediv der for AD is wrong."
 
 
@@ -142,7 +137,6 @@ def test_mul_AD():
     g *= y
     h = g*y
 
-    print(f.der2)
     assert f.val == 3, "Error: mul value for AD is wrong."
     assert np.sum(f.der == np.array([1, 3])) == 2, "Error: mul der for AD is wrong."
     assert np.sum(f.der2 == np.array([[0, 1],[1, 0]])) == 4, "Error: mul der for AD is wrong."
@@ -181,7 +175,6 @@ def test_div_VAD():
     assert np.sum(h.val == np.array([1, 1/3])) == 2, "Error: div value for AD is wrong."
     assert np.sum(h.der == np.array([[1/3, 0], [0, 1/3]])) == 4, "Error: div der for AD is wrong."
     assert np.sum(h.der2 == np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])) == 8, "Error: div der for AD is wrong."
-    print(g)
     assert np.sum(g.val == np.array([1/3, 1])) == 2, "Error: div value for AD is wrong."
     assert np.sum(g.der == np.array([[-1/9, 0], [0, -1]])) == 4, "Error: div der for AD is wrong."
     assert np.sum(g.der2 == np.array([[[2/27, 0], [0, 0]], [[0, 0], [0, 2]]])) == 8, "Error: div der for AD is wrong."
@@ -193,7 +186,6 @@ def test_pow_AD():
     assert np.sum(f.der == np.array([6, 0])) == 2, "Error: pow der for AD is wrong."
     assert np.sum(f.der2 == np.array([[2, 0],[0, 0]])) == 4, "Error: pow der for AD is wrong."
     g = 2 ** x
-    print(g)
     # precision is different from np
     assert np.allclose(g.val, np.array([8.0])), "Error: pow value for AD is wrong."
     assert np.allclose(g.der,np.array([8*np.log(2), 0.0])), "Error: pow der for AD is wrong."
