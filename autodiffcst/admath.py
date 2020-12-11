@@ -231,7 +231,7 @@ def sin(ad):
             Returns:
                     new_ad (AD): the new AD object after applying sine function
     """
-    print(type(ad))
+
     if isinstance(ad, AD.AD):
         new_val = sin(ad.val)
         der = cos(ad.val)
