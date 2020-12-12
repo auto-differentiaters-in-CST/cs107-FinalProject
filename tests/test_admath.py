@@ -35,6 +35,8 @@ def test_abs():
     x = AD.AD(0, tag=0)
     with pytest.raises(Exception):
         f = abs(x)
+    with pytest.raises(TypeError):
+        f = admath.abs('error')
 
 def test_chain_rule():
     x = AD.AD(2,order=5)
@@ -85,6 +87,8 @@ def test_log():
     der2test[2,2,2] = -3**-2
     assert np.allclose(g.der2,der2test), "Error: der2 for log(VAD) is not correct."
     assert log(5) == np.log(5), "Error: log didn't apply properly on number."
+    with pytest.raises(TypeError):
+        f = admath.log('error')
 
 def test_fact_ad():
     assert admath.fact_ad(2,0) == 1, "Error: fact_ad calculation wrong."
@@ -114,6 +118,8 @@ def test_exp():
     der2test[2,2,2] = np.exp(3)
     assert np.allclose(g.der2,der2test), "Error: der2 for exp(VAD) is not correct."
     assert exp(5) == np.exp(5), "Error: exp didn't apply properly on number."
+    with pytest.raises(TypeError):
+        f = admath.exp('error')
 
 def test_sqrt():
     x = AD.AD(2, tag=0,order=3)
@@ -134,12 +140,16 @@ def test_sqrt():
     der2test[1,1,1] = -0.25/2/np.sqrt(2)
     assert np.allclose(g.der2,der2test), "Error: der2 for sqrt(VAD) is not correct."
     assert sqrt(5) == np.sqrt(5), "Error: sqrt didn't apply properly on number."
+    with pytest.raises(TypeError):
+        f = admath.sqrt('error')
 
 # trig test:
 
 def test_sin_float():
     ad = 2
     assert sin(ad).__eq__(np.sin(2)), "Error: sin(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sin('error')
 
 def test_sin_ad():
     [x,y] = VAD([1,2])
@@ -166,6 +176,8 @@ def test_sin_ad():
 def test_cos_float():
     ad = 2
     assert cos(ad).__eq__(np.cos(2)), "Error: cos(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.cos('error')
 
 def test_cos_ad():
     [x,y] = VAD([1,2])
@@ -192,6 +204,8 @@ def test_cos_ad():
 def test_tan_float():
     ad = 2
     assert tan(ad).__eq__(np.tan(2)), "Error: tan(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.tan('error')
 
 def test_tan_ad():
     [x,y] = VAD([1,2])
@@ -216,11 +230,15 @@ def test_tan_ad():
 def test_sec_float():
     ad = 2
     assert abs(admath.sec(ad)-1/math.cos(2)) <= 1e-8, "Error: sec(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sec('error')
 
 # hyperbolic trig
 def test_sinh_float():
     ad = 2
     assert abs(sinh(ad)-math.sinh(2)) <= 1e-8, "Error: sinh(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sinh('error')
 
 def test_sinh_ad():
     [x,y] = VAD([1,2])
@@ -247,6 +265,8 @@ def test_sinh_ad():
 def test_cosh_float():
     ad = 2
     assert abs(cosh(ad)-math.cosh(2)) <= 1e-8, "Error: cosh(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.cosh('error')
 
 def test_cosh_ad():
     [x,y] = VAD([1,2])
@@ -273,6 +293,8 @@ def test_cosh_ad():
 def test_tanh_float():
     ad = 2
     assert abs(tanh(ad)-np.tanh(2)) <= 1e-8, "Error: tanh(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.tanh('error')
 
 def test_tanh_ad():
     [x,y] = VAD([1,2])
@@ -297,3 +319,5 @@ def test_tanh_ad():
 def test_sech_float():
     ad = 2
     assert abs(admath.sech(ad)-1/np.cosh(2)) <= 1e-8, "Error: sech(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sech('error')
