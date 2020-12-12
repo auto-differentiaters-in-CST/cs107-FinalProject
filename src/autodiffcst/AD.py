@@ -372,7 +372,7 @@ class AD():
                         other (AD or int or float): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying addition
+                        None, but a new AD will be assigned to the original variable.
                 
                 Example:
                 >>> x = AD(3, 2, 1, 0)
@@ -430,7 +430,7 @@ class AD():
                         other (AD or valid input for the numpy operation): the object to be substracted from self
     
                 Returns:
-                        new_self (AD): the new AD object after applying substraction
+                        None, but a new AD will be assigned to the original variable.
 
                 Example:
                 >>> x = AD(3, 2, 1, 0)
@@ -530,7 +530,7 @@ class AD():
                         other (AD or int or float): the object to be multiplied to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying multiplication
+                        None, but a new AD will be assigned to the original variable.
                 
                 Example:
                 >>> x = AD(3, 2, 1, 0)
@@ -598,7 +598,7 @@ class AD():
                         other (AD or int or float): the object that self is divided by
     
                 Returns:
-                        new_self (AD): the new AD object after applying division
+                        None, but a new AD will be assigned to the original variable.
                 
                 Example:
                 >>> x = AD(3, 2, 2, 0)
@@ -688,7 +688,7 @@ class AD():
                         other (AD or int or float): the object that self's power will be raised to
     
                 Returns:
-                        new_self (AD): the new AD object after applying power function
+                        None, but a new AD will be assigned to the original variable.
                 
                 Example:
                 >>> x = AD(3, 2, 2, 0)

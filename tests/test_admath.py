@@ -1,7 +1,7 @@
 # Use a simple (but explicit) path modification to resolve the package properly
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 import pytest
 import math
@@ -25,6 +25,7 @@ def test_abs():
     x = VAD([-1,2,3])
     f = abs(x)
     print(f.der)
+    print(f.der2)
     assert np.sum(f.val == np.array([[1],[2],[3]])) == 3, "Error: abs didn't apply properly on VAD."
     assert np.sum(f.der == np.array([[-1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])) == 9, "Error: der1 for abs(VAD) is not correct."
     x = AD.AD(-1, tag=0)
@@ -35,6 +36,16 @@ def test_abs():
     x = AD.AD(0, tag=0)
     with pytest.raises(Exception):
         f = abs(x)
+    with pytest.raises(TypeError):
+        f = admath.abs('error')
+    xv = AD.AD(-2,tag=0,order=3)
+    f = admath.abs(xv)
+    assert f.higherdiff(3) == 0, "Error: abs didn't apply on higher properly"
+    [x] = VAD([-5],order=3)
+    f = abs(x)
+    print(f.der)
+    print(f.der2)
+    print(f.higher)
 
 def test_chain_rule():
     x = AD.AD(2,order=5)
@@ -73,7 +84,7 @@ def test_log():
     assert np.allclose(f.higher,higherarr), "Error: higherder for log(AD) is not correct."
     y = VAD([1,2,3])
     g = log(y)
-    assert np.allclose(g.val, np.log([[1],[2],[3]])), "Error: log didn't apply properly on VAD."
+    assert np.allclose(g.val, np.log([1,2,3])), "Error: log didn't apply properly on VAD."
     dertest = np.zeros((3,3))
     dertest[0,0] = 1
     dertest[1,1] = 1/2
@@ -85,6 +96,8 @@ def test_log():
     der2test[2,2,2] = -3**-2
     assert np.allclose(g.der2,der2test), "Error: der2 for log(VAD) is not correct."
     assert log(5) == np.log(5), "Error: log didn't apply properly on number."
+    with pytest.raises(TypeError):
+        f = admath.log('error')
 
 def test_fact_ad():
     assert admath.fact_ad(2,0) == 1, "Error: fact_ad calculation wrong."
@@ -102,7 +115,7 @@ def test_exp():
     assert np.allclose(f.higher,higherarr), "Error: higherder for exp(AD) is not correct."
     y = VAD([1,2,3])
     g = exp(y)
-    assert np.allclose(g.val, np.exp([[1],[2],[3]])), "Error: exp didn't apply properly on VAD."
+    assert np.allclose(g.val, np.exp([1,2,3])), "Error: exp didn't apply properly on VAD."
     dertest = np.zeros((3,3))
     dertest[0,0] = np.exp(1)
     dertest[1,1] = np.exp(2)
@@ -114,6 +127,8 @@ def test_exp():
     der2test[2,2,2] = np.exp(3)
     assert np.allclose(g.der2,der2test), "Error: der2 for exp(VAD) is not correct."
     assert exp(5) == np.exp(5), "Error: exp didn't apply properly on number."
+    with pytest.raises(TypeError):
+        f = admath.exp('error')
 
 def test_sqrt():
     x = AD.AD(2, tag=0,order=3)
@@ -124,7 +139,7 @@ def test_sqrt():
     assert np.abs(f.higherdiff(3) - 3/32/np.sqrt(2))<1e-8, "Error: higherder for sqrt(AD) is not correct."
     y = VAD([1,2])
     g = sqrt(y)
-    assert np.allclose(g.val, np.sqrt([[1],[2]])), "Error: sqrt didn't apply properly on VAD."
+    assert np.allclose(g.val, np.sqrt([1,2])), "Error: sqrt didn't apply properly on VAD."
     dertest = np.zeros((2,2))
     dertest[0,0] = 0.5
     dertest[1,1] = 0.5*1/np.sqrt(2)
@@ -134,19 +149,23 @@ def test_sqrt():
     der2test[1,1,1] = -0.25/2/np.sqrt(2)
     assert np.allclose(g.der2,der2test), "Error: der2 for sqrt(VAD) is not correct."
     assert sqrt(5) == np.sqrt(5), "Error: sqrt didn't apply properly on number."
+    with pytest.raises(TypeError):
+        f = admath.sqrt('error')
 
 # trig test:
 
 def test_sin_float():
     ad = 2
     assert sin(ad).__eq__(np.sin(2)), "Error: sin(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sin('error')
 
 def test_sin_ad():
     [x,y] = VAD([1,2])
     assert sin(x+y).val[0] == np.sin(3), "Error: sin(x+y), false value."
     assert np.allclose(jacobian(sin(x+y)),np.array([np.cos(3),np.cos(3)])), "Error: sin(x+y), false derivative."
     f = sin(VAD([1,2]))
-    assert np.allclose(f.val,np.array([[np.sin(1)],[np.sin(2)]])), "Error: sin(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.sin(1),np.sin(2)])), "Error: sin(VAD[1,2]), false value."
     assert np.allclose(sin(x+y).der2,np.array([[-np.sin(3),-np.sin(3)],[-np.sin(3),-np.sin(3)]])), "Error: sin(x+y), false der2."
     der1 = np.zeros((2,2))
     der1[0,0] = np.cos(1)
@@ -166,6 +185,8 @@ def test_sin_ad():
 def test_cos_float():
     ad = 2
     assert cos(ad).__eq__(np.cos(2)), "Error: cos(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.cos('error')
 
 def test_cos_ad():
     [x,y] = VAD([1,2])
@@ -173,7 +194,7 @@ def test_cos_ad():
     assert np.allclose(jacobian(cos(x+y)),np.array([-np.sin(3),-np.sin(3)])), "Error: cos(x+y), false derivative."
     f = cos(VAD([1,2]))
     assert np.allclose(cos(x+y).der2,np.array([[-np.cos(3),-np.cos(3)],[-np.cos(3),-np.cos(3)]])), "Error: cos(x+y), false der2."
-    assert np.allclose(f.val,np.array([[np.cos(1)],[np.cos(2)]])), "Error: cos(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.cos(1),np.cos(2)])), "Error: cos(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = -np.sin(1)
     der1[1,1] = -np.sin(2)
@@ -192,13 +213,15 @@ def test_cos_ad():
 def test_tan_float():
     ad = 2
     assert tan(ad).__eq__(np.tan(2)), "Error: tan(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.tan('error')
 
 def test_tan_ad():
     [x,y] = VAD([1,2])
     assert tan(x+y).val[0] == np.tan(3), "Error: tan(x+y), false value."
     assert np.allclose(jacobian(tan(x+y)),np.array([admath.sec(3)**2,admath.sec(3)**2])), "Error: tan(x+y), false derivative."
     f = tan(VAD([1,2]))
-    assert np.allclose(f.val,np.array([[np.tan(1)],[np.tan(2)]])), "Error: tan(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.tan(1),np.tan(2)])), "Error: tan(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     assert np.allclose(tan(x+y).der2,np.array([[2*tan(3)*admath.sec(3)**2,2*tan(3)*admath.sec(3)**2],[2*tan(3)*admath.sec(3)**2,2*tan(3)*admath.sec(3)**2]])), "Error: tan(x+y), false der2."
     der1[0,0] = admath.sec(1)**2
@@ -216,11 +239,15 @@ def test_tan_ad():
 def test_sec_float():
     ad = 2
     assert abs(admath.sec(ad)-1/math.cos(2)) <= 1e-8, "Error: sec(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sec('error')
 
 # hyperbolic trig
 def test_sinh_float():
     ad = 2
     assert abs(sinh(ad)-math.sinh(2)) <= 1e-8, "Error: sinh(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sinh('error')
 
 def test_sinh_ad():
     [x,y] = VAD([1,2])
@@ -228,7 +255,7 @@ def test_sinh_ad():
     assert np.allclose(jacobian(sinh(x+y)),np.array([np.cosh(3),np.cosh(3)])), "Error: sinh(x+y), false derivative."
     f = sinh(VAD([1,2]))
     assert np.allclose(sinh(x+y).der2,np.array([[np.sinh(3),np.sinh(3)],[np.sinh(3),np.sinh(3)]])), "Error: cosh(x+y), false der2."
-    assert np.allclose(f.val,np.array([[np.sinh(1)],[np.sinh(2)]])), "Error: cosh(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.sinh(1),np.sinh(2)])), "Error: cosh(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = np.cosh(1)
     der1[1,1] = np.cosh(2)
@@ -247,6 +274,8 @@ def test_sinh_ad():
 def test_cosh_float():
     ad = 2
     assert abs(cosh(ad)-math.cosh(2)) <= 1e-8, "Error: cosh(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.cosh('error')
 
 def test_cosh_ad():
     [x,y] = VAD([1,2])
@@ -254,7 +283,7 @@ def test_cosh_ad():
     assert np.allclose(jacobian(cosh(x+y)),np.array([np.sinh(3),np.sinh(3)])), "Error: cosh(x+y), false derivative."
     f = cosh(VAD([1,2]))
     assert np.allclose(cosh(x+y).der2,np.array([[np.cosh(3),np.cosh(3)],[np.cosh(3),np.cosh(3)]])), "Error: cosh(x+y), false der2."
-    assert np.allclose(f.val,np.array([[np.cosh(1)],[np.cosh(2)]])), "Error: cosh(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.cosh(1),np.cosh(2)])), "Error: cosh(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = np.sinh(1)
     der1[1,1] = np.sinh(2)
@@ -273,6 +302,8 @@ def test_cosh_ad():
 def test_tanh_float():
     ad = 2
     assert abs(tanh(ad)-np.tanh(2)) <= 1e-8, "Error: tanh(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.tanh('error')
 
 def test_tanh_ad():
     [x,y] = VAD([1,2])
@@ -280,7 +311,7 @@ def test_tanh_ad():
     assert np.allclose(jacobian(tanh(x+y)),np.array([admath.sech(3)**2,admath.sech(3)**2])), "Error: tanh(x+y), false derivative."
     assert np.allclose(tanh(x+y).der2,np.array([[-2*tanh(3)*admath.sech(3)**2,-2*tanh(3)*admath.sech(3)**2],[-2*tanh(3)*admath.sech(3)**2,-2*tanh(3)*admath.sech(3)**2]])), "Error: tanh(x+y), false der2."
     f = tanh(VAD([1,2]))
-    assert np.allclose(f.val,np.array([[np.tanh(1)],[np.tanh(2)]])), "Error: tanh(VAD[1,2]), false value."
+    assert np.allclose(f.val,np.array([np.tanh(1),np.tanh(2)])), "Error: tanh(VAD[1,2]), false value."
     der1 = np.zeros((2,2))
     der1[0,0] = admath.sech(1)**2
     der1[1,1] = admath.sech(2)**2
@@ -297,3 +328,5 @@ def test_tanh_ad():
 def test_sech_float():
     ad = 2
     assert abs(admath.sech(ad)-1/np.cosh(2)) <= 1e-8, "Error: sech(x), false value."
+    with pytest.raises(TypeError):
+        f = admath.sech('error')

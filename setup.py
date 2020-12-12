@@ -25,8 +25,8 @@ if __name__ == "__main__":
 
 # 
 
-    with open("docs/documentation.md", "r", encoding="utf-8") as fh:
-        long_description = fh.read()
+    # with open("docs/documentation.md", "r", encoding="utf-8") as fh:
+    #     long_description = fh.read()
 
     with open('requirements.txt') as f:
         required = f.read().splitlines()
@@ -34,12 +34,12 @@ if __name__ == "__main__":
 
     setuptools.setup(
         name="autodiffCST", # Replace with your own username
-        version="0.0.9.4",
+        version="0.0.9.7",
         author="Xiaohan Yang, Hanwen Zhang, Runting Yang, Max Li",
         author_email="xiaohan_yang@g.harvard.edu, hzhang1@g.harvard.edu, runting_yang@hsph.harvard.edu, manli@fas.harvard.edu",
         description="This package autodiffCST implements automatic differentiation. Users could perform forward mode, and use it for higher order differentiation.",
-        long_description=long_description,
-        long_description_content_type="text/markdown",
+        # long_description=long_description,
+        # long_description_content_type="text/markdown",
         url="https://github.com/auto-differentiaters-in-CST/cs107-FinalProject",
         # packages=setuptools.find_packages(),
         packages=setuptools.find_packages(where="src"),
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         python_requires='>=3.6',
         setup_requires=['pytest-runner'],
         install_requires=['numpy','sympy>=1.0'],
-        tests_require=['pytest','coverage'],
+        tests_require=['pytest','coverage','pytest-cov'],
         test_suite="tests",
         py_modules = ['AD_vec', 'AD', "admath"]
     

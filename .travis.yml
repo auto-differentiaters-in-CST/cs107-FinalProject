@@ -4,9 +4,7 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-  - pytest tests --cov-report
-  - coverage run -m unittest discover
+  - pytest --cov=./src/autodiffcst/
 after_success:
 - bash <(curl -s https://codecov.io/bash) -t 2353b173-0e01-4f2e-88fc-12b7fd616f01
 
-git:   depth: false

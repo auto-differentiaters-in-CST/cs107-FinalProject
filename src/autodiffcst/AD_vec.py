@@ -20,7 +20,17 @@ class VAD():
                         der2 (int or float or list or np.array): second-order derivatives of the new AD object. 
 
                 Returns:
-                        None, but initializes an AD object when called
+                        None, but initializes AD object(s) when called
+                
+                Example:
+                >>> x, y = VAD([1,2]) 
+                >>> x
+                AD(value: [1], derivatives: [1., 0.])
+
+                >>> fs = VAD([1,2]) 
+                >>> fs
+                VAD(value: [1 2], derivatives: [[1. 0.]
+                                                [0. 1.]])
         """
         self.val = np.array(val)
         if der is None:
@@ -64,6 +74,13 @@ class VAD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
+                
+                Example:
+                >>> fs = VAD([1,2]) 
+                >>> print(fs)
+                VAD(value: [1 2], derivatives: [[1. 0.]
+                                                [0. 1.]])
+        
         """
         return "VAD(value: {0}, derivatives: {1})".format(self.val, self.der)
 
@@ -76,10 +93,31 @@ class VAD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
+
+                Example:
+                >>> fs = VAD([1,2]) 
+                >>> fs
+                VAD(value: [1 2], derivatives: [[1. 0.]
+                                                [0. 1.]])
+        
         """
         return "VAD(value: {0}, derivatives: {1})".format(self.val, self.der)
 
     def __len__(self):
+        """
+        Overwrites the __len__ dunder method to get the length of the VAD object's values, namely the number of variables.
+    
+                Parameters:
+                        self (VAD): the VAD object that __len__ is called upon.
+    
+                Returns:
+                        An integer representing the length of the vector dimension that the VAD object resides in.
+
+                Example:
+                >>> len(VAD([1,2]))
+                2
+        """     
+
         try:
             return len(self.val)
         except TypeError:
@@ -87,22 +125,39 @@ class VAD():
 
     ## getter
     def __getitem__(self, pos):
+        """
+        Overwrites the __getitem__ dunder method to get variable at certain position of the VAD object.
+    
+                Parameters:
+                        self (VAD): the VAD object that __getitem__ is called upon.
+                        pos (int): a valid position of a variable.
+    
+                Returns:
+                        AD object at the position
+
+                Example:
+                >>> VAD([1,2])[0]
+                AD(value: [1], derivatives: [1. 0.])
+        """  
+
         return self.variables[pos]
-
-
-    ## setter, Do we want this?
-    def __setitem__(self, pos, newAD):
-        self.variables[pos] = newAD
         
     # Comparison Equal
     def __eq__(self, other):
         """
-        compare value of two VAD objects' values 
-        for example:
-            >>> a = AD([1,2,3])
-            >>> b = AD([2,2,3])
-            >>> a == b
-            >>> False
+        Overwrites the __eq__ dunder method to check if two VAD objects are equal in value.
+    
+                Parameters:
+                        self (VAD): the VAD object that __eq__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        True if all the values of two VAD objects are equal.
+                        False if otherwise.
+
+                Example:
+                >>> VAD([1,2]) == VAD([1,3])
+                False
         """
         if isinstance(other, VAD):
             if np.sum(self.val == other.val) == len(self): 
@@ -114,16 +169,39 @@ class VAD():
             raise TypeError("Invalid Comparison. VAD object can only be compared with VAD.")
 
     def __ne__(self, other):
+        """
+        Overwrites the __eq__ dunder method to check if two VAD objects are equal in value.
+    
+                Parameters:
+                        self (VAD): the VAD object that __ne__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        False if all the values of two VAD objects are equal.
+                        True if otherwise.
+
+                Example:
+                >>> VAD([1,2]) != VAD([1,3])
+                True
+        """
         return not self == other
 
     def isequal(self, other):
         """
-        compare value of two VAD objects' values element wise
-        for example:
-            a = VAD([1,2,3])
-            b = VAD([2,2,3])
-            >>> a.isequal(b)
-            array([False,True,True]) 
+        Compare value of two VAD objects' values element wise.
+
+                Parameters:
+                        self (VAD): the VAD object that isequal is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        an array of True or False depends on the comparison result.
+        
+                Example:
+                >>> a = VAD([1,2,3])
+                >>> b = VAD([2,2,3])
+                >>> a.isequal(b)
+                array([False,True,True]) 
         """
         if isinstance(other, VAD):
             return self.val == other.val      
@@ -132,12 +210,21 @@ class VAD():
     
     def fullequal(self, other):
         """
-        compare value of two VAD objects element wise
-        for example:
-            a = VAD([1,2,3])
-            b = VAD([1,2,3]) * 2
-            >>> a.fullequal(b)
-            array(False) 
+         Compare value, first derivatives and second derivatives of two VAD objects.
+
+                Parameters:
+                        self (VAD): the VAD object that fullequal is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        True if everything is equal.
+                        False otherwise.
+     
+                Example:
+                >>> a = VAD([1,2,3])
+                >>> b = VAD([1,2,3]) * 1
+                >>> a.fullequal(b)
+                True
         """
         if isinstance(other, VAD):
             return np.allclose(self.val, other.val) and np.allclose(self.der,other.der) and np.allclose(self.der2, other.der2)
@@ -147,12 +234,20 @@ class VAD():
 
     def __gt__(self, other):
         """
-        compare value of two VAD objects
-        for example:
-            >>> a = AD([1,2,3])
-            >>> b = AD([2,2,3])
-            >>> a > b
-            >>> False
+        Overwrites the __gt__ dunder method to compare value of two VAD objects.
+
+                Parameters:
+                        self (VAD): the VAD object that __gt__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        True if self.val is larger than other.val elementwise.
+                        False otherwise.
+                Example:
+                >>> a = VAD([2,2,3])
+                >>> b = VAD([1,2,2])
+                >>> a > b
+                False
         """
         if isinstance(other, VAD):
             return np.sum(self.val > other.val) == len(self)
@@ -163,12 +258,20 @@ class VAD():
 
     def __ge__(self, other):
         """
-        compare value of two VAD objects 
-        for example:
-            >>> a = AD([1,2,3])
-            >>> b = AD([2,2,3])
-            >>> a > b
-            >>> False
+        Overwrites the __ge__ dunder method to compare value of two VAD objects.
+
+                Parameters:
+                        self (VAD): the VAD object that __ge__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        True if self.val is greater than or equal to other.val elementwise.
+                        False otherwise.
+                Example:
+                >>> a = VAD([2,2,3])
+                >>> b = VAD([1,2,2])
+                >>> a >= b
+                True
         """
         if isinstance(other, VAD):
             return np.sum(self.val >= other.val) == len(self)
@@ -177,12 +280,21 @@ class VAD():
             
     def isgreater(self, other):
         """
-        compare value of two VAD objects element wise
-        for example:
-            a = VAD([1,3,3])
-            b = VAD([2,2,3])
-            >>> a.isgreater(b)
-            array([False,True,False])
+        Compare value of two VAD objects element wise
+
+                Parameters:
+                        self (VAD): the VAD object that isgreater is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        an array of boolean values.
+
+                Example:
+                >>> a = VAD([2,2,3])
+                >>> b = VAD([1,2,2])
+                >>> a.isgreater(b)
+                array([ True, False,  True])
+        
         """
         if isinstance(other, VAD):
             return self.val > other.val      
@@ -192,12 +304,22 @@ class VAD():
 
     def __lt__(self, other):
         """
-        compare value of two VAD objects
-        for example:
-            >>> a = AD([1,2,3])
-            >>> b = AD([2,2,3])
-            >>> a < b
-            >>> False
+        Overwrites the __lt__ dunder method to compare value of two VAD objects.
+
+
+                Parameters:
+                        self (VAD): the VAD object that __lt__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        True if all values in self is less than values in other.
+                        False otherwise.
+                        
+                Example:
+                >>> a = VAD([2,2,3])
+                >>> b = VAD([1,2,2])
+                >>> a < b
+                False
         """
         if isinstance(other, VAD):
             return np.sum(self.val < other.val) == len(self)
@@ -207,12 +329,22 @@ class VAD():
 
     def __le__(self, other):
         """
-        compare value of two VAD objects 
-        for example:
-            >>> a = AD([1,2,3])
-            >>> b = AD([2,2,3])
-            >>> a < b
-            >>> False
+        Overwrites the __le__ dunder method to compare value of two VAD objects.
+
+
+                Parameters:
+                        self (VAD): the VAD object that __le__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        True if all values in self is less than or equal to values in other.
+                        False otherwise.
+                        
+                Example:
+                >>> a = VAD([2,2,3])
+                >>> b = VAD([1,2,2])
+                >>> a <= b
+                False
         """
         if isinstance(other, VAD):
             return np.sum(self.val <= other.val) == len(self)
@@ -221,12 +353,21 @@ class VAD():
             
     def isless(self, other):
         """
-        compare value of two VAD objects element wise
-        for example:
-            a = VAD([1,2,3])
-            b = VAD([2,2,3])
-            >>> a.isless(b)
-            array([True,False,False]) 
+        Compare value of two VAD objects element wise
+
+                Parameters:
+                        self (VAD): the VAD object that isgreater is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        an array of boolean values.
+
+                Example:
+                >>> a = VAD([2,2,3])
+                >>> b = VAD([1,2,2])
+                >>> a.isless(b)
+                array([False, False, False])
+        
         """
         if isinstance(other, VAD):
             return self.val < other.val      
@@ -235,93 +376,161 @@ class VAD():
                 
     ## Unary 
     def __neg__(self):
+        """
+        Overwrites the __neg__ dunder method to get the negation of the VAD object.
+    
+                Parameters:
+                        self (VAD): the VAD object that __neg__ is called upon.
+    
+                Returns:
+                        A new VAD object which has the negated value and derivative of the current VAD.
+
+                Example:
+                >>> -VAD([1,2])
+                VAD(value: [-1,-2], derivatives: [[-1. -0.]
+                                                  [-0. -1.]])
+        """
         AD_result = self.variables * -1
         return set_VAD(AD_result) 
 
     ## Addition
     def __add__(self, other):
         """
-        Overwrites the __add__ dunder method to apply addition to an AD object.
+        Overwrites the __add__ dunder method to apply addition to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied addition to
-                        other (AD or valid input for the numpy operation): the object to be added to self
+                        self (VAD): An VAD object to be applied addition to
+                        other (VAD or valid input for the numpy operation): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying addition
+                        new_self (VAD): the new VAD object after applying addition
+
+                Example:
+                >>> a = VAD([1,2])
+                >>> a + 3
+                VAD(value: [4., 5.], derivatives: [[1., 0.],
+                                                   [0., 1.]])
         """
         AD_result = self.variables + other
         return set_VAD(AD_result)  
         
     def __radd__(self, other):
         """
-        Overwrites the __radd__ dunder method to apply addition to an AD object 
-        when the AD object is on the right side of the addition sign.
+        Overwrites the __radd__ dunder method to apply addition to an VAD object 
+        when the VAD object is on the right side of the addition sign.
     
                 Parameters:
-                        self (AD): An AD object to be applied addition to
-                        other (AD or int or float): the object to be added to self
+                        self (VAD): An AD object to be applied addition to
+                        other (VAD or valid input for the numpy operation): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying addition
+                        new_self (VAD): the new VAD object after applying addition
+
+                Example:
+                >>> a = VAD([1,2])
+                >>> 3 + a
+                VAD(value: [4., 5.], derivatives: [[1., 0.],
+                                                   [0., 1.]])
         """          
         return self + other
     
     def __iadd__(self, other):
         """
-        Overwrites the __iadd__ dunder method to apply addition to an AD object when the operation "+=" is used.
+        Overwrites the __iadd__ dunder method to apply addition to an VAD object when the operation "+=" is used.
     
                 Parameters:
-                        self (AD): An AD object to be applied addition to
-                        other (AD or valid input for the numpy operation): the object to be added to self
+                        self (VAD): An VAD object to be applied addition to
+                        other (VAD or valid input for the numpy operation): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying addition
+                        None, but a new VAD will be assigned to the original variable.
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a += 1
+                >>> a
+                VAD(value: [2., 3.], derivatives: [[1., 0.],
+                                                   [0., 1.]])
         """          
         return self + other
 
     # Division
     def __sub__(self, other):
         """
-        Overwrites the __sub__ dunder method to apply substraction to an AD object.
+        Overwrites the __sub__ dunder method to apply substraction to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied substraction to
-                        other (AD or valid input for the numpy operation): the object to be substracted from self
+                        self (VAD): An VAD object to be applied substraction to
+                        other (VAD or valid input for the numpy operation): the object to be substracted to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying substraction
-        """      
+                        new_self (VAD): the new VAD object after applying substraction
+
+                Example:
+                >>> a = VAD([1,2])
+                >>> a - 3
+                VAD(value: [-2., -1.], derivatives: [[1., 0.],
+                                                     [0., 1.]])
+        """  
         return self + (-1)*other
     
     def __rsub__(self, other):
+        """
+        Overwrites the __rsub__ dunder method to apply substraction to an VAD object.
+    
+                Parameters:
+                        self (VAD): An VAD object to be applied substraction to
+                        other (VAD or valid input for the numpy operation): the object to be substracted to self
+    
+                Returns:
+                        new_self (VAD): the new VAD object after applying substraction
+
+                Example:
+                >>> a = VAD([1,2])
+                >>> 3 - a
+                VAD(value: [2., 1.], derivatives: [[-1., -0.],
+                                                   [-0., -1.]])
+        """  
         return (-1)*self + other
     
     def __isub__(self, other):
         """
-        Overwrites the __isub__ dunder method to apply substraction to an AD object when the operation "-=" is used.
+        Overwrites the __isub__ dunder method to apply substraction to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied substraction to
-                        other (AD or valid input for the numpy operation): the object to be substracted from self
+                        self (VAD): An VAD object to be applied substraction to
+                        other (VAD or valid input for the numpy operation): the object to be substracted to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying substraction
-        """          
+                        None, but a new VAD will be assigned to the original variable.
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a -= 3
+                >>> a
+                VAD(value: [-2., -1.], derivatives: [[1., 0.],
+                                                     [0., 1.]])
+        """        
         return self - other
 
 
     ## Mod
     def __mod__(self, other):
         """
-        Overwrites the __mod__ dunder method to apply mod to an AD object.
+        Overwrites the __mod__ dunder method to apply mod to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied mod to
+                        self (VAD): An VAD object to be applied mod to
                         other (int or float): the number that self is modded by
     
                 Returns:
-                        new_val: the value of the AD object after applying mod
+                        new_val: the value of the VAD object after applying mod
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a % 2
+                array([1, 0])
+
         """        
         if isinstance(other, int) or isinstance(other, float):
             new_val = self.val % other
@@ -332,56 +541,81 @@ class VAD():
     
     def __imod__(self, other):
         """
-        Overwrites the __imod__ dunder method to apply mod to an AD object when the operation "%=" is used.
+        Overwrites the __imod__ dunder method to apply mod to an VAD object when the operation "%=" is used.
     
                 Parameters:
-                        self (AD): An AD object to be applied mod to
+                        self (VAD): An VAD object to be applied mod to
                         other (int or float): the number that self is modded by
     
                 Returns:
-                        new_val: the value of the AD object after applying mod
+                        None, but an array of mod values will be assigned to the original variable.
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a %= 2
+                >>> a
+                array([1, 0])
+
         """          
         return self % other    
 
     ## Multiplication
     def __mul__(self, other):
         """
-        Overwrites the __mul__ dunder method to apply multiplication to an AD object.
+        Overwrites the __mul__ dunder method to apply multiplication to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied multiplication to
-                        other (AD or int or float): the object to be multiplied to self
+                        self (VAD): An AD object to be applied multiplication to
+                        other (VAD or valid input for the numpy operation): the object to be multiplied to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying multiplication
+                        new_self (VAD): the new VAD object after applying multiplication
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a*2
+                VAD(value: [2., 4.], derivatives: [[2., 0.],
+                                                   [0., 2.]])
         """     
         AD_result = self.variables * other
         return set_VAD(AD_result)    
 
     def __rmul__(self, other):
         """
-        Overwrites the __rmul__ dunder method to apply multiplication to an AD object 
-        when the AD object is on the right side of the multiplication sign.
+        Overwrites the __rmul__ dunder method to apply multiplication to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied multiplication to
-                        other (AD or int or float): the object to be multiplied to self
+                        self (VAD): An AD object to be applied multiplication to
+                        other (VAD or valid input for the numpy operation): the object to be multiplied to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying multiplication
-        """            
+                        new_self (VAD): the new VAD object after applying multiplication
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> 2*a
+                VAD(value: [2., 4.], derivatives: [[2., 0.],
+                                                   [0., 2.]])
+        """               
         return self * other
 
     def __imul__(self, other):
         """
-        Overwrites the __imul__ dunder method to apply multiplication to an AD object when the operation "*=" is used.
+        Overwrites the __rmul__ dunder method to apply multiplication to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied multiplication to
-                        other (AD or int or float): the object to be multiplied to self
+                        self (VAD): An AD object to be applied multiplication to
+                        other (VAD or valid input for the numpy operation): the object to be multiplied to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying multiplication
+                        None, but a new VAD will be assigned to the original variable.
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a *= 2
+                >>> a
+                VAD(value: [2., 4.], derivatives: [[2., 0.],
+                                                   [0., 2.]])
         """          
         return self * other
     
@@ -417,20 +651,6 @@ class VAD():
 
         AD_result = other/self.variables
         return set_VAD(AD_result)
-        # try:
-        #     return other / self
-        #
-        # except RecursionError:
-        #     if isinstance(other, int) or isinstance(other, float):
-        #         new_val = other / self.val
-        #         new_der = self.der * -1 * other / (self.val ** 2)
-        #         # add second-order
-        #         new_der2 = self.der2 * -1 * other / (self.der ** 2)
-        #         new_self = VAD(new_val, new_der, new_der2)
-        #         return new_self
-        #     else:
-        #         raise TypeError("Invalid type.")
-
     
     def __itruediv__(self, other):
         """
@@ -515,7 +735,7 @@ class VAD():
 
 # helper function
 def set_VAD(ADs):
-    new_val = np.array([ADs[i].val for i in range(len(ADs))])
+    new_val = np.concatenate([ADs[i].val for i in range(len(ADs))])
     new_der = np.array([ADs[i].der for i in range(len(ADs))])
     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD(new_val, new_der, new_der2)

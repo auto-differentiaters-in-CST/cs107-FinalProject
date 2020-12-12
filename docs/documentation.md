@@ -361,8 +361,8 @@ The Rosenbrock function (https://en.wikipedia.org/wiki/Rosenbrock_function):
 
 $$ f(x,y)=100(y-x^2)^2+(1-x)^2,$$
 
-is a common test function used for optimization algorithms. Here we use it to demonstrate a nice application of our package.
-
+is a common test function used for optimization algorithms. We use it to demonstrate a nice application of our package.
+Here we only show the code for doing Newton's method in each iteration, where our package can be used to obtain the Jacobian and Hessian directly. Please refer to docs/using_VAD_for_Newtons_method.ipynb for the complete notebook with a contour plot of the optimization path.
 Please refer to docs/using_VAD_for_Newtons_method.ipynb for the complete notebook.
 
 
@@ -370,44 +370,17 @@ Please refer to docs/using_VAD_for_Newtons_method.ipynb for the complete noteboo
 import numpy as np
 import autodiffcst as cst
 
-# We start at point (2,1)
-x = 2; y = 1
-tol = 10**(-8)
-stepsize = 1
-# count number of iterations
-k = 0
-# this is our intermediate point duing iterations
-x_i = x; y_i = y
-# store the path
-list_x_i = []
-list_y_i = []
-list_f_i = []
-while stepsize > tol:
-    k += 1
-    # using VAD to create variables at point (x_i,y_i)
-    [a,b] = cst.VAD([x_i,y_i])
-    # construct the function
-    Rsbrk = 100*(b-a**2)**2+(1-a)**2
-    list_x_i.append(x_i)
-    list_y_i.append(y_i)
-    list_f_i.append(Rsbrk.val[0])
-    # Take a Newton step by solving the linear system 
-    # constructed using the Hessian and gradient
-    step = np.linalg.solve(cst.hessian(Rsbrk),-cst.jacobian(Rsbrk))
-    x_i += step[0]
-    y_i += step[1]
-    stepsize = np.linalg.norm(step)
-print('--------')
-print("starting point: ({0},{1})".format(x,y))
-print("iterations:",k)
-print("(x,y):",path[-1])
-print("f:",list_f_i[-1])
---------
-starting point: (2,1)
-iterations: 6
-(x,y): [1. 1.]
-f: 0.0
+# using VAD to create variables at point (x_i,y_i)
+[a,b] = cst.VAD([x_i,y_i])
+# construct the function
+Rsbrk = 100*(b-a**2)**2+(1-a)**2
+# Take a Newton step by solving the linear system 
+# constructed using the Hessian and gradient
+step = np.linalg.solve(cst.hessian(Rsbrk),-cst.jacobian(Rsbrk))
+x_i += step[0]
+y_i += step[1]
 ```
+
 
 ## Section 4: Software Organization
 The home directory of our software package would be structured as follows.
