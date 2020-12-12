@@ -315,3 +315,21 @@ def test_AD_eq_hw():
     y = VAD([1])
     with pytest.raises(TypeError):
         x == y
+        x.fullequal(y)
+        x < y
+        x > y
+        x <= y
+        x >= y
+
+def test_AD_ne_hw():
+    x = ad.AD([1],tag=0,der=[1],order=5)
+    assert not x != x, "Error: ne not working for AD"
+
+def test_AD_ueq_hw():
+    x = ad.AD([1],tag=0,der=[1],order=5)
+    y = 2*x
+    assert x != y, "Error: ne not working for AD"
+    assert x < y, "Error: ne not working for AD"
+    assert y > x, "Error: ne not working for AD"
+    assert x <= y, "Error: ne not working for AD"
+    assert y >= x, "Error: ne not working for AD"
