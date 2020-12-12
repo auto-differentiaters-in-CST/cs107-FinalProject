@@ -448,15 +448,15 @@ def sigmoid(ad):
     Returns the new AD object after applying sigmoid function, a special case of the logistic function.
 
             Parameters:
-                    ad (AD): An AD object to be applied tangent function on
+                    ad (AD): An AD object to be applied sigmoid function on
 
             Returns:
-                    new_ad (AD): the new AD object after applying tangent function
+                    new_ad (AD): the new AD object after applying sigmoid function
 
             Example:
             >>> x = AD.AD(2,order=5)
-            >>> tan(x)
-            AD(value: [-2.18503986], derivatives: [5.7743992])
+            >>> sigmoid(x)
+            AD(value: [0.88079708], derivatives: [0.10499359])
     """
     if isinstance(ad, AD.AD):
         return 1/(1+exp(-ad))
