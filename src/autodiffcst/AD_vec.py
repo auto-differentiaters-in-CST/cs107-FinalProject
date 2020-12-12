@@ -843,7 +843,6 @@ def my_decorator(func):
 
 exp = my_decorator(admath.exp)
 abs = my_decorator(admath.abs)
-log = my_decorator(admath.log)
 sqrt = my_decorator(admath.sqrt)
 sin = my_decorator(admath.sin)
 cos = my_decorator(admath.cos)
@@ -851,7 +850,7 @@ tan = my_decorator(admath.tan)
 sinh = my_decorator(admath.sinh)
 cosh = my_decorator(admath.cosh)
 tanh = my_decorator(admath.tanh)
-
+sigmoid = my_decorator(admath.sigmoid)
 
 def pow(vad,y):
     """
@@ -875,6 +874,29 @@ def pow(vad,y):
         return set_VAD(AD_result)
     except:
         return np.power(vad,y)
+
+
+def log(vad, base=np.e):
+    """
+        Do the log operation on VAD objects.
+
+                Parameters:
+                        vad (VAD): the VAD object to apply log on
+                        base (VAD or valid input for the numpy operation): log base, default to be e
+
+                Returns:
+                        The new VAD object after applying log function
+
+                Example:
+                >>> x = VAD([2])
+                >>> log(x)
+                AD(value: [0.69314718], derivatives: [0.5])
+    """
+    try:
+        AD_result = np.array([admath.log(ad)/admath.log(base) for ad in vad.variables])
+        return set_VAD(AD_result)
+    except:
+        return admath.log(vad)/admath.log(base)
 
 
 
