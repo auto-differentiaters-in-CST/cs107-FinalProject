@@ -35,7 +35,13 @@ The evaluation trace tracks each layer of operations while we evaluate the input
 
 The computational graph is a graphical visualization of the evaluation trace. It holds traces and elementary operations of all the steps, connecting them via arrows pointing from input to output of each step, and thus can help us better understand the structure of the function and its evaluation trace. Forward mode performs the operations from the start to the end of the graph or evaluation trace. Reverse mode performs the operations backwards, while applying the chain rule at each time determining the derivate of the trace.
 
+<<<<<<< HEAD
 Here, we provide an example of a evaluation trace and a computational graph of the function $f(x,y)=exp(-(sin(x)-cos(y))^2)$, with derivatives evaluated at $f(\pi/2,\pi/3)$.
+=======
+Here, we provide an example of a evaluation trace and a computational graph of the function $$f(x,y)=\exp (-(\sin (x)-\cos (y))^2),$$
+with derivatives evaluated at point $(\pi /2,\pi /3)$.
+
+>>>>>>> new_vec
 
 Evaluation trace:
 
@@ -53,7 +59,13 @@ Evaluation trace:
 
 Computational graph:
 
+<<<<<<< HEAD
 ![2.4 Graph](C_graph_example.jpg "Computational Graph")
+=======
+![2.4 Graph](docs/C_graph_example.jpg "Computational Graph")
+
+In case the graph fails to show up in the notebook, please refer to docs/C_graph_example.jpg
+>>>>>>> new_vec
 
 ### 2.5 Second and Higher-Order Derivatives and the Hessian Matrix
 
@@ -123,10 +135,16 @@ Our package is for Python 3 only. To install autodiffCST, you need to have pip3 
 Then, you could install this package by running 
 ```pip3 install autodiffCST``` from the command line. 
 
+<<<<<<< HEAD
+=======
+*Please be aware that you might need to manually install sympy and numpy prior to installing our package, depending on your environment. You could do so by running ```pip3 install sympy``` and ```pip3 install numpy``` in your terminal.*
+
+>>>>>>> new_vec
 An alternative is to clone our repository by running ```git clone https://github.com/auto-differentiaters-in-CST/cs107-FinalProject.git``` from the command line and then ```cd autodiffcst``` to go to the directory where the modules reside. Then use ```pip install -r requirements.txt``` to install the required pacakges.
 
 **User Guide**
 
+<<<<<<< HEAD
 After installation, you could import this package by ```import AD_vec as cst```.
 
 Then, you could initiate the VAD object by giving the point where you wish to differentiate. VAD can take in a vector input values, representing a point's coordinates in multi-dimensional space. Moreover, you could also try other supplementary features as in the code demo provided below. Notice that to use this demo, you can find a dem.py file in the `autodiffcst` directory.
@@ -207,10 +225,179 @@ ValueError: You asked for an order beyond what you stored.
 
 You can also try the most complicated case with a single function apply to a single vector variable created as one VAD object as in the following cell. 
 For example, we have $x=[1,2,3]$, and we wish to see the derivative of $f(x)=\sin(x)$. Here this $f$ is, in fact, an abuse of notation, because what it really says is $$f = \begin{bmatrix} f_1(x), f_2(x), f_3(x)\end{bmatrix} = \begin{bmatrix} \sin (x_1), \sin (x_2), \sin (x_3)\end{bmatrix}.$$
+=======
+After installation, you could import this package by ```import autodiffcst as cst```.
+
+Then, you could initiate the VAD object by giving the point where you wish to differentiate. VAD can take in a vector input values, representing a point's coordinates in multi-dimensional space. Moreover, you could also try other supplementary features as in the code demo provided below. Notice that to use this demo, you can find a dem.py file in the `autodiffcst` directory.
+
+A brief guide on the main features before code examples:
+
+- autodiffcst.**VAD** *(val,order=2)*: 
+
+    Initialize a list of scalar variables with respect to which you wish to evaluate the derivatives.
+    When you want to do differentiation to a function of multiple scalar variables, you must build all of them at once within the same **VAD** call.
+    
+    Can also initialize as a single vector variable, but restrictions may apply. See example 3.3.
+
+    - Parameters: 
+        - *val*: a list or a numpy array of numbers. The value of your variable.
+        - *order*: a positive integer. The highest order of derivative to be evaluated. Can only be set as greater than 2 if *val* has a single number.
+    
+    - Returns:    None
+
+
+- autodiffcst.**diff** *(direction, order = 1)*:
+
+    A method to get derivative in a specified direction once variable(s) or a function made up of established variable(s) is set up. 
+
+    - Parameters: 
+        - *direction*: an index number if order = 1, a list of two index numbers if order = 2. The index of the variable at which you want to obtain the derivative.
+        - *order*: either 1 or 2. The order of the derivative you want. Should only be 1 or 2.
+        
+    When you want to get a first derivative, you must specify one variable; when you want to get a second derivative, you must specify two variables.
+    Even if you only have one variable, you still need to specify 0 for first derivative and $[0,0]$ for second derivative.
+
+    - Returns:  The value of the desired derivative.
+        
+
+
+- autodiffcst.**jacobian** *(f)*:
+
+    A function to get first derivatives of all variables in the form of a Jacobian matrix.
+
+    - Parameters:
+        - *f*: a single function or a list or numpy array of function, each made up of variables built with **VAD**.
+    
+    - Returns: The Jacobian matrix.
+
+
+- autodiffcst.**hessian** *(f)*:
+
+    A function to get second derivatives of all variables in the form of a Hessian matrix. Can only be used when applicable.
+
+    - Parameters:
+        - *f*: a single function made up of only scalar variables built with **VAD**. Can't be used with vector variables.
+
+    - Returns: The Hessian matrix.
+        
+
+- autodiffcst.**higherdiff** *(order)*:
+    
+    A method to get higher-order derivatives. Only work for the case of single variables. In order to use this feature, you should initialize your variable from **VAD** with input *val* being a list of a single value, and then specify the highest *order*.
+
+    - Parameters:
+        - *order*: a positive number.
+    
+    - Returns: The derivative as a number to the specified order.
+
+
+### Example 3.1
+Simple case: a list of a single scalar variable. First-order, second-order, and higher-order derivatives can be calculated.
+
+```python
+# import modules
+>>> import autodiffcst as cst
+
+>>> [u] = cst.VAD([5])           # initialize VAD objects u with a single point at 5
+# u = cst.VAD([5]) can also be used, but then you need to refer to your scalar variable as u[0].
+
+>>> f = u*2-3                    # build a function with VAD object
+
+>>> print(f)                     # print f's value and derivative
+AD(value: [7], derivatives: [2.])
+    
+>>> dfdu = f.diff(0)             # get derivative in the direction of u
+>>> print(dfdu)                  # notice that you must specify a direction
+2.0
+
+>>> dfdu2 = f.diff([0,0],order=2)# get second derivative df^2/dudu
+>>> print(dfdu2)
+0.0
+
+>>> dfdu = f.diff()              # get derivative without direction, get an error
+TypeError: diff() missing 1 required positional argument: 'direction'
+
+>>> cst.jacobian(f)              # Jacobian matrix for single variable and single function, if you wish
+array([[2.]])
+
+>>> cst.hessian(f)               # Hessian matrix for single variable and single function, if you wish
+array([[0.]])
+
+# only in this simple case, we support higher-order derivatives beyond 2
+>>> [x] = cst.VAD([2],order=10)  # initialize as before, but specify that you want to get to order up tp 10
+
+>>> g = 2*cst.exp(x)
+>>> g.higherdiff(10)
+14.7781121978613
+
+>>> g.higherdiff(12)             # since you initialize with order=10, you cannot go beyond that
+ValueError: You asked for an order beyond what you stored.
+
+>>> f = x**3                  # let's try another case for higher-order derivatives
+>>> f.higher 
+array([12., 12.,  6.,  0.,  0.,  0.,  0.,  0.,  0.,  0.])
+# Hurray! Now you get all first ten derivatives at once!
+
+```
+
+### Example 3.2
+Advanced cases: initialize VAD objects with vectors (multiple input values)
+
+```python
+# import modules
+>>> import autodiffcst as cst
+
+>>> x, y, z = cst.VAD([1,2,3])     # initialize VAD objects x, y, z with values 1, 2, 3 respectively
+                                   # with multiple variable, you can skip brackets
+
+>>> f1,f2,f3= x+y, x**2+z, x*y*z   # build three functions with x, y, z
+>>> print(f3)                      # print f3's values and derivatives
+AD(value: [6], tag: [0 1 2], derivatives: [6. 3. 2.])  
+
+>>> cst.jacobian([f1, f2, f3])   
+array([[1., 1., 0.],
+       [2., 0., 1.],
+       [6., 3., 2.]])
+
+>>> cst.jacobian(f1)                # you can also get jacobian for only f1
+array([1., 1., 0.])
+
+>>> cst.hessian(f1)
+array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])
+
+>>> cst.hessian(f3)
+array([[0., 3., 2.],
+       [3., 0., 1.],
+       [2., 1., 0.]])
+
+>>> cst.hessian([f1, f2, f3])     # the hessian of this object will be a tensor, and is not supported
+TypeError: Invalid Type. Function should be an AD object.
+
+>>> f1.diff(0,order=1)            # get first derivative with respect to x (index 0)
+1.0
+
+>>> f3.diff([2,1],order=2)        # get second derivative with respect to z and y
+1.0
+
+>>> f3.diff([1,2],order=2)        # notice that hessian matrix is symmetric, so we get the same value
+1.0
+
+>>> x, y, z = cst.VAD([1,2,3],order=3)  # higher-order feature is no longer supported for multiple scalar variables
+Exception: We cannot handle derivatives of order > 2 for more than one scalar variables.
+```
+
+### Example 3.3
+Tricky case: using **VAD** to create a vector variable
+
+For example, suppose we have $x=[1,2,3]$, and we wish to see the derivative of $f(x)=\sin(x)$. Here this $f$ is, in fact, an abuse of notation, because what it really says is $$f = \begin{bmatrix} f_1(x), f_2(x), f_3(x)\end{bmatrix} = \begin{bmatrix} \sin (x_1), \sin (x_2), \sin (x_3)\end{bmatrix}.$$
+>>>>>>> new_vec
 But our package is capable of handling this case, as long as:
 - $f$ is only one function, rather than a list of multiple functions.
 - You have only one such vector $x$ created as one VAD object.
 
+<<<<<<< HEAD
 Our ```hessian``` only handles $2D$ matrices in order to prevent getting into cases beyond expectation, and so you will not be able to see the second derivative tensor. But we do store that correctly in our object.
 
 Please be informed that we DO NOT support a single function applied to multiple vector variables, such as $f = e^x+3y$ where $x=[1,2,3]$ and $y=[4,5,6]$. And this case is exempted from implementation as specified in piazza @595.
@@ -219,10 +406,23 @@ However, if you do try to do this with our package, our algorithm will take $x,y
 
 ```python
 # the tricky case with vector variables
+=======
+Our ```hessian``` only handles cases of up to $2D$ matrices and so you will not be able to see the second derivative tensor. But we do store the hessian correctly in our object, as you can see in our demo below.
+
+Please be informed that we DO NOT support a single function applied to multiple vector variables, such as $f = e^x+3y$ where $x=[1,2,3]$ and $y=[4,5,6]$. And this case is exempted from implementation as specified in piazza @595.
+
+However, if you decide to be a crooked user regardless and try to do this with our package, our algorithm will take $x,y$ as the same vector variable $[x_1,x_2,x_3]$ and return results based on that assumption. Having said that, if you call ```jacobian```, the result will be computed as in the case where $f = e^x+3x$, and therefore is NOT the correct solution. Of course, you won't be able to use ```hessian``` method at all in this case. 
+We just want you to be aware that there will be NO error or exception raised when you create $f = e^x+3y$, as this is beyond the scope of this project. But this doesn't mean we can handle it properly for you. Therefore, it's your responsibility to take extra caution when reaching this tricky case and avoid the abusive use of our package. 
+
+```python
+# import modules
+>>> import autodiffcst as cst
+>>>>>>> new_vec
 
 >>> v = cst.VAD([1,2,3])        # initialize VAD objects: a vector v of value [1,2,3]
     
 >>> f = cst.sin(v)              # build VAD: a single function applied to the vector v
+<<<<<<< HEAD
 >>> print(f)                    # print f's value, derivative and second derivative, here notice the second derivative will appear as a tensor 
 
 VAD(value: [[0.84147098]
@@ -240,6 +440,73 @@ VAD(value: [[0.84147098]
  
 ```
 
+=======
+>>> print(f)                    # print f's value and derivative. Here the second derivative will appear as a 3x3 matrix 
+VAD(value: [[0.84147098]
+            [0.90929743]
+            [0.14112001]], derivatives: [[ 0.54030231  0.          0.        ]
+                                         [-0.         -0.41614684 -0.        ]
+                                         [-0.         -0.         -0.9899925 ]])   
+
+>>> cst.jacobian(f)
+array([[ 0.54030231,  0.        ,  0.        ],
+       [-0.        , -0.41614684, -0.        ],
+       [-0.        , -0.        , -0.9899925 ]])
+
+>>> cst.hessian(f)              # you will get an error, as promised.
+TypeError: Invalid Type. Sorry, we cannot handle multiple functions for Hessian.
+
+>>> f.diff(0,order=1)           # get the first derivative with respect to v[0] (or x0), the first variable         
+array([ 0.54030231, -0.        , -0.        ])
+# the result is the first column of jacobian, since we want [df1/dx0,df2/dx0,df3/dx0]
+
+>>> f.diff([2,2],order=2)       # now the second derivative df^2/dx3dx3 is also a vector 
+array([ 0.        , -0.        , -0.14112001])
+
+# now check the bonus!
+>>> f.der2                      # only in this case, you will be able to get the tensor hessian
+array([[[-0.84147098,  0.        ,  0.        ],
+        [ 0.        ,  0.        ,  0.        ],
+        [ 0.        ,  0.        ,  0.        ]],
+
+       [[-0.        , -0.        , -0.        ],
+        [-0.        , -0.90929743, -0.        ],
+        [-0.        , -0.        , -0.        ]],
+
+       [[-0.        , -0.        , -0.        ],
+        [-0.        , -0.        , -0.        ],
+        [-0.        , -0.        , -0.14112001]]])
+```
+
+### Example 3.4 
+Using autodiffcst in real case: finding minimum of Rosenbrock function with Newton's method
+
+The Rosenbrock function (https://en.wikipedia.org/wiki/Rosenbrock_function):
+
+$$ f(x,y)=100(y-x^2)^2+(1-x)^2,$$
+
+is a common test function used for optimization algorithms. We use it to demonstrate a nice application of our package.
+Here we only show the code for doing Newton's method in each iteration, where our package can be used to obtain the Jacobian and Hessian directly. Please refer to docs/using_VAD_for_Newtons_method.ipynb for the complete notebook with a contour plot of the optimization path.
+Please refer to docs/using_VAD_for_Newtons_method.ipynb for the complete notebook.
+
+
+```python
+import numpy as np
+import autodiffcst as cst
+
+# using VAD to create variables at point (x_i,y_i)
+[a,b] = cst.VAD([x_i,y_i])
+# construct the function
+Rsbrk = 100*(b-a**2)**2+(1-a)**2
+# Take a Newton step by solving the linear system 
+# constructed using the Hessian and gradient
+step = np.linalg.solve(cst.hessian(Rsbrk),-cst.jacobian(Rsbrk))
+x_i += step[0]
+y_i += step[1]
+```
+
+
+>>>>>>> new_vec
 ## Section 4: Software Organization
 The home directory of our software package would be structured as follows.
 
@@ -247,6 +514,7 @@ The home directory of our software package would be structured as follows.
 - README.md
 - requirements.txt
 - docs/
+<<<<<<< HEAD
  * README.md
  * milestone1.ipynb
  * milestone2.ipynb
@@ -266,11 +534,38 @@ The home directory of our software package would be structured as follows.
 - tests/
  * AD_test.py
  * test_admath.py
+=======
+    * README.md
+    * milestone1.ipynb
+    * milestone2.ipynb
+    * milestone2_progress.ipynb
+    * documentation.ipynb
+    * documentation.md
+    * api
+    * using_VAD_for_Newtons_method.ipynb
+ 
+- setup.py
+- demo.ipynb
+- src/
+    - autodiffcst/
+        * \_\_init\_\_.py
+        * AD.py
+        * AD_vec.py
+        * admath.py
+
+- tests/
+    * AD_test.py
+    * test_admath.py
+>>>>>>> new_vec
 
 - TravisCI.yml
 - CodeCov.yml
 
+<<<<<<< HEAD
 Specificly speaking, the README file would contain a general package description and the necessary information for users to navigate in the subdirectories. Besides, we would place our documentation, testing api, and previous milestone files in the doc directory. Moreover, to package our model with PyPI, we need to include setup.py and an autodiffcst directory, where stores the source code of our package. These core modulesinclude: `AD.py` (used by `AD_vec` to handle single value inputs), `AD_vec.py` (defines the main object class VAD and some of its related functions), and `admath.py` (defines elementary math operations for VAD objects). The `autodiffcst` directory also contains a simple tutorial for demo of our code. Furthermore, we would put a collection of test cases in `tests` directory. The tests are run through Pytest. Last but not least, we would include TravisCI.yml and CodeCov.yml in our home directory for integrated test.
+=======
+Specificly speaking, the README file would contain a general package description and the necessary information for users to navigate in the subdirectories. Besides, we would place our documentation, testing api, and previous milestone files in the `docs` directory. Moreover, to package our model with PyPI, we need to include `setup.py` and an `autodiffcst` directory in `src` directory, where stores the source code of our package. These core modulesinclude: `AD.py` (used by `AD_vec` to handle single value inputs), `AD_vec.py` (defines the main object class VAD and some of its related functions), and `admath.py` (defines elementary math operations for VAD objects). Furthermore, we would put a collection of test cases in `tests` directory. The tests are run through Pytest. Last but not least, we would include TravisCI.yml and CodeCov.yml in our home directory for integrated test. In addition, we also included a simple tutorial `demo.ipynb` for demo of our code in the home directory.
+>>>>>>> new_vec
 
 To distribute our package, we would use PyPI so that users could easily install the package with *pip install autodiffCST*.
 For developers, the repository can be cloned by running git clone https://github.com/auto-differentiaters-in-CST/cs107-FinalProject.git from the command line.
@@ -312,7 +607,12 @@ The module `admath.py` contains other elementary functions that are used to form
 In this package, we will use the following public modules to deal with elementary functions, we would allow users to enter functions that can be recognized by Python, factor a input function to a series of basic operations/functions (such as sin, sqrt, log, and exp), as in Section 3: How to Use.
 
 - Modules for mathmatical calculation:
+<<<<<<< HEAD
   * Numpy: we would use it for matrix operations, and basic math functions and values, such as sin, cos, $\pi$, e, etc. 
+=======
+  * Numpy: we use it for matrix operations, and basic math functions and values, such as sin, cos, $\pi$, e, etc. 
+  * Sympy: we use it to compute the Bell polynomials for higher order derivatives.
+>>>>>>> new_vec
 
 - Modules for testing:
   * pydoc
@@ -333,6 +633,7 @@ Here is the future features section from *Milestone 2*:
 
 3. Newton's method. We would like to use our AD package to solve meaningful problems. One way to achieve this is to use it in an implementation of Newton's method. This will be a script that imports our AD package to calculate the derivatives in Newton's method.
 
+<<<<<<< HEAD
 
 
 After some consideration, we decided that we would like to do ***higher order derivatives*** instead of Backward Mode and Newton's method as proposed. This pivot shifting is approved, so we updated the future features section to reflect this change and M2 feedback (the update was made before the whole module was finished so some function names and implementations might not match):
@@ -348,6 +649,17 @@ A starting point would be allowing second order derivatives taken on our AD obje
 
 In addition, we demoed a case where our extension could aid Newton's method in the file `using_VAD_for_Newtons_method.ipynb` in the `docs` directory. It is quite an integrated test scheme which utilizes a large coverage of the elementary operations that can be used in our modules. It is highly encouraged to try this test case. 
 
+=======
+After some consideration, we decided that we would like to do ***higher order derivatives*** instead of Backward Mode and Newton's method as proposed. This pivot shifting is approved, so we updated the future features section to reflect this change and M2 feedback (the update was made before the whole module was finished so some function names and implementations might not match):
+#### 1. Differentiate a list of functions. 
+Our package can deal with one function with multiple varaibles. In the future we plan to take a list of functions as input and output its Jacobian accordingly. Using Numpy array as the data structure to keep the Jacobian would be ideal, so we will need to change the implementation of our current jacobian method.
+
+#### 2. Higher order derivatives. 
+A starting point would be allowing second order derivatives taken on our AD objects and returning the correct Jacobian matrix accordingly. Note that this cannot be achieved by simply applying `diff()` to an AD object twices, since the Jacobian matrix would be different and the datatype would be different. We would need to store the values of the second derivatives of our AD object at each elementary steps in the evaluation trace. Then we would need another function to return the second derivatives (possibly named `second_diff()`), which functions similarly to `diff()`, but returns the second derivatives of the AD object. Apart from the `jacobian()` function, we will also have a `hessian()` function which returns the second order derivatives matrix of the function. 
+
+
+### Description of Extension and its Background
+>>>>>>> new_vec
 As mentioned above, our main extension is calculating higher order derivatives using automatic differentiation. Higher order derivatives are prevalent in Numerical Analysis researches, mechanical engineering, astronomy and a number of other fields of application. Most of the times, people are interesting in using derivatives of order 1, 2 and 3, seldomly 4 and 5. Orders higher than such are rarely consider except for pure mathematical and academic purposes. More mathematical background of higher order derivatives is provided in the Background section above. 
 
 Our implementation of higher order derivatives is integrated with our main object classes `VAD`. The features differ for single value input and vector input of `VAD`, so we will introduce them separately. 
@@ -356,6 +668,7 @@ For `VAD` and functions of `VAD` with single value input, we can calculate their
 
 For `VAD` and functions of `VAD` with vector value input, we can calculate their derivatives up to the second order. This shall be enough for basic applications of differentiating vectors. The first and second order derivatves are stored in attributes `der` and `der2` respectively and can be accessed through them and through functions `jacobian()` and `hessian()`.
 
+<<<<<<< HEAD
 # Broader Impact and Inclusivity Statement
 
 ### Broader Impact
@@ -365,6 +678,21 @@ On the other hand, we do not hope to see that this package is used for plagiaris
 
 ### Software Inclusivity
 The autodiffCST package and its developer welcome users from all backgrounds and identities. We believe excellence in a collaborative project comes from trust, respect and caring for each other, as it is evident through the process of developing this package. We tried our best to make our package as inclusive and user-friendly as possible with the willingness to reach more people that are interested in this package, by providing fitting documentations and instructions. Admittedly, this package is written in English and Python, but we welcome the participation from people that are fluent in any languages and programming languages. During the process of developing this package, pull requests are reviewed and approved by all developers. Whenever one of us feels the need to initiate a pull request, this person would communicate with other members and reach an agreement together. We would love to bring this positive communication to future collaboration of this package and beyond.
+=======
+In addition, we demoed a case where our extension could aid Newton's method in the file `using_VAD_for_Newtons_method.ipynb` in the `docs` directory. It is quite an integrated test scheme which utilizes a large coverage of the elementary operations that can be used in our modules. It is highly encouraged to try this test case. 
+
+# Broader Impact and Inclusivity Statement
+
+### Broader Impact
+We hope our package would be applied to different fields that require doing differentiations via computer programs: physics, engineering, applied mathematics, astronomy, and even other areas that the developers of this package have never imagined. We hope this package can be used to do automatic differentiations accurately and efficiently and can inspire the development of enhanced versions of automatic differentiation packages in the future. We see a number of possibilities that this package could be enhanced and would be happy to see them completed. 
+
+On the other hand, we do not hope to see that this package is used for plagiarism, cheating, or shortcut for doing differentiation. The open-source nature of this package makes it accessible to people, but also susceptible to people who plan to use it for plagiarism. Users should be aware of this nature and wisely choose their way of using this package. This package is not designed for shortcuts of doing differentiation practices. People could use it to check their answers for calculating derivatives by hand or by other algorithms, but should not use it in place of derivative calculation practices. These practices have their purposes and using this package to get the answers does not contribute to the learning process.
+
+We also see that when working on this project, we connected mathematical ideas such as Leibniz Rule and Faa di Bruno Formula to our automatic differentiation algorithms. Although this should not be the first time when people used these formulas to calculate higher-order derivatives, it was inspiring for us to do the implementation ourselves. We hope our project serves as a case where we bridge the gap between theories and applications. This experience will allow us and many students alike to keep striving for this goal and further tells that this is the best time when all kinds of knowledge come together to facilitate new discoveries.
+
+### Software Inclusivity
+The autodiffCST package and its developer welcome users who are contributors from all backgrounds and identities. We believe excellence in a collaborative project comes from trust, respect, and caring for each other, as it is evident through the process of developing this package. We tried our best to make our package as inclusive and user-friendly as possible with the willingness to reach more people that are interested in this package, by providing fitting documentation and instructions. Admittedly, this package is written in English and Python, but we welcome the contribution from people that are fluent in any language and programming languages. During the process of developing this package, pull requests are reviewed and approved by all developers. Whenever one of us feels the need to initiate a pull request, this person would communicate with other members and reach an agreement together. We would love to bring this positive communication to a future collaboration of this package and beyond.
+>>>>>>> new_vec
 
 # Future
 
