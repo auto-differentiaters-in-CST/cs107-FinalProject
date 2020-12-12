@@ -415,4 +415,7 @@ def test_VAD_op_hw():
     assert np.allclose(z.val,np.array([2,4])), 'Error: wrong imul VAD'
     x = VAD(val = [2,2])
     x /= 2
-    assert np.allclose(x.val,np.array([1,1])), 'Error: wrong imul VAD'
+    assert np.allclose(x.val,np.array([1,1])), 'Error: wrong itruediv VAD'
+    x = VAD(val = [2,2])
+    f = x**2
+    assert np.allclose(f.val,np.array([4,4])), 'Error: wrong pow VAD'
