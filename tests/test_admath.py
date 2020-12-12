@@ -98,6 +98,9 @@ def test_log():
     assert log(5) == np.log(5), "Error: log didn't apply properly on number."
     with pytest.raises(TypeError):
         f = admath.log('error')
+    x,y = VAD([2,3])
+    p = log(x, base=y)
+    assert np.allclose(p.val[0], np.log(2)/np.log(3))
 
 def test_fact_ad():
     assert admath.fact_ad(2,0) == 1, "Error: fact_ad calculation wrong."
@@ -330,3 +333,44 @@ def test_sech_float():
     assert abs(admath.sech(ad)-1/np.cosh(2)) <= 1e-8, "Error: sech(x), false value."
     with pytest.raises(TypeError):
         f = admath.sech('error')
+
+def test_sig_float():
+    ad = 2
+    assert abs(sigmoid(ad)-1/(1+np.exp(-ad))) <= 1e-8, "Error: cosh(x), false value."
+    with pytest.raises(TypeError):
+        f = sigmoid('error')
+
+def test_sig_ad():
+    [x,y] = VAD([1,2])
+    assert np.allclose(sigmoid(x+y).val[0],1/(1+np.exp(-3))), "Error: sigmoid(x+y), false value."
+    def sigder1(x):
+        return np.exp(-x)*(1+np.exp(-x))**(-2)
+    fstder = sigder1(3)
+    assert np.allclose(jacobian(sigmoid(x+y)),np.array([fstder,fstder])), "Error: sigmoid(x+y), false derivative."
+    f = sigmoid(VAD([1,2]))
+    def sigder2(x):
+        firstp = 2*np.exp(-2*x)/((1+np.exp(-x))**3)
+        secondp = np.exp(-x)/((1+np.exp(-x))**2)
+        return firstp - secondp
+
+    scdder = sigder2(3)
+
+    assert np.allclose(sigmoid(x+y).der2,np.array([[scdder,scdder],[scdder,scdder]])), "Error: sigmoid(x+y), false der2."
+    assert np.allclose(f.val,np.array([1/(1+np.exp(-1)),1/(1+np.exp(-2))])), "Error: sigmoid(VAD[1,2]), false value."
+    der1 = np.zeros((2,2))
+    der1[0,0] = sigder1(1)
+    der1[1,1] = sigder1(2)
+    der2 = np.zeros((2,2,2))
+    der2[0,0,0] = sigder2(1)
+    der2[1,1,1] = sigder2(2)
+    assert np.allclose(f.der,der1), "Error: sigmoid(VAD[cd 1,2]), false der1."
+    assert np.allclose(f.der2,der2), "Error: sigmoid(VAD[1,2]), false der2."
+    [z] = VAD([0],order=3)
+    def sigder3(x):
+        p1 = np.exp(-x)/((1+np.exp(-x))**2)
+        p2 = 6*np.exp(-2*x)/((1+np.exp(-x))**3)
+        p3 = 6*np.exp(-3*x)/((1+np.exp(-x))**4)
+        return p1-p2+p3
+    higherde = np.array([sigder1(0),sigder2(0),sigder3(0)])
+    h = sigmoid(z)
+    assert np.allclose(h.higher,higherde), "Error: sigmoid(0), false higher."
