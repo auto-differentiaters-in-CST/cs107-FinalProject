@@ -305,3 +305,13 @@ def test_AD_init_hw():
         x = VAD([1,2,3],order=5)
         x = ad.AD([1,2,3],order=5)
 
+def test_AD_repr_hw():
+    x = ad.AD([1],tag=0,der=[1],order=5)
+    assert x.__repr__() == 'AD(value: [[1]], derivatives: [1.])', "Error: repr is not working"
+    assert x.__str__() == 'AD(value: [[1]], derivatives: [1.])', "Error: str is not working"
+
+def test_AD_eq_hw():
+    x = ad.AD([1],tag=0,der=[1],order=5)
+    y = VAD([1])
+    with pytest.raises(TypeError):
+        x == y
