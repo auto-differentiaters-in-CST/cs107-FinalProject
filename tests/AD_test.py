@@ -239,7 +239,7 @@ def test_hessian():
 
 def test_pow_m():
     x = VAD([1, 2])
-    g = pow(a, 2)
+    g = pow(x, 2)
     assert np.allclose(g.val, np.array([1., 4.]))
     assert np.allclose(g.der, np.array([[2., 0.],[0., 4.]]))
 

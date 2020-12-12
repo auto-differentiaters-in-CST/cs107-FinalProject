@@ -6,7 +6,8 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import numpy as np
 import sympy as sp
-import autodiffcst.AD as AD
+from autodiffcst import AD
+# import autodiffcst.AD as AD
 
 
 def choose(n, k):
