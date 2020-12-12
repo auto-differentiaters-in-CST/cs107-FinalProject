@@ -298,8 +298,10 @@ def test_AD_init_hw():
     with pytest.raises(TypeError):
         x = ad.AD(-1,size=1.5)
         x = ad.AD(-1,order=1.5)
+        x = ad.AD(-1,order='error')
     with pytest.raises(ValueError):
         x = ad.AD(-1,order=0)
     with pytest.raises(Exception):
         x = VAD([1,2,3],order=5)
+        x = ad.AD([1,2,3],order=5)
 
