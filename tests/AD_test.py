@@ -365,4 +365,8 @@ def test_higher_hw():
         x = ad.AD(val = 1, size = 1, tag = 0)
         f = x**5
         f.higherdiff(10)
-    
+
+def test_AD_rpow_hw():
+    x = ad.AD(val = 1, order = 10, size = 1, tag = 0)
+    f = 5**x
+    assert np.abs(f.val - 5)<1e-8, "rpow not working for AD"
