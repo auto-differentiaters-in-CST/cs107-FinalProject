@@ -442,3 +442,26 @@ def tanh(ad):
             return np.tanh(ad)
         except:
             raise TypeError("Your input is not valid.")
+
+def sigmoid(ad):
+    """
+    Returns the new AD object after applying sigmoid function, a special case of the logistic function.
+
+            Parameters:
+                    ad (AD): An AD object to be applied tangent function on
+
+            Returns:
+                    new_ad (AD): the new AD object after applying tangent function
+
+            Example:
+            >>> x = AD.AD(2,order=5)
+            >>> tan(x)
+            AD(value: [-2.18503986], derivatives: [5.7743992])
+    """
+    if isinstance(ad, AD.AD):
+        return 1/(1+exp(-ad))
+    else:
+        try:
+            return 1/(1+np.exp(-ad))
+        except:
+            raise TypeError("Your input is not valid.")

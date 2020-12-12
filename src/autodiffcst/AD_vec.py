@@ -851,7 +851,7 @@ tan = my_decorator(admath.tan)
 sinh = my_decorator(admath.sinh)
 cosh = my_decorator(admath.cosh)
 tanh = my_decorator(admath.tanh)
-
+sigmoid = my_decorator(admath.sigmoid)
 
 def pow(vad,y):
     """
