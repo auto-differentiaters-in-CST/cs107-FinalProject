@@ -352,3 +352,17 @@ def test_AD_add_hw():
     with pytest.raises(Exception):
         f = x + y
 
+def test_higher_hw():
+    x = ad.AD(val = 1, order = 10, size = 1, tag = 0)
+    f = x**5
+    assert f.higherdiff(1) == 5,"higherdiff not working"
+    with pytest.raises(TypeError):
+        f.higherdiff('error')
+    with pytest.raises(ValueError):
+        f.higherdiff(0)
+        f.higherdiff(15)
+    with pytest.raises(Exception):
+        x = ad.AD(val = 1, size = 1, tag = 0)
+        f = x**5
+        f.higherdiff(10)
+    
