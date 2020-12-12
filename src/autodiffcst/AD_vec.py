@@ -80,7 +80,6 @@ class VAD():
                 >>> print(fs)
                 VAD(value: [1 2], derivatives: [[1. 0.]
                                                 [0. 1.]])
-        
         """
         return "VAD(value: {0}, derivatives: {1})".format(self.val, self.der)
 
@@ -116,8 +115,7 @@ class VAD():
                 Example:
                 >>> len(VAD([1,2]))
                 2
-        """     
-
+        """    
         try:
             return len(self.val)
         except TypeError:
@@ -139,11 +137,11 @@ class VAD():
                 >>> VAD([1,2])[0]
                 AD(value: [1], derivatives: [1. 0.])
         """  
-
         return self.variables[pos]
-        
-    # Comparison Equal
-    def __eq__(self, other):
+
+
+    ## setter, Do we want this?
+    def __setitem__(self, pos, newAD):
         """
         Overwrites the __eq__ dunder method to check if two VAD objects are equal in value.
     
@@ -159,6 +157,25 @@ class VAD():
                 >>> VAD([1,2]) == VAD([1,3])
                 False
         """
+        self.variables[pos] = newAD
+        
+    # Comparison Equal
+    def __eq__(self, other):
+        """
+        Overwrites the __eq__ dunder method to check if two VAD objects are equal in value.
+    
+                Parameters:
+                        self (VAD): the VAD object that __ne__ is called upon.
+                        other (VAD): the VAD object to be compared with.
+    
+                Returns:
+                        False if all the values of two VAD objects are equal.
+                        True if otherwise.
+
+                Example:
+                >>> VAD([1,2]) != VAD([1,3])
+                True
+        """
         if isinstance(other, VAD):
             if np.sum(self.val == other.val) == len(self): 
                 return True
@@ -170,7 +187,7 @@ class VAD():
 
     def __ne__(self, other):
         """
-        Overwrites the __eq__ dunder method to check if two VAD objects are equal in value.
+        Overwrites the __ne__ dunder method to check if two VAD objects are equal in value.
     
                 Parameters:
                         self (VAD): the VAD object that __ne__ is called upon.
@@ -451,7 +468,7 @@ class VAD():
                 >>> a
                 VAD(value: [2., 3.], derivatives: [[1., 0.],
                                                    [0., 1.]])
-        """          
+        """         
         return self + other
 
     # Division
@@ -471,7 +488,7 @@ class VAD():
                 >>> a - 3
                 VAD(value: [-2., -1.], derivatives: [[1., 0.],
                                                      [0., 1.]])
-        """  
+        """       
         return self + (-1)*other
     
     def __rsub__(self, other):
@@ -510,7 +527,7 @@ class VAD():
                 >>> a
                 VAD(value: [-2., -1.], derivatives: [[1., 0.],
                                                      [0., 1.]])
-        """        
+        """            
         return self - other
 
 
@@ -531,7 +548,7 @@ class VAD():
                 >>> a % 2
                 array([1, 0])
 
-        """        
+        """          
         if isinstance(other, int) or isinstance(other, float):
             new_val = self.val % other
             print("Warning: the mod function does not yield any derivatives. Instead, the function applies mod to the current value of the AD object and returns the result.")
@@ -556,7 +573,7 @@ class VAD():
                 >>> a
                 array([1, 0])
 
-        """          
+        """           
         return self % other    
 
     ## Multiplication
@@ -596,7 +613,7 @@ class VAD():
                 >>> 2*a
                 VAD(value: [2., 4.], derivatives: [[2., 0.],
                                                    [0., 2.]])
-        """               
+        """            
         return self * other
 
     def __imul__(self, other):
@@ -660,9 +677,9 @@ class VAD():
                 VAD(value: [1., 0.5], derivatives: [[-0.5, 0.],
                                                    [0., -0.125]])
         """
-
         AD_result = other/self.variables
         return set_VAD(AD_result)
+        
     
     def __itruediv__(self, other):
         """
@@ -681,6 +698,7 @@ class VAD():
                 >>> a
                 VAD(value: [1., 2.], derivatives: [[0.5, 0.],
                                                    [0., 0.5]])
+                    
         """          
         return self / other
     
@@ -725,7 +743,7 @@ class VAD():
                 >>> a
                 VAD(value: [1., 4.], derivatives: [[2., 0.],
                                                    [0., 4.]])
-        """          
+        """           
         return self ** other
 
     
@@ -768,7 +786,7 @@ class VAD():
                 >>> f = 2 * a
                 >>> f.diff(1,1)
                 np.array([0.,2.])             
-        """   
+        """    
         if order == 1 and isinstance(direction,int):
             return self.der[:,direction]
                 
@@ -779,7 +797,7 @@ class VAD():
 
 # helper function
 def set_VAD(ADs):
-        """
+    """
         Create a VAD object with a list of AD objects.
     
                 Parameters:
@@ -793,14 +811,14 @@ def set_VAD(ADs):
                 >>> ADs = np.array([x, y])
                 >>> set_VAD(ADs) 
                 VAD([1,2])       
-        """   
+    """ 
     new_val = np.concatenate([ADs[i].val for i in range(len(ADs))])
     new_der = np.array([ADs[i].der for i in range(len(ADs))])
     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD(new_val, new_der, new_der2)
 
 def my_decorator(func):
-        """
+    """
         Helper function that enables directly using functions from admath.
     
                 Parameters:
@@ -813,7 +831,7 @@ def my_decorator(func):
                 >>> y = VAD([1, 2, 3])
                 >>> func(y)
                 exp(y)
-        """ 
+    """ 
     def wrapper(vad):
         try:
             AD_result = np.array([func(ad) for ad in vad.variables])
@@ -836,7 +854,7 @@ tanh = my_decorator(admath.tanh)
 
 
 def pow(vad,y):
-        """
+    """
         Do the power operation on VAD objects, functions similar to **.
     
                 Parameters:
@@ -851,7 +869,7 @@ def pow(vad,y):
                 >>> pow(a, 2)
                 VAD(value: [1., 4.], derivatives: [[2., 0.],
                                                    [0., 4.]])
-        """ 
+    """ 
     try:
         AD_result = np.array([ad**y for ad in vad.variables])
         return set_VAD(AD_result)
@@ -862,7 +880,7 @@ def pow(vad,y):
 
 # jacobian
 def jacobian(funcs):
-        """
+    """
         Return the Jacobian matrix of the input function(s).
     
                 Parameters:
@@ -875,7 +893,7 @@ def jacobian(funcs):
                 >>> x = VAD([3, 1])
                 >>> f = 2 * x
                 >>> jacobian(f),np.array([[2., 0.],[0.,2.]]))
-        """ 
+    """
     diffs = []
     if isinstance(funcs,VAD) or isinstance(funcs,ad.AD):
         return funcs.der
@@ -905,7 +923,7 @@ def hessian(func):
             >>> g = 2 * x[0]
             >>> hessian(g)
             np.array([[0., 0.], [0., 0.]]))
-        """ 
+    """ 
     if isinstance(func, VAD):
         raise TypeError("Invalid Type. Sorry, we cannot handle multiple functions for Hessian.")
     elif isinstance(func, ad.AD):
@@ -915,52 +933,4 @@ def hessian(func):
         raise TypeError("Invalid Type. Function should be an AD object.")
 
 
-
-if __name__ == "__main__":
-
-    # x = VAD([3,1])
-    # f = 2*x
-    # g = x[1]*x[0]
-    # print(x)
-    # print(g)
-    # print(f.diff(1,1))
-    # print(f.diff([1,0],2))
-    # print(g.diff(0,1))
-    # print(g.diff(1,1))
-    # print(g.diff([0,0],2))
-    # #print(f)
-    # print(f.diff(0,1))
-
-
-    # f = admath.sin(x[0])
-    # print(f)
-    # g = admath.cos(x[0])
-    # k = g**(-1.0)
-    # print(k)
-    # print(f*k)
-
-
-    # f = (x[0]**3)*(x[0]**2)
-    # print(f)
-    # print(f.higher)
-    # k = admath.sin(admath.sin(x[0]))
-    # f = admath.sin(x[0])*admath.cos(x[0])
-    #
-    # a = admath.sin(x[0])
-    # b = admath.cos(x[0])
-    # # #g = admath.tan(x[0])
-    # k = a*b
-    # #
-    # print(a)
-    # print(a.higher)
-    # # # h = a**(-1)
-    # # # print(h)
-    # # # print(h.higher)
-    # print(b)
-    # print(b.higher)
-    # # # print (g)
-    # # # print(g.higher)
-    # # #mul wrong!!!!
-    # print(k)
-    # print(k.higher)
 
