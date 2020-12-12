@@ -41,6 +41,7 @@ def test_repr():
     x = VAD([1])
     assert repr(x) == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
     assert x.__repr__() == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
+    assert x.__str__() == "VAD(value: [1], derivatives: [[1.]])", "Error: str is not working"
 
 def test_negative():
     [x,y,z] = VAD([1,2,3])
@@ -402,3 +403,13 @@ def test_AD_pow_hw():
     with pytest.raises(TypeError):
         f = x**'a'
     
+def test_VAD_op_hw():
+    x = VAD(val = [1,2])
+    y = VAD(val = [1,2])
+    z = VAD(val = [1,2])
+    x -= 1
+    assert np.allclose(x.val,np.array([0,1])), 'Error: wrong isub VAD'
+    y %= 2
+    assert np.allclose(y,np.array([1,0])), 'Error: wrong imod VAD'
+    z *= 2
+    assert np.allclose(z.val,np.array([2,4])), 'Error: wrong imul VAD'
