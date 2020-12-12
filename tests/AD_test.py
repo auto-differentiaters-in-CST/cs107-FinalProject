@@ -40,6 +40,7 @@ def test_initialize_advanced():
 def test_repr():
     x = VAD([1])
     assert repr(x) == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
+    assert x.__repr__() == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
 
 def test_negative():
     [x,y,z] = VAD([1,2,3])
@@ -76,7 +77,7 @@ def test_len_VAD():
 def test_len_AD():
     [x, y] = VAD([1,2])
     lx = len(x)
-    assert lx == 2, "Error: dunder length for AD is wrong."
+    assert lx == 1, "Error: dunder length for AD is wrong."
     
 
 def test_isequal_VAD():
