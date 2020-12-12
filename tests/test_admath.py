@@ -37,6 +37,9 @@ def test_abs():
         f = abs(x)
     with pytest.raises(TypeError):
         f = admath.abs('error')
+    xv = AD.AD(-2,tag=0,order=3)
+    f = admath.abs(xv)
+    assert f.higherdiff(3) == 0, "Error: abs didn't apply on higher properly"
 
 def test_chain_rule():
     x = AD.AD(2,order=5)
