@@ -98,6 +98,9 @@ def test_log():
     assert log(5) == np.log(5), "Error: log didn't apply properly on number."
     with pytest.raises(TypeError):
         f = admath.log('error')
+    x,y = VAD([2,3])
+    p = log(x, base=y)
+    assert np.allclose(p.val[0], np.log(2)/np.log(3))
 
 def test_fact_ad():
     assert admath.fact_ad(2,0) == 1, "Error: fact_ad calculation wrong."
