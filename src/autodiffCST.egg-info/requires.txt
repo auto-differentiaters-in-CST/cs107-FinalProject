@@ -1,0 +1,6 @@
+numpy
+sympy>=1.0
+
+[testing]
+pytest
+pytest-cov
