@@ -98,7 +98,7 @@ def abs(ad):
             if isinstance(ad.val[i], numbers.Integral):
                 der[i] = get_der(ad.val[i])
             else:
-                print(type(ad.val[i]))
+                #print(type(ad.val[i]))
                 sub_der = np.array([get_der(v) for v in ad.val[i]])
                 der[i] = sub_der
                 der2[i] = np.array([0] * len(ad.val[i]))
