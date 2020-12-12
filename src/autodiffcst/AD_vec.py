@@ -623,14 +623,20 @@ class VAD():
     ## Division
     def __truediv__(self, other):
         """
-        Overwrites the __truediv__ dunder method to apply division to an AD object.
+        Overwrites the __truediv__ dunder method to apply division to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied division to
-                        other (AD or int or float): the object that self is divided by
+                        self (VAD): An VAD object to be applied division to
+                        other (VAD or valid input for the numpy operation): the object that self is divided by
     
                 Returns:
-                        new_self (AD): the new AD object after applying division
+                        new_self (VAD): the new VAD object after applying division
+                        
+                Example:
+                >>> a = VAD([2,4])
+                >>> a / 2
+                VAD(value: [1., 2.], derivatives: [[0.5, 0.],
+                                                   [0., 0.5]])
         """
         AD_result = self.variables / other
         return set_VAD(AD_result)   
@@ -643,10 +649,16 @@ class VAD():
     
                 Parameters:
                         self (AD): An AD object to be applied division to
-                        other (AD or int or float): the object that self is divided by
+                        other (VAD or valid input for the numpy operation): the object that self is divided by
     
                 Returns:
                         new_self (AD): the new AD object after applying division
+                
+                Example:
+                >>> a = VAD([2,4])
+                >>> 2 / a
+                VAD(value: [1., 0.5], derivatives: [[-0.5, 0.],
+                                                   [0., -0.125]])
         """
 
         AD_result = other/self.variables
@@ -654,14 +666,21 @@ class VAD():
     
     def __itruediv__(self, other):
         """
-        Overwrites the __itruediv__ dunder method to apply division to an AD object when the operation "/=" is used.
+        Overwrites the __itruediv__ dunder method to apply division to an VAD object when the operation "/=" is used.
     
                 Parameters:
-                        self (AD): An AD object to be applied division to
-                        other (AD or int or float): the object that self is divided by
+                        self (VAD): An VAD object to be applied division to
+                        other (VAD or valid input for the numpy operation): the object that self is divided by
     
                 Returns:
-                        new_self (AD): the new AD object after applying division
+                        None, but a new VAD will be assigned to the original variable.
+                
+                Example:
+                >>> a = VAD([2,4])
+                >>> a /= 2
+                >>> a
+                VAD(value: [1., 2.], derivatives: [[0.5, 0.],
+                                                   [0., 0.5]])
         """          
         return self / other
     
@@ -670,14 +689,20 @@ class VAD():
     
     def __pow__(self, other):
         """
-        Overwrites the __pow__ dunder method to apply power function to an AD object.
+        Overwrites the __pow__ dunder method to apply power function to an VAD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied power function to
-                        other (AD or int or float): the object that self's power will be raised to
+                        self (VAD): An VAD object to be applied power function to
+                        other (VAD or valid input for the numpy operation): the object that self's power will be raised to
     
                 Returns:
-                        new_self (AD): the new AD object after applying power function
+                        new_self (VAD): the new VAD object after applying power function
+                
+                Example:
+                >>> a = VAD([1,2])
+                >>> a ** 2
+                VAD(value: [1., 4.], derivatives: [[2., 0.],
+                                                   [0., 4.]])
         """           
         AD_result = self.variables ** other
         return set_VAD(AD_result)  
@@ -685,29 +710,42 @@ class VAD():
     
     def __ipow__(self, other):
         """
-        Overwrites the __ipow__ dunder method to apply power function to an AD object when the operation "**=" is used.
+        Overwrites the __ipow__ dunder method to apply power function to an VAD object when the operation "**=" is used.
     
                 Parameters:
-                        self (AD): An AD object to be applied power function to
-                        other (AD or int or float): the object that self's power will be raised to
+                        self (VAD): An VAD object to be applied power function to
+                        other (VAD or valid input for the numpy operation): the object that self's power will be raised to
     
                 Returns:
-                        new_self (AD): the new AD object after applying power function
+                        None, but a new VAD will be assigned to the original variable.
+
+                Example:
+                >>> a = VAD([1,2])
+                >>> a **= 2
+                >>> a
+                VAD(value: [1., 4.], derivatives: [[2., 0.],
+                                                   [0., 4.]])
         """          
         return self ** other
 
     
     def __rpow__(self, other):
         """
-        Overwrites the __rpow__ dunder method to apply power function to an AD object 
-        when the AD object is on the right side of the power sign.
+        Overwrites the __rpow__ dunder method to apply power function to an VAD object 
+        when the VAD object is on the right side of the power sign.
     
                 Parameters:
-                        self (AD): An AD object to be applied power function to
-                        other (AD or int or float): the object that self's power will be raised to
+                        self (VAD): An VAD object to be applied power function to
+                        other (VAD or valid input for the numpy operation): the object that self's power will be raised to
     
                 Returns:
-                        new_self (AD): the new AD object after applying power function
+                        new_self (VAD): the new VAD object after applying power function
+        
+                Example:
+                >>> a = VAD([1,3])
+                >>> 2 ** a
+                VAD(value: [2., 8.], derivatives: [[2.*np.log(2.), 0.],
+                                                   [0., 8.*np.log(2.)]])
         """
         AD_result = other ** self.variables
         return set_VAD(AD_result)
@@ -715,15 +753,21 @@ class VAD():
 
     def diff(self, direction, order = 1):
         """
-        Calculate and return the derivatives of the function represented by an AD object.
+        Calculate and return the derivatives of the function represented by an VAD object.
     
                 Parameters:
-                        self (AD): the AD object whose derivatives will be calculated.
+                        self (VAD): the VAD object whose derivatives will be calculated.
                         direction (list): the seed indicating which variable's derivative should be returned
                         order (1 or 2): the order of the derivatives
                 Returns:
-                        An array representing the derivatives (or derivative) of the AD object, 
+                        An array representing the derivatives (or derivative) of the VAD object, 
                         with directions indicted by the input direction
+                
+                Example:
+                >>> a = VAD([3,1])
+                >>> f = 2 * a
+                >>> f.diff(1,1)
+                np.array([0.,2.])             
         """   
         if order == 1 and isinstance(direction,int):
             return self.der[:,direction]
@@ -735,12 +779,41 @@ class VAD():
 
 # helper function
 def set_VAD(ADs):
+        """
+        Create a VAD object with a list of AD objects.
+    
+                Parameters:
+                        ADs (array or np.array): a list or np.array of AD objects
+                Returns:
+                        A VAD object that has the values and derivatives of the list of AD objects
+                
+                Example:
+                >>> x = ad.AD(1, tag=0, size=2)
+                >>> y = ad.AD(2, tag=1, size=2)
+                >>> ADs = np.array([x, y])
+                >>> set_VAD(ADs) 
+                VAD([1,2])       
+        """   
     new_val = np.concatenate([ADs[i].val for i in range(len(ADs))])
     new_der = np.array([ADs[i].der for i in range(len(ADs))])
     new_der2 = np.array([ADs[i].der2 for i in range(len(ADs))])
     return VAD(new_val, new_der, new_der2)
 
 def my_decorator(func):
+        """
+        Helper function that enables directly using functions from admath.
+    
+                Parameters:
+                        func: the function to be applied
+                Returns:
+                        A VAD object after the function is applied to it
+                
+                Example:
+                >>> func = my_decorator(admath.exp)
+                >>> y = VAD([1, 2, 3])
+                >>> func(y)
+                exp(y)
+        """ 
     def wrapper(vad):
         try:
             AD_result = np.array([func(ad) for ad in vad.variables])
@@ -763,6 +836,22 @@ tanh = my_decorator(admath.tanh)
 
 
 def pow(vad,y):
+        """
+        Do the power operation on VAD objects, functions similar to **.
+    
+                Parameters:
+                        vad (VAD): the VAD object to apply power on
+                        y (VAD or valid input for the numpy operation): the object that vad's power will be raised to
+    
+                Returns:
+                        The new VAD object after applying power function
+
+                Example:
+                >>> a = VAD([1,2])
+                >>> pow(a, 2)
+                VAD(value: [1., 4.], derivatives: [[2., 0.],
+                                                   [0., 4.]])
+        """ 
     try:
         AD_result = np.array([ad**y for ad in vad.variables])
         return set_VAD(AD_result)
@@ -773,6 +862,20 @@ def pow(vad,y):
 
 # jacobian
 def jacobian(funcs):
+        """
+        Return the Jacobian matrix of the input function(s).
+    
+                Parameters:
+                        funcs (VAD or list of VAD): the VAD object(s) for which we want to calculate the Jacobian of
+    
+                Returns:
+                        The Jacobian matrix of the input function(s)
+
+                Example:
+                >>> x = VAD([3, 1])
+                >>> f = 2 * x
+                >>> jacobian(f),np.array([[2., 0.],[0.,2.]]))
+        """ 
     diffs = []
     if isinstance(funcs,VAD) or isinstance(funcs,ad.AD):
         return funcs.der
@@ -785,6 +888,24 @@ def jacobian(funcs):
 
 # hessian
 def hessian(func):
+    """
+    Return the Hessian matrix of the input function.
+    
+            Parameters:
+                    func (AD): the AD object for which we want to calculate the Hessian of
+    
+            Returns:
+                    The Hessian matrix of the input function
+
+            Raise:
+                    TypeError if the input is VAD and has multiple functions
+
+            Example:
+            >>> x = VAD([3, 1])
+            >>> g = 2 * x[0]
+            >>> hessian(g)
+            np.array([[0., 0.], [0., 0.]]))
+        """ 
     if isinstance(func, VAD):
         raise TypeError("Invalid Type. Sorry, we cannot handle multiple functions for Hessian.")
     elif isinstance(func, ad.AD):
@@ -797,11 +918,11 @@ def hessian(func):
 
 if __name__ == "__main__":
 
-    x = VAD([3,1])
+    # x = VAD([3,1])
     # f = 2*x
-    g = x[1]*x[0]
-    print(x)
-    print(g)
+    # g = x[1]*x[0]
+    # print(x)
+    # print(g)
     # print(f.diff(1,1))
     # print(f.diff([1,0],2))
     # print(g.diff(0,1))
