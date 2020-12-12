@@ -296,9 +296,10 @@ def test_mod():
 
 def test_AD_init_hw():
     with pytest.raises(TypeError):
-        x = ad.AD(-1,size=1.5)
-        x = ad.AD(-1,order=1.5)
-        x = ad.AD(-1,order='error')
+        x = ad.AD(-1,tag=0,size=1.5)
+        x = ad.AD(-1,tag=0,order=1.5)
+        x = ad.AD(-1,tag=0,order='error')
+        x = VAD([-1],order='error')
     with pytest.raises(ValueError):
         x = ad.AD(-1,order=0)
     with pytest.raises(Exception):
@@ -350,3 +351,4 @@ def test_AD_add_hw():
     f = x + x
     with pytest.raises(Exception):
         f = x + y
+
