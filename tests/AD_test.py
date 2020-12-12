@@ -320,6 +320,16 @@ def test_AD_eq_hw():
         x > y
         x <= y
         x >= y
+        y = VAD([1])
+    
+    y = 0
+    with pytest.raises(TypeError):
+        x == y
+        x.fullequal(y)
+        x < y
+        x > y
+        x <= y
+        x >= y
 
 def test_AD_ne_hw():
     x = ad.AD([1],tag=0,der=[1],order=5)
