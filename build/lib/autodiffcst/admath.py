@@ -6,10 +6,8 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import numpy as np
 import sympy as sp
-import autodiffcst.AD as AD
-
-
-
+from autodiffcst import AD
+# import autodiffcst.AD as AD
 
 
 def choose(n, k):
@@ -101,7 +99,7 @@ def abs(ad):
             if isinstance(ad.val[i], numbers.Integral):
                 der[i] = get_der(ad.val[i])
             else:
-                print(type(ad.val[i]))
+                #print(type(ad.val[i]))
                 sub_der = np.array([get_der(v) for v in ad.val[i]])
                 der[i] = sub_der
                 der2[i] = np.array([0] * len(ad.val[i]))
@@ -163,7 +161,6 @@ def fact_ad(x, n):
             Example:
             >>> fact_ad(5,4)
             120
-
     """
     prod = 1
     for i in range(n):
@@ -231,7 +228,6 @@ def sqrt(ad):
     """
     return ad ** 0.5
 
-
 # trig
 def sin(ad):
     """
@@ -248,7 +244,6 @@ def sin(ad):
             >>> sin(x)
             AD(value: [0.90929743], derivatives: [-0.41614684])
     """
-
     if isinstance(ad, AD.AD):
         new_val = sin(ad.val)
         der = cos(ad.val)
@@ -312,7 +307,6 @@ def tan(ad):
             >>> x = AD.AD(2,order=5)
             >>> tan(x)
             AD(value: [-2.18503986], derivatives: [5.7743992])
-
     """
     if isinstance(ad, AD.AD):
         return sin(ad) / cos(ad)
@@ -323,7 +317,6 @@ def tan(ad):
             raise TypeError("Your input is not valid.")
 
 
-# helper function for tan
 def sec(num):
     """
     Returns the new AD object after applying secant function.
@@ -420,7 +413,6 @@ def sech(ad):
             Example:
             >>> sech(np.array([1,2,3]))
             array([0.64805427, 0.26580223, 0.09932793])
-
     """
     try:
         return 1 / np.cosh(ad)
@@ -443,7 +435,6 @@ def tanh(ad):
             >>> tanh(x)
             AD(value: [0.96402758], derivatives: [0.07065082])
     """
-
     if isinstance(ad, AD.AD):
         return sinh(ad)/cosh(ad)
     else:

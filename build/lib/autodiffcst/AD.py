@@ -16,15 +16,28 @@ class AD():
     
                 Parameters:
                         val (int or float): the initial value of the new AD object.
-                        tag (string or list of strings): the tag, or variable names of the new AD object, such as "x" and "y". 
-                        der (float or dict): derivatives of the new AD object. 
-                                              A dictionary shall be used if the object contains multiple variables.
                         order (int): the highest order of derivatives the user wants to evaluate
-    
+                        size (int): the size of dimension that the AD object resides
+                        tag (list of int or np.ndarray of int): the tag, or direction that the AD object resides in its dimension
+                        der (list of float or np.ndarray of float): first order derivative of the new AD object, 
+                                                                    contained in a list or or np.ndarray           
+                        der2 (list of float or np.ndarray of float): second order derivative of the new AD object, 
+                                                                    contained in a list or or np.ndarray
+                        higher (list of float or np.ndarray of float): higher order derivatives of the new AD object, 
+                                                                    contained in a list or or np.ndarray
+
                 Returns:
                         None, but initializes an AD object when called
+
+                Example:
+                >>> AD(val=1, order=2, size=1, tag=1) 
+                AD(value: [1], derivatives: [1.])
+
+                >>> AD(1, 2, 1, 1) 
+                AD(value: [1], derivatives: [1.])
+
+                Note: Initializing val, order, size and tag is a must to use AD directly
         """
-        #print(higher==None)
         self.val = val if isinstance(val, np.ndarray) else np.array([val])
         if der is None:
             if size is None:
@@ -83,6 +96,10 @@ class AD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
+
+                Example:
+                >>> repr(AD(1, 2, 1, 0))
+                "AD(value: [1], derivatives: [1.])"
         """
         return "AD(value: {0}, derivatives: {1})".format(self.val, self.der)
 
@@ -95,10 +112,29 @@ class AD():
     
                 Returns:
                         A string containing the current value and derivatives of the AD object.
+
+                Example:
+                >>> str(AD(1, 2, 1, 0))
+                "AD(value: [1], derivatives: [1.])"
         """        
         return "AD(value: {0}, derivatives: {1})".format(self.val,self.der)
 
     def __eq__(self, other):
+        """
+        Overwrites the __eq__ dunder method to check if two AD objects are equal in value.
+    
+                Parameters:
+                        self (AD): the AD object that __eq__ is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        True if the two AD objects have equal values.
+                        False if the two AD objects do not have equal values.
+
+                Example:
+                >>> AD(1, 2, 1, 0) == AD(2, 2 ,1, 0)
+                False
+        """  
         if isinstance(other, AD):
             if self.val == other.val: 
                 return True
@@ -108,9 +144,40 @@ class AD():
             raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
     
     def __ne__(self, other):
+        """
+        Overwrites the __ne__ dunder method to check if two AD objects are not equal in value.
+    
+                Parameters:
+                        self (AD): the AD object that __ne__ is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        False if the two AD objects have equal values.
+                        True if the two AD objects do not have equal values.
+
+                Example:
+                >>> AD(1, 2, 1, 0) != AD(2, 2 , 1, 0)
+                True
+        """ 
         return not self == other
     
     def fullequal(self, other):
+        """
+        Check if two AD objects are equal in value, first and second derivatives.
+    
+                Parameters:
+                        self (AD): the AD object that fullequal is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        True if the two AD objects have equal values, first and second derivatives.
+                        False if the two AD objects differ in any of their equal values, first and second derivatives.
+
+                Example:
+                >>> a = AD(1, 2, 1, 0)
+                >>> a.fullequal(AD(2, 2 ,1, 0))
+                False
+        """ 
         if isinstance(other, AD):
             return np.allclose(self.val, other.val) and np.allclose(self.der,other.der) and np.allclose(self.der2, other.der2)
         else:
@@ -118,18 +185,63 @@ class AD():
 
 
     def __lt__(self, other):
+        """
+        Overwrites the __lt__ dunder method to check if the current AD objects is less than another AD in value.
+    
+                Parameters:
+                        self (AD): the AD object that __lt__ is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        True if the current AD objects is less than the other AD in value.
+                        False if the current AD objects is not less than the other AD in value.
+
+                Example:
+                >>> AD(1, 2, 1, 0) < AD(2, 2 ,1, 0)
+                array([ True])
+        """  
         if isinstance(other, AD):
             return self.val < other.val
         else:
             raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
 
     def __gt__(self, other):
+        """
+        Overwrites the __gt__ dunder method to check if the current AD objects is greater than another AD in value.
+    
+                Parameters:
+                        self (AD): the AD object that __gt__ is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        True if the current AD objects is greater than the other AD in value.
+                        False if the current AD objects is not greater than the other AD in value.
+
+                Example:
+                >>> AD(1, 2, 1, 0) > AD(2, 2 ,1, 0)
+                array([False])
+        """ 
         if isinstance(other, AD):
             return self.val > other.val
         else:
             raise TypeError("Invalid Comparison. AD object can only be compared with AD.")
 
     def __le__(self, other):
+        """
+        Overwrites the __le__ dunder method to check if the current AD objects is no larger than another AD in value.
+    
+                Parameters:
+                        self (AD): the AD object that __le__ is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        True if the current AD objects is no larger than the other AD in value.
+                        False if the current AD objects is larger than the other AD in value.
+
+                Example:
+                >>> AD(1, 2, 1, 0) <= AD(2, 2 ,1, 0)
+                array([ True])
+        """ 
         if isinstance(other, AD):
             return self.val <= other.val
         else:
@@ -137,6 +249,21 @@ class AD():
 
 
     def __ge__(self, other):
+        """
+        Overwrites the __ge__ dunder method to check if the current AD objects is no less than another AD in value.
+    
+                Parameters:
+                        self (AD): the AD object that __ge__ is called upon.
+                        other (AD): the AD object to be compared with.
+    
+                Returns:
+                        True if the current AD objects is no less than the other AD in value.
+                        False if the current AD objects is less than the other AD in value.
+
+                Example:
+                >>> AD(1, 2, 1, 0) >= AD(2, 2 ,1, 0)
+                array([False])
+        """  
         if isinstance(other, AD):
             return self.val >= other.val
         else:
@@ -144,9 +271,35 @@ class AD():
 
 
     def __len__(self):
+        """
+        Overwrites the __len__ dunder method to get the length of the vector dimension that the AD object resides in.
+    
+                Parameters:
+                        self (AD): the AD object that __len__ is called upon.
+    
+                Returns:
+                        An integer representing the length of the vector dimension that the AD object resides in.
+
+                Example:
+                >>> len(AD(1, 2, 1, 0))
+                1
+        """ 
         return len(self.tag)
     ## Unary 
     def __neg__(self):
+        """
+        Overwrites the __neg__ dunder method to get the negation of the AD object.
+    
+                Parameters:
+                        self (AD): the AD object that __neg__ is called upon.
+    
+                Returns:
+                        A new AD object which has the negated value and derivative of the current AD.
+
+                Example:
+                >>> -AD(1, 2, 1, 0)
+                AD(value: [-1], derivatives: [-1.])
+        """
         return self*(-1)
     ## Addition
     def __add__(self, other):
@@ -159,6 +312,12 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying addition
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> y = AD(1, 2, 2, 1)
+                >>> x + y
+                AD(value: [4], derivatives: [1., 1.])
         """        
         try:
             new_der = self.der + other.der
@@ -196,6 +355,11 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying addition
+                
+                Example:
+                >>> x = AD(3, 2, 1, 0)
+                >>> 2 + x
+                AD(value: [5.], derivatives: [1.])
         """          
         return self + other
 
@@ -208,7 +372,13 @@ class AD():
                         other (AD or int or float): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying addition
+                        None, but a new AD will be assigned to the original variable.
+                
+                Example:
+                >>> x = AD(3, 2, 1, 0)
+                >>> x += 2
+                >>> x
+                AD(value: [5.], derivatives: [1.])
         """          
         return self + other
     
@@ -223,10 +393,32 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying substraction
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> y = AD(1, 2, 2, 1)
+                >>> x - y
+                AD(value: [2.], derivatives: [1.，-1.])
         """      
         return self + (-1)*other
     
     def __rsub__(self, other):
+        """
+        Overwrites the __rsub__ dunder method to apply substraction to an AD object.
+    
+                Parameters:
+                        self (AD): An AD object to be applied substraction to
+                        other (AD or valid input for the numpy operation): the object to be substracted from self
+    
+                Returns:
+                        new_self (AD): the new AD object after applying substraction
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> 2-x
+                AD(value: [-1.], derivatives: [-1.，-0.])
+        """      
+        
         return (-1)*self + other
     
     def __isub__(self, other):
@@ -238,29 +430,35 @@ class AD():
                         other (AD or valid input for the numpy operation): the object to be substracted from self
     
                 Returns:
-                        new_self (AD): the new AD object after applying substraction
+                        None, but a new AD will be assigned to the original variable.
+
+                Example:
+                >>> x = AD(3, 2, 1, 0)
+                >>> x -= 2
+                >>> x 
+                AD(value: [1.], derivatives: [1.])
         """          
         return self - other
     
     def __mul__(self, other):
         """
-        Overwrites the __add__ dunder method to apply addition to an AD object.
+        Overwrites the __mul__ dunder method to apply multiplication to an AD object.
     
                 Parameters:
-                        self (AD): An AD object to be applied addition to
+                        self (AD): An AD object to be applied multiplication to
                         other (AD or int or float): the object to be added to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying addition
+                        new_self (AD): the new AD object after applying multiplication
+
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> y = AD(1, 2, 2, 1)
+                >>> x * y
+                AD(value: [3.], derivatives: [1.，3.])
         """        
         try:
-            # print(other.der, other.der.shape)
-            # print(self.der, self.der.shape)
-
-            # print(other.der2, other.der2.shape)
-            # print(self.der2, self.der2.shape)
-
-
+            
             new_der = self.der * other.val + self.val * other.der
             
             new_der2 = self.val * other.der2 + np.matmul(np.array([other.der]).T,np.array([self.der]))  \
@@ -280,8 +478,6 @@ class AD():
                     sumval = 0
                     n = i + 1
                     for k in range(n+1):
-                        #print(self.higher[k-1])
-                        #print(other.higher[n-k-1])
                         if k == 0:
                             sumval += choose(n,k) * self.val * other.higher[n-k-1]
                         elif k == n:
@@ -289,8 +485,7 @@ class AD():
                         else:
                             sumval += choose(n,k) * self.higher[k-1] * other.higher[n-k-1]
                     higher_der[i] = sumval
-            #print("higher_der", higher_der)
-            #print("self.order", self.order)
+            
             return AD(val=new_val,tag = new_tag, der=new_der, der2=new_der2, order = self.order, size=self.size, higher=higher_der)
         except AttributeError:
             if isinstance(other, int) or isinstance(other, float):
@@ -298,15 +493,12 @@ class AD():
                 new_der = self.der * other 
                 new_der2 = self.der2 * other
                 if self.higher is None:
-                    #print("no higher case self,other#")
                     new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
                 else:
-                    #print("has higher case self,other#")
                     higher_der = other * self.higher
                     new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
                 return new_self
-                    # return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
-
+                    
             else:
                 raise TypeError("Invalid type.")
 
@@ -321,6 +513,11 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying multiplication
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> 2*x 
+                AD(value: [6.], derivatives: [2.，0.])
         """            
         return self * other
 
@@ -333,7 +530,13 @@ class AD():
                         other (AD or int or float): the object to be multiplied to self
     
                 Returns:
-                        new_self (AD): the new AD object after applying multiplication
+                        None, but a new AD will be assigned to the original variable.
+                
+                Example:
+                >>> x = AD(3, 2, 1, 0)
+                >>> x *= 5
+                >>> x
+                AD(value: [15.], derivatives: [5.])
         """          
         return self * other
     
@@ -349,8 +552,13 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying division
+
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> y = AD(1, 2, 2, 1)
+                >>> x / y
+                AD(value: [3.], derivatives: [1.，-2.])
         """
-        #print("call truediv")
         return self * (other ** (-1.0))
 
     
@@ -365,33 +573,18 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying division
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> 3/x 
+                AD(value: [1.], derivatives: [-0.33333333, -0.])
         """            
         try:
             return other / self
         
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
-                return other*self **(-1)
-
-                    #new_val = other / self.val
-
-            #     new_der = - other / (self.val ** 2)
-            #     # add second-order
-            #     new_der2 = 2*other / (self.val ** 3)
-            #     higher_der = None
-            #     if self.higher:
-            #         higher_der = np.array([0.0]*len(self.higher))
-            #         #print(higher_der)
-            #         higher_der[0] = new_der
-            #         higher_der[1] = new_der2
-            #         for i in range(2,len(self.higher)):
-            #             n = i + 1
-            #             coef = other*fact_ad(-1,n)
-            #             mainval = math.pow(self.val[0],-n-1)
-            #             higher_der[i] = coef*mainval
-            #             # higher_der[i] = self.higher[i] * -1 * other / (self.higher[i-1] ** 2)
-            #     return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
-                    # return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
+                return other*self **(-1)            
             else:
                 raise TypeError("Invalid division type.")
 
@@ -405,7 +598,13 @@ class AD():
                         other (AD or int or float): the object that self is divided by
     
                 Returns:
-                        new_self (AD): the new AD object after applying division
+                        None, but a new AD will be assigned to the original variable.
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> x /= 3
+                >>> x 
+                AD(value: [1.], derivatives: [0.33333333, 0.])
         """          
         return self / other
     
@@ -420,6 +619,12 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying power function
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> y = AD(1, 2, 2, 1)
+                >>> x ** y
+                AD(value: [3.], derivatives: [1., 3.29583687])
         """
         if isinstance(other, AD):
             if self.val[0] != 0:
@@ -429,28 +634,6 @@ class AD():
                     raise ValueError("Derivative is undefined.")
                 else:
                     return AD(0, tag = self.tag, der = np.zeros(self.size), der2 = np.zeros((self.size, self.size)))
-
-
-            # new_val = self.val ** other.val
-            #
-            # self_der = other.val * self.val**(other.val - 1.0)
-            # other_der = self.val ** other.val* np.log(self.val)
-            # new_der = self_der + other_der
-            #
-            # x = self.val
-            # y = other.val
-            # h = np.array([[(y-1)*y*x**(y-2), x**(y-1)+y*x**(y-1)*np.log(x)], [x**(y-1)+y*x**(y-1)*np.log(x), x**y*(np.log(x))**2]])
-            # hessian = np.zeros((self.size,self.size))
-            # hessian[0:-1,0:-1] = h[:,:,0]
-            # first_inner = np.array([self.der, other.der])
-            # second_inner = np.zeros((self.size,self.size, self.size))
-            # second_inner[0:-1,0:,0:] = np.array([self.der2, other.der2])
-            # new_der2 = np.matmul(hessian, np.matmul(first_inner.T, first_inner))+np.matmul(new_der, second_inner)
-            #
-            # new_tag = np.unique(np.concatenate((self.tag,other.tag),0))
-            #
-            # # if self.higher is None:
-            # return AD(val = new_val, tag = new_tag, der = new_der, der2 = new_der2, size = self.size)
     
         elif isinstance(other, int) or isinstance(other, float) or isinstance(other, list) or isinstance(other, np.ndarray):
             try:
@@ -471,8 +654,7 @@ class AD():
                     coef = fact_ad(other,n)
                     mainval = math.pow(self.val[0],other-n)
                     higher_der[i] = coef*mainval
-            # print("here")
-            # return chain_rule(self, new_val, new_der, new_der2, higher_der)
+            
             return chain_rule(self, new_val, new_der, new_der2, higher_der = higher_der)
 
         else:
@@ -488,6 +670,11 @@ class AD():
     
                 Returns:
                         new_self (AD): the new AD object after applying power function
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> 3 ** x
+                AD(value: [27.], derivatives: [29.66253179, 0.])
         """          
         return self ** other
 
@@ -501,38 +688,20 @@ class AD():
                         other (AD or int or float): the object that self's power will be raised to
     
                 Returns:
-                        new_self (AD): the new AD object after applying power function
+                        None, but a new AD will be assigned to the original variable.
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> x **= 2
+                >>> x
+                AD(value: [9.], derivatives: [6., 0.])
         """            
         try:
             return other ** self
         
         except RecursionError:
             if isinstance(other, int) or isinstance(other, float):
-                # new_val = other ** self.val
-                # new_der = np.log(other) * (new_val) * self.der
-                # # may need to change
-                # new_der2 = (np.log(other) ** 2) * (new_val) * self.der2
                 return exp(log(other) * self)
-                # y = exp(log(other) * self)
-                # new_val = other ** self.val
-                # new_der = y.der
-                # new_der2 = y.der2
-
-                # if self.higher is None:
-                #     return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-
-                # else:
-                #     higher_der = np.array([1.0]*len(self.higher))
-                #     for i in range(len(self.higher)):
-                #         n = i + 1
-                #         higher_der[i] = new_val * np.log(other) ** n
-               
-                #     # return chain_rule(ad, new_val, der, der2, higher_der)
-                #     return AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, order=len(higher_der), size = self.size, higher=higher_der)
-
-                # new_self = AD(val = new_val, tag = self.tag, der = new_der, der2 = new_der2, size = self.size)
-       
-                # return new_self
             else:
                 raise TypeError("Invalid type.") 
     
@@ -544,11 +713,19 @@ class AD():
     
                 Parameters:
                         self (AD): the AD object whose derivatives will be calculated.
-                        direction (string): the seed indicating which variable's derivative should be returned
+                        direction (int): the seed indicating which variable's derivative should be returned
     
                 Returns:
-                        A dictionary (or float) representing the derivatives (or derivative) of the AD object, 
-                        with directions indicted by the input direction
+                        derivative (float): the derivative of the AD object, wrt the input direction 
+                
+                Example:
+                >>> x = AD(3, 2, 2, 0)
+                >>> y = AD(1, 2, 2, 1)
+                >>> f = x / y
+                >>> dfdy = f.diff(1)
+                >>> dfdy 
+                -3.0
+                
         """
         if order == 1 and isinstance(direction, int):
             return self.der[direction]
@@ -569,7 +746,16 @@ class AD():
                         order (string): the order of derivative
     
                 Returns:
-                        the derivative of the given order evaluated at the point of self.val
+                        the derivative(float) of the given order evaluated at the point of self.val
+                
+                Example:
+                >>> x = AD(val = 3, order = 10, size = 1, tag = 0)
+                >>> f = x**5
+                >>> f.higherdiff(5)
+                120.0
+                >>> f.higherdiff(6)
+                0.0
+
         """
         if not isinstance(order, numbers.Integral):
             raise TypeError("Highest order of derivatives must be a positive integer.")
@@ -578,8 +764,6 @@ class AD():
         elif self.higher is None:
             raise Exception("You didn't initialize higher order")
         elif order > len(self.higher):
-            #print(order)
-            #print(self.order)
             raise ValueError("You asked for an order beyond what you stored.")
 
         return self.higher[order-1]
