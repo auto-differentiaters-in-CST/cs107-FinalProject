@@ -370,3 +370,17 @@ def test_AD_rpow_hw():
     x = ad.AD(val = 1, order = 10, size = 1, tag = 0)
     f = 5**x
     assert np.abs(f.val - 5)<1e-8, "rpow not working for AD"
+
+def test_AD_pow_hw():
+    x = ad.AD(val = 1, order = 10, size = 1, tag = 0)
+    f = x**5
+
+    assert np.abs(f.val - 1)<1e-8, "rpow not working for AD"
+    x = ad.AD(val = 0, order = 10, size = 1, tag = 0)
+    
+    with pytest.raises(ValueError):
+        f = x ** 5
+        f = x**2
+    with pytest.raises(TypeError):
+        f = x**'a'
+    
