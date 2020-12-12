@@ -127,7 +127,7 @@ Our package is for Python 3 only. To install autodiffCST, you need to have pip3 
 Then, you could install this package by running 
 ```pip3 install autodiffCST``` from the command line. 
 
-*Please be aware that you might need to install sympy==1.7 prior to installing our package, depending on your environment. This has caused problems when we were testing, but we might not be able to fix it.*
+*Please be aware that you might need to manually install sympy and numpy prior to installing our package, depending on your environment. You could do so by running ```pip3 install sympy``` and ```pip3 install numpy``` in your terminal.*
 
 An alternative is to clone our repository by running ```git clone https://github.com/auto-differentiaters-in-CST/cs107-FinalProject.git``` from the command line and then ```cd autodiffcst``` to go to the directory where the modules reside. Then use ```pip install -r requirements.txt``` to install the required pacakges.
 

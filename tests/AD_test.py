@@ -40,6 +40,8 @@ def test_initialize_advanced():
 def test_repr():
     x = VAD([1])
     assert repr(x) == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
+    assert x.__repr__() == "VAD(value: [1], derivatives: [[1.]])", "Error: repr is not working"
+    assert x.__str__() == "VAD(value: [1], derivatives: [[1.]])", "Error: str is not working"
 
 def test_negative():
     [x,y,z] = VAD([1,2,3])
@@ -67,6 +69,12 @@ def test_eq_AD():
     eq2 = A[0] == A[2]
     assert eq1 == True, "Error: dunder equal for VAD is wrong."
     assert eq2 == False, "Error: dunder equal for VAD is wrong."
+    with pytest.raises(TypeError):
+        A == 1
+        A > 1
+        A < 1
+        A >= 1
+        A <= 1
     
 def test_len_VAD():
     A = VAD([1,2,3])
@@ -76,7 +84,7 @@ def test_len_VAD():
 def test_len_AD():
     [x, y] = VAD([1,2])
     lx = len(x)
-    assert lx == 2, "Error: dunder length for AD is wrong."
+    assert lx == 1, "Error: dunder length for AD is wrong."
     
 
 def test_isequal_VAD():
@@ -388,4 +396,38 @@ def test_higher_hw():
         x = ad.AD(val = 1, size = 1, tag = 0)
         f = x**5
         f.higherdiff(10)
+
+def test_AD_rpow_hw():
+    x = ad.AD(val = 1, order = 10, size = 1, tag = 0)
+    f = 5**x
+    assert np.abs(f.val - 5)<1e-8, "rpow not working for AD"
+
+def test_AD_pow_hw():
+    x = ad.AD(val = 1, order = 10, size = 1, tag = 0)
+    f = x**5
+
+    assert np.abs(f.val - 1)<1e-8, "rpow not working for AD"
+    x = ad.AD(val = 0, order = 10, size = 1, tag = 0)
     
+    with pytest.raises(ValueError):
+        f = x ** 5
+        f = x**2
+    with pytest.raises(TypeError):
+        f = x**'a'
+    
+def test_VAD_op_hw():
+    x = VAD(val = [1,2])
+    y = VAD(val = [1,2])
+    z = VAD(val = [1,2])
+    x -= 1
+    assert np.allclose(x.val,np.array([0,1])), 'Error: wrong isub VAD'
+    y %= 2
+    assert np.allclose(y,np.array([1,0])), 'Error: wrong imod VAD'
+    z *= 2
+    assert np.allclose(z.val,np.array([2,4])), 'Error: wrong imul VAD'
+    x = VAD(val = [2,2])
+    x /= 2
+    assert np.allclose(x.val,np.array([1,1])), 'Error: wrong itruediv VAD'
+    x = VAD(val = [2,2])
+    f = x**2
+    assert np.allclose(f.val,np.array([4,4])), 'Error: wrong pow VAD'
