@@ -25,6 +25,7 @@ def test_abs():
     x = VAD([-1,2,3])
     f = abs(x)
     print(f.der)
+    print(f.der2)
     assert np.sum(f.val == np.array([[1],[2],[3]])) == 3, "Error: abs didn't apply properly on VAD."
     assert np.sum(f.der == np.array([[-1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])) == 9, "Error: der1 for abs(VAD) is not correct."
     x = AD.AD(-1, tag=0)
@@ -40,6 +41,11 @@ def test_abs():
     xv = AD.AD(-2,tag=0,order=3)
     f = admath.abs(xv)
     assert f.higherdiff(3) == 0, "Error: abs didn't apply on higher properly"
+    [x] = VAD([-5],order=3)
+    f = abs(x)
+    print(f.der)
+    print(f.der2)
+    print(f.higher)
 
 def test_chain_rule():
     x = AD.AD(2,order=5)
