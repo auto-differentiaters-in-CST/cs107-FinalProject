@@ -67,6 +67,17 @@ def test_eq_AD():
     eq2 = A[0] == A[2]
     assert eq1 == True, "Error: dunder equal for VAD is wrong."
     assert eq2 == False, "Error: dunder equal for VAD is wrong."
+    
+def test_len_VAD():
+    A = VAD([1,2,3])
+    l = len(A)
+    assert l == 3, "Error: dunder length for VAD is wrong."
+    
+def test_len_AD():
+    [x, y] = VAD([1,2])
+    lx = len(x)
+    assert lx == 2, "Error: dunder length for AD is wrong."
+    
 
 def test_isequal_VAD():
     A = VAD([1,2,3])
