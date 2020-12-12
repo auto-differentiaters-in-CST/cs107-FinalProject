@@ -68,6 +68,12 @@ def test_eq_AD():
     eq2 = A[0] == A[2]
     assert eq1 == True, "Error: dunder equal for VAD is wrong."
     assert eq2 == False, "Error: dunder equal for VAD is wrong."
+    with pytest.raises(TypeError):
+        A == 1
+        A > 1
+        A < 1
+        A >= 1
+        A <= 1
     
 def test_len_VAD():
     A = VAD([1,2,3])
