@@ -163,14 +163,16 @@ def test_mul_AD():
 def test_mul_VAD():
     f = VAD([3,1])
     g = 4*f
-    assert np.sum(g.val == np.array([12, 4])) == 2, "Error: mul value for VAD is wrong."
-    assert np.sum(g.der == np.array([[4, 0], [0, 4]])) == 4, "Error: mul der for VAD is wrong."
+    g *= 2
+    assert np.sum(g.val == np.array([24, 8])) == 2, "Error: mul value for VAD is wrong."
+    assert np.sum(g.der == np.array([[8, 0], [0, 8]])) == 4, "Error: mul der for VAD is wrong."
     assert np.sum(g.der2 == np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])) == 8, "Error: mul der2 for VAD is wrong."
 
 def test_div_AD():
     [x, y] = VAD([3,1])
     f = x / y
     g = 9 / x
+    g /= 1
     assert f.val == 3, "Error: div value for AD is wrong."
     assert np.sum(f.der == np.array([1, -3])) == 2, "Error: div der for AD is wrong."
     assert np.sum(f.der2 == np.array([[0, -1],[-1, 6]])) == 4, "Error: div der for AD is wrong."
@@ -183,6 +185,7 @@ def test_div_VAD():
     f = VAD([3,1])
     h = f / 3
     g = 1 / f
+    g /= 1
     assert np.sum(h.val == np.array([1, 1/3])) == 2, "Error: div value for AD is wrong."
     assert np.sum(h.der == np.array([[1/3, 0], [0, 1/3]])) == 4, "Error: div der for AD is wrong."
     assert np.sum(h.der2 == np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])) == 8, "Error: div der for AD is wrong."
@@ -201,7 +204,6 @@ def test_pow_AD():
     assert np.allclose(g.val, np.array([8.0])), "Error: pow value for AD is wrong."
     assert np.allclose(g.der,np.array([8*np.log(2), 0.0])), "Error: pow der for AD is wrong."
     assert np.allclose(g.der2, np.array([[8*np.log(2)*np.log(2), 0.0], [0., 0.]])), "Error: pow der for AD is wrong."
-    print(np.array([[8*np.log(2)*np.log(2), 0], [0, 0]]))
 
 def test_set_VAD():
     x = ad.AD(1, tag=0, size=2)
@@ -225,6 +227,13 @@ def test_hessian():
     x = VAD([3, 1])
     g = 2 * x[0]
     assert np.allclose(hessian(g), np.array([[0., 0.], [0., 0.]]))
+
+
+def test_pow_m():
+    x = VAD([1, 2])
+    g = pow(a, 2)
+    assert np.allclose(g.val, np.array([1., 4.]))
+    assert np.allclose(g.der, np.array([[2., 0.],[0., 4.]]))
 
 def test_diff():
     x = VAD([3, 1])
@@ -294,9 +303,12 @@ def test_isless():
     with pytest.raises(TypeError):
         a.isless(3)
 
-def test_rsub():
+def test_sub_m():
     a = VAD([1])
-    assert (1-a).val == 0.0
+    b = 1 - a
+    b -= 1
+    assert b.val == -1.0
+    assert b.der == -1.0
 
 
 def test_mod():
