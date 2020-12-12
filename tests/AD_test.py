@@ -333,3 +333,10 @@ def test_AD_ueq_hw():
     assert y > x, "Error: ne not working for AD"
     assert x <= y, "Error: ne not working for AD"
     assert y >= x, "Error: ne not working for AD"
+
+def test_AD_add_hw():
+    x = ad.AD([1],tag=0,der=[1],order=5)
+    y = ad.AD([1],tag=0,der=[1],order=7)
+    f = x + x
+    with pytest.raises(Exception):
+        f = x + y
