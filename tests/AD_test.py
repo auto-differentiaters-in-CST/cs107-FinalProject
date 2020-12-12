@@ -413,3 +413,6 @@ def test_VAD_op_hw():
     assert np.allclose(y,np.array([1,0])), 'Error: wrong imod VAD'
     z *= 2
     assert np.allclose(z.val,np.array([2,4])), 'Error: wrong imul VAD'
+    x = VAD(val = [2,2])
+    x /= 2
+    assert np.allclose(x.val,np.array([1,1])), 'Error: wrong imul VAD'
